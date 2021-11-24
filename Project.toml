@@ -1,0 +1,13 @@
+name = "DelaySSAToolkit"
+uuid = "d39380a9-d0d7-4ae6-ae63-0e8d8b7efa9e"
+authors = ["Xiaoming Fu"]
+version = "0.1.0"
+
+[compat]
+julia = "1.6"
+
+[extras]
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
+
+[targets]
+test = ["Test"]
