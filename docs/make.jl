@@ -9,13 +9,17 @@ makedocs(;
     repo="https://github.com/palmtree2013/DelaySSAToolkit.jl/blob/{commit}{path}#{line}",
     sitename="DelaySSAToolkit.jl",
     format=Documenter.HTML(;
+        mathengine=Documenter.Writers.HTMLWriter.MathJax2(),
         prettyurls=get(ENV, "CI", "false") == "true",
         canonical="https://palmtree2013.github.io/DelaySSAToolkit.jl",
         assets=String[],
     ),
     pages=[
         "Home" => "index.md",
-        "Algorithms" => "Algorithms.md"
+        "Tutorials" => Any["tutorials.md", "examples.md"],
+        "Theory" => "theory.md",
+        "Algorithms" => "algorithms.md",
+        "API" => "api.md",
     ],
 )
 
