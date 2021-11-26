@@ -35,5 +35,5 @@ where the $a’_ks$ and $a_0$ are generated in step 4.
 11. Set $t=t+\Delta$.
 12. Return to step 2 or quite.
 
-
-
+## Reference
+[1] C. Xiaodong, “Exact stochastic simulation of coupled chemical reactions with delays,” Journal of Chemical Physics, vol. 126, no. 12, p. 297, 2007, doi: 10.1063/1.2710253.
