@@ -1,4 +1,4 @@
-## Direct Method Algorithm 
+# Delay Direct Method Algorithm 
 
 Suppose that at time $t$ there are ongoing delayed reactions set to complete at times $t+T_1, t+T_2, \ldots, t+T_d$. Define $T_0=0$ and $T_{d+1}=\infty$.
 

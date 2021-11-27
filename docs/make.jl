@@ -20,8 +20,12 @@ makedocs(;
             "tutorials/tutorials.md", 
             "tutorials/examples.md"
             ],
+        "Algorithm" => [
+            "algorithms/delaydirect.md",
+            "algorithms/delayrejection.md",      
+            "algorithms/delaymnrm.md",      
+        ],
         "Theory" => "theory.md",
-        "Algorithm" => "Algorithms.md",
         "API" => "api.md",
     ],
 )
