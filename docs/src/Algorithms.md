@@ -1,4 +1,4 @@
-## Direct Method Algorithm [1]
+## Direct Method Algorithm 
 
 Suppose that at time $t$ there are ongoing delayed reactions set to complete at times $t+T_1, t+T_2, \ldots, t+T_d$. Define $T_0=0$ and $T_{d+1}=\infty$.
 
@@ -25,7 +25,7 @@ Define *Tstruct*, whose *i*-th $(i=1,\dots,d)$ row stores $T_i$ and the index, $
 
      -  While $F < r_1$
        - Update the state vector $x_1$ due to the finish of the delayed reaction $t+T_i$.
-       - If $i<d-2$
+       - If $i<d$
          - Calculate propensity $a_k(t+T_{i+1})$ due to the finish of the delayed reaction at $t+T_{i+1}$ and calculate $a_0(t+T_{i+1})$.
          - Update $a_t=a_t+a_0(t+T_{i+1})(T_{i+1}-T_i)$.
          -  Update $F=1-e^{-a_t} $, $i=i+1$.
