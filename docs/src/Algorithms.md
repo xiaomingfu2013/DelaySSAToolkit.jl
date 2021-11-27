@@ -1,4 +1,6 @@
+
 ## Direct Method Algorithm [1]
+
 Suppose that at time *t* there are ongoing delayed reactions set to complete at times $t+T_1, t+T_2, \ldots, t+T_d$. Define $T_0=0$ and $T_{d+1}=\infty$.
 Define *Tstruct*, whose *i*th $(i=1,\dots,N_d)$ cell stores $T_i$ and the index, $\mu_i$, of the reaction that $T_i$ is associated with.
 
