@@ -21,7 +21,7 @@ makedocs(;
             "tutorials/examples.md"
             ],
         "Theory" => "theory.md",
-        "Algorithm" => "Algorithms.md",
+        "Algorithm" => "algorithms.md",
         "API" => "api.md",
     ],
 )
