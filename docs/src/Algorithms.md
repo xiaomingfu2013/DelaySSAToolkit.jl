@@ -60,6 +60,6 @@ Define *Tstruct*, whose *i*-th $(i=1,\dots,N_d)$ row stores $T_i$ and the index,
 
 
 
-\## Reference
+## Reference
 
 1. C. Xiaodong, “Exact stochastic simulation of coupled chemical reactions with delays,” Journal of Chemical Physics, vol. 126, no. 12, p. 297, 2007, doi: 10.1063/1.2710253.
