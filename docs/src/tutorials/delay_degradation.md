@@ -24,12 +24,12 @@ mass_jump = MassActionJump(rate1, reactant_stoich, net_stoich; scale_rates =fals
 jumpset = JumpSet((),(),nothing,[mass_jump])
 ```
 
-- ```rates```  A vector of rates of reactions.
-- ```reactant_stoch``` is a vector whose `k`th entry is the reactant stoichiometry of the `k`th reaction. The reactant stoichiometry for an individual reaction is assumed to be represented as a vector of `Pair`s, mapping species id to stoichiometric coefficient.
+- `rates`  A vector of rates of reactions.
+- `reactant_stoch` is a vector whose `k`th entry is the reactant stoichiometry of the `k`th reaction. The reactant stoichiometry for an individual reaction is assumed to be represented as a vector of `Pair`s, mapping species id to stoichiometric coefficient.
 - `net_stoch`  is assumed to have the same type as `reactant_stoich`; a vector whose `k`th entry is the net stoichiometry of the `k`th reaction. The net stoichiometry for an individual reaction is again represented as a vector of `Pair`s, mapping species id to the net change in the species when the reaction occurs.
 - `scale_rates` is an optional parameter that specifies whether the rate constants correspond to stochastic rate constants in the sense used by Gillespie, and hence need to be rescaled. *The default, `scale_rates=true`, corresponds to rescaling the passed in rate constants.* When using `MassActionJump` the default behavior is to assume rate constants correspond to stochastic rate constants in the sense used by Gillespie (J. Comp. Phys., 1976, 22 (4)). This means that for a reaction such as $2A \overset{k}{\rightarrow} B$, the jump rate function constructed by `MassActionJump` would be `k*A*(A-1)/2!`. For a trimolecular reaction like $3A \overset{k}{\rightarrow} B$ the rate function would be `k*A*(A-1)*(A-2)/3!`. To *avoid* having the reaction rates rescaled (by `1/2` and `1/6` for these two examples), one can pass the `MassActionJump` constructor the optional named parameter `scale_rates=false`
-- ```mass_jump```  Define mass-action jumps
-- ```jumpsets```  Wrap up the reactions into one jumpset.
+- `mass_jump`  Define mass-action jumps
+- `jumpsets`  Wrap up the reactions into one jumpset.
 
 ### Defining a `DelayJumpSet`
 
@@ -50,13 +50,13 @@ delay_interrupt = Dict(4=>delay_affect!)
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 ```
 
-- ```delay_trigger```  
+- `delay_trigger`  
   - Keys: Indices of reactions defined in `jumpset` that can trigger the delay reaction. Here we have the 3rd reaction $\beta: X_A \rightarrow X_I$ that will trigger the $X_I$ to degrade after time $\tau$.
   - Values: A update function that determines how to update the delay channel. In this example, once the delay reaction is trigged, the delay channel 1 (which is the channel for $X_I$) will be added a delay time $\tau$.			
-- ```delay_interrupt```
+- `delay_interrupt`
   - Keys: Indices of reactions defined in `jumpset` that can cause the change in delay channel. In this example, the 4th reaction $\gamma : X_I \rightarrow \emptyset$ will change the schduled delay reaction to change its state immediately.
   - Values: A update function that determines how to update the delay channel. In this example, once a delay-interrupt reaction happens, any of the reactants $X_I$ that is supposed to leave the system after time $\tau$ can be degraded immediately.  
-- ```delay_complete``` 
+- `delay_complete` 
   - Keys: Indices of delay channel. Here the 1st delay channel corresponds to $X_I$.
   - Values: A vector of `Pair`s, mapping species id to net change of stoichiometric coefficient.
 
