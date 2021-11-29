@@ -32,23 +32,16 @@ Define *Tstruct*, whose *i*-th $(i=1,\dots,d)$ row stores $T_i$ and the index, $
      - Set $\Delta=T_i-(\ln(1-r_1)+a_t-a_0(t+T_i)(T_{i+1}-T_i))/a_0(t+T_i)$.
    - EndIf
 5. If $\Delta\in[T_i,T_{i+1})$, delete the columns $1,\ldots,i$ of $T_i$ and set $T_j=T_j-\Delta$.
-
 6. Generate an independent uniform $(0,1)$ random number $r_2$.
-
 7. Find $\mu\in[1,\dots,m]$ such that
    ```math
    \sum_{k=1}^{\mu-1} a_k < r_2 \leq \sum_{k=1}^{\mu}a_k
    ```
    where the $a_k$ and $a_0$ are generated in step 4.
-
 8. If $\mu\in \text{ND}$ , update the number of each molecular species according to the reaction $\mu$
-
 9. If $\mu\in \text{CD}$, update *Tstruct* by adding the row $[\tau_\mu,\mu]$ so that $Tstruct(i,1)<Tstruct(i+1,1)$ still holds for all **i**.
-
 10. If $\mu\in \text{ICD}$, update the system according to the initiation of $\mu$ and update *Tstruct* by adding the row $[\tau_\mu,\mu]$ so that $Tstruct(i,1)<Tstruct(i+1,1)$ still holds for all $i$.
-
 11. Set $t=t+\Delta$.
-
 12. Return to Step 2 or quit.
 
 Remark. Notice that in the above pseudo-code, we modified the Step 4. in the orignal algorithm but both are equivalent.
