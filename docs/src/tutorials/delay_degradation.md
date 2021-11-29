@@ -4,7 +4,7 @@
 
 The model is defined as follows: 1. $C:\emptyset \rightarrow X_A$; 2. $\gamma : X_A \rightarrow \emptyset$; 3. $\beta : X_A \rightarrow  X_I$, which triggers $X_I\rightarrow \emptyset$ after $\tau$ time; 4. $\gamma: X_I \rightarrow \emptyset$, which causes the delay channel to change its state during a schduled delay reaction.
 
-This example is studied by [Lafuerza, Toral 2011](https://www.semanticscholar.org/paper/Role-of-delay-in-the-stochastic-creation-process.-Lafuerza-Toral/630ae871b895abca86703d18d3b223eea0659233), where one can solve the exact solution analytically. If we denote $X_A(t)$ to be the mean value of $X_A$ at time $t$, and $X_I(t)$ the mean value of $X_I$ at time $t$, then
+This example is studied by [1], where one can solve the exact solution analytically. If we denote $X_A(t)$ to be the mean value of $X_A$ at time $t$, and $X_I(t)$ the mean value of $X_I$ at time $t$, then
 ```math
 X_A(t)= \frac{C}{a}( 1-e^{-at} ),\quad X_I(t) = \begin{cases}
 \frac{Cβ}{a-γ}\big[\frac{1-e^{-γt}}{γ}-\frac{1-e^{-at}}{a}\big]，& t \in [0,\tau]\\
@@ -57,10 +57,10 @@ delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
   - Keys: Indices of reactions defined in `jumpset` that can cause the change in delay channel. In this example, the 4th reaction $\gamma : X_I \rightarrow \emptyset$ will change the schduled delay reaction to change its state immediately.
   - Values: A update function that determines how to update the delay channel. In this example, once a delay-interrupt reaction happens, any of the reactants $X_I$ that is supposed to leave the system after time $\tau$ can be degraded immediately.  
 - ```delay_complete``` 
-  - Keys: Indices of delay trigger reaction of delay reactions
-  - Values: How delay trigger reaction affects the system
+  - Keys: Indices of delay channel. Here the 1st delay channel corresponds to $X_I$.
+  - Values: A vector of `Pair`s, mapping species id to net change of stoichiometric coefficient.
 
-Now we can initialize the problem by setting 
+Now we can initialise the problem by setting 
 
 ```julia
 u0 = [0, 0]
@@ -70,7 +70,7 @@ de_chan0 = [[]]
 p = 0.
 tspan = (0.,tf)
 ```
-
+where `de_chan0` is the initial condition for the delay channel, which is a vector of arrays whose `k`th entry stores the schduled delay time for `k`th delay channel. Here we assume $X_I(0) = 0$, thus only an empty array.
 Next, we choose a delay SSA algorithm `DelayDirect()` and define the problem
 
 ```julia
@@ -80,6 +80,7 @@ dprob = DiscreteProblem(u0, tspan, p)
 jprob = JumpProblem(dprob, aggregatoralgo, jumpset, save_positions = (false,false))
 djprob = DelayJumpProblem(jprob,delaysets,de_chan0)
 ```
+where `DelayJumpProblem` inputs `JumpProblem`, `DelayJumpSet` and the initial condition of the delay channel `de_chan0`.
 
 ## Visualisation
 
@@ -87,8 +88,7 @@ Now we can solve the problem and plot a trajectory
 
 ```julia
 using Plots, DiffEqBase
-sol =@time solve(djprob, SSAStepper(), seed=2, saveat =.1, save_delay_channel = false)
-plot(sol, label = ["X_A" "X_I"])
+sol = solve(djprob, SSAStepper(), seed=2, saveat =.1, save_delay_channel = false)
 ```
 
 Then we simulate $10^4$ trajectories and calculate the evolution of mean value for each reactant
@@ -100,32 +100,18 @@ ens_prob = EnsembleProblem(djprob)
 ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1, save_delay_channel =false)
 ```
 
+
 ### Verification with the exact solution
-
-At last we can verify the results
-
+Lastkt, we can compare with the mean values of the exact solutions $X_I, X_A$
 ```julia
 timestamps = 0:0.1:tf
 a = β + γ 
-x_A(t) = C/a*(1-exp(-a*t))
-x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((1-exp(-γ*τ))/γ + exp(-a*t)*(1-exp((a-γ)τ))/(a-γ))
-using Plots
-plot(timestamps,x_A.(timestamps),linewidth=3,label="X_A")
-plot!(timestamps,x_I.(timestamps),linewidth=3,label="X_I")
-```
-
-So we can check the mean numbers of $X_A$ and $X_I$
-
-```julia
-plot(timestamps,x_A.(timestamps),linewidth=3,label="X_A_true")
-plot!(timestamps,mean_A.(timestamps),linewidth=3,line=:dash,label="X_A_experiment")
-```
-
-
-```julia
-plot(timestamps,x_I.(timestamps),linewidth=3,label="X_I_true")
-plot!(timestamps,mean_I.(timestamps),linewidth=3,line=:dash, legend = :topleft,label="X_I_experiment")
+mean_x_A(t) = C/a*(1-exp(-a*t))
+mean_x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((1-exp(-γ*τ))/γ + exp(-a*t)*(1-exp((a-γ)τ))/(a-γ))
 ```
 
 
 
+
+## Reference
+[1] Lafuerza, L. F., & Toral, R. (2011). Exact solution of a stochastic protein dynamics model with delayed degradation. Physical Review E, 84(5), 051121.
