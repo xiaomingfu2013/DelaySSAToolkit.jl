@@ -18,8 +18,8 @@ makedocs(;
         "Home" => "index.md",
         "Tutorials" => [
             "tutorials/tutorials.md", 
-            "tutorials/delay_degradation.md"
-            "tutorials/delay_multidegradation.md"
+            "tutorials/delay_degradation.md",
+            "tutorials/delay_multidegradation.md",
             ],
         "Algorithm" => [
             "algorithms/delaydirect.md",
