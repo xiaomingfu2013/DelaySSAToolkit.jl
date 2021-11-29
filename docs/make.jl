@@ -22,9 +22,9 @@ makedocs(;
             "tutorials/delay_multidegradation.md",
             ],
         "Algorithm" => [
-            "algorithms/delaydirect.md",
             "algorithms/delayrejection.md",      
-            "algorithms/delaymnrm.md",      
+            "algorithms/delaydirect.md",
+            "algorithms/delaymnrm.md", 
         ],
         "Theory" => "theory.md",
         "API" => "api.md",
