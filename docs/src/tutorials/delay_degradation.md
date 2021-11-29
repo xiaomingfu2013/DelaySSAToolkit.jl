@@ -87,14 +87,13 @@ where `DelayJumpProblem` inputs `JumpProblem`, `DelayJumpSet` and the initial co
 Now we can solve the problem and plot a trajectory
 
 ```julia
-using Plots, DiffEqBase
 sol = solve(djprob, SSAStepper(), seed=2, saveat =.1, save_delay_channel = false)
 ```
 
 Then we simulate $10^4$ trajectories and calculate the evolution of mean value for each reactant
 
 ```julia
-using StatsBase
+using DiffEqBase
 Sample_size = Int(1e4)
 ens_prob = EnsembleProblem(djprob)
 ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1, save_delay_channel =false)
