@@ -8,11 +8,10 @@ Gillespie developed a stochastic simulation algorithm (SSA) to simulate stochast
 
 `DelaySSAToolkit.jl` is a tool developed on top of `DiffEqJump.jl` which solves the delay stochastic simulation and contains the following features:
 ## Features
-- Various Delay stochastic algorithms are provided with high performance;
-- Stochastic delay is supported;
+- Various delay stochastic algorithms are provided;
+- Stochastic delay type is supported;
 - Multiple delay channels and simultaneous delay reactions are supported;
-- Priority queue and dependency graph are supported for high computational performance;
-- Deeply integrated with `DiffEqJump.jl`;
+- Priority queue and dependency graph are integrated for high computational performance;
 - Ecosystem with DifferentialEquations, Catalyst and more...
 
 ## Installation
