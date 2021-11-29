@@ -51,7 +51,7 @@ delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 ```
 
 - ```delay_trigger```  
-  - Keys: Indices of reactions defined in `jumpset` that can trigger the delay reaction. Here we have the 3rd reaction $ \beta: X_A \rightarrow X_I$ that will trigger the $X_I$ to degrade after time $\tau$.
+  - Keys: Indices of reactions defined in `jumpset` that can trigger the delay reaction. Here we have the 3rd reaction $\beta: X_A \rightarrow X_I$ that will trigger the $X_I$ to degrade after time $\tau$.
   - Values: A update function that determines how to update the delay channel. In this example, once the delay reaction is trigged, the delay channel 1 (which is the channel for $X_I$) will be added a delay time $\tau$.			
 - ```delay_interrupt```
   - Keys: Indices of reactions defined in `jumpset` that can cause the change in delay channel. In this example, the 4th reaction $\gamma : X_I \rightarrow \emptyset$ will change the schduled delay reaction to change its state immediately.
