@@ -1,4 +1,4 @@
-# A delay production example
+# A birth-death example with delay degradation
 
 ## Model definition
 
