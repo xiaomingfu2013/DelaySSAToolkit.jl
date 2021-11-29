@@ -2,23 +2,15 @@
 
 ## Model definition
 
-The model is defined as follows
+The model is defined as follows: 1. $C:\emptyset \rightarrow X_A$; 2. $\gamma : X_A \rightarrow \emptyset$; 3. $\beta : X_A \rightarrow  X_I$, which triggers $X_I\rightarrow \emptyset$ after $\tau$ time; 4. $\gamma: X_I \rightarrow \emptyset$, which causes the delay channel to change its state during a schduled delay reaction.
 
-$C:\emptyset \rightarrow X_A$
-
-$\gamma : X_A \rightarrow \emptyset$ 
-
-$\beta : X_A \rightarrow  X_I$,  which triggers $X_I\rightarrow \emptyset$ after $\tau$ time
-
-$\gamma: X_I \rightarrow \emptyset$, which causes the delay channel to change its state during a schduled delay reaction.
-
-This example is studied by [Lafuerza, Toral 2011](https://www.semanticscholar.org/paper/Role-of-delay-in-the-stochastic-creation-process.-Lafuerza-Toral/630ae871b895abca86703d18d3b223eea0659233), where one can solve the exact solution analytically. If we denote $X_A(t)$ to be the mean value of $X_A$ at time $t$, and $X_I(t)$ the mean value of $X_I$ at time $t$, then 
-$$
+This example is studied by [Lafuerza, Toral 2011](https://www.semanticscholar.org/paper/Role-of-delay-in-the-stochastic-creation-process.-Lafuerza-Toral/630ae871b895abca86703d18d3b223eea0659233), where one can solve the exact solution analytically. If we denote $X_A(t)$ to be the mean value of $X_A$ at time $t$, and $X_I(t)$ the mean value of $X_I$ at time $t$, then
+```math
 X_A(t)= \frac{C}{a}( 1-e^{-at} ),\quad X_I(t) = \begin{cases}
 \frac{Cβ}{a-γ}\big[\frac{1-e^{-γt}}{γ}-\frac{1-e^{-at}}{a}\big]，& t \in [0,\tau]\\
 \frac{Cβ}{a}\Big[\frac{1-e^{-γτ}}{γ}+\frac{(1-e^{τ(a-γ)})}{a-γ}e^{-at}\Big], & t \in (\tau,\infty)
 \end{cases}
-$$
+```
 where $a = β + γ$.
 
 We first define the parameters and the mass-action jump (see [Defining a Mass Action Jump](https://diffeq.sciml.ai/stable/types/jump_types/#Defining-a-Mass-Action-Jump) for details)
