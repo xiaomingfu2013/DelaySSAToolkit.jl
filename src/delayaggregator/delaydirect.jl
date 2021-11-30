@@ -1,12 +1,6 @@
 """
 #TODO
-Composition-Rejection Direct Method (DirectCR), implementation combining
-features from the original article:
-*A constant-time kinetic Monte Carlo algorithm for simulation of large biochemical reaction networks*,
-by A. Slepoy, A.P. Thompson and S.J. Plimpton, J. Chem. Phys, 128, 205101 (2008).
-and
-*Efficient Formulations for Exact Stochastic Simulation of Chemical Systems*,
-by S. Mauch and M. Stalzer, ACM Trans. Comp. Biol. and Bioinf., 8, No. 1, 27-35 (2010).
+
 """
 
 mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,uType} <: AbstractDSSAJumpAggregator

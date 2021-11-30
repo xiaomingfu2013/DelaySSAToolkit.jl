@@ -98,35 +98,32 @@ end
 # end
 
 ## TODO can't fix it for Jump System
-# function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; kwargs...)
-#     statetoid = Dict(value(state) => i for (i,state) in enumerate(states(js)))
-#     eqs       = equations(js)
-#     invttype  = prob.tspan[1] === nothing ? Float64 : typeof(1 / prob.tspan[2])
+function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; kwargs...)
+    statetoid = Dict(value(state) => i for (i,state) in enumerate(states(js)))
+    eqs       = equations(js)
+    invttype  = prob.tspan[1] === nothing ? Float64 : typeof(1 / prob.tspan[2])
 
-#     # handling parameter substition and empty param vecs
-#     p = (prob.p isa DiffEqBase.NullParameters || prob.p === nothing) ? Num[] : prob.p
+    # handling parameter substition and empty param vecs
+    p = (prob.p isa DiffEqBase.NullParameters || prob.p === nothing) ? Num[] : prob.p
 
-#     majpmapper = JumpSysMajParamMapper(js, p; jseqs=eqs, rateconsttype=invttype)
-#     majs = isempty(eqs.x[1]) ? nothing : assemble_maj(eqs.x[1], statetoid, majpmapper)
-#     crjs = ConstantRateJump[assemble_crj(js, j, statetoid) for j in eqs.x[2]]
-#     vrjs = VariableRateJump[assemble_vrj(js, j, statetoid) for j in eqs.x[3]]
-#     ((prob isa DiscreteProblem) && !isempty(vrjs)) && error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
-#     jset = JumpSet(Tuple(vrjs), Tuple(crjs), nothing, majs)
+    majpmapper = JumpSysMajParamMapper(js, p; jseqs=eqs, rateconsttype=invttype)
+    majs = isempty(eqs.x[1]) ? nothing : assemble_maj(eqs.x[1], statetoid, majpmapper)
+    crjs = ConstantRateJump[assemble_crj(js, j, statetoid) for j in eqs.x[2]]
+    vrjs = VariableRateJump[assemble_vrj(js, j, statetoid) for j in eqs.x[3]]
+    ((prob isa DiscreteProblem) && !isempty(vrjs)) && error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
+    jset = JumpSet(Tuple(vrjs), Tuple(crjs), nothing, majs)
 
-#     if needs_vartojumps_map(aggregator) || needs_depgraph(aggregator)
-#         jdeps = asgraph(js)
-#         vdeps = variable_dependencies(js)
-#         vtoj = jdeps.badjlist
-#         jtov = vdeps.badjlist
-#         jtoj = needs_depgraph(aggregator) ? eqeq_dependencies(jdeps, vdeps).fadjlist : nothing
-#     else
-#         vtoj = nothing; jtov = nothing; jtoj = nothing
-#     end
-
-#     jprob = JumpProblem(prob, aggregator, jset; dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, 
-#                 scale_rates=false, nocopy=true, kwargs...)
-#     DelayJumpProblem(jprob, delayjumpset, de_chan0)
-# end
+    if needs_vartojumps_map(aggregator) || needs_depgraph(aggregator)
+        jdeps = asgraph(js)
+        vdeps = variable_dependencies(js)
+        vtoj = jdeps.badjlist
+        jtov = vdeps.badjlist
+        jtoj = needs_depgraph(aggregator) ? eqeq_dependencies(jdeps, vdeps).fadjlist : nothing
+    else
+        vtoj = nothing; jtov = nothing; jtoj = nothing
+    end
+    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=false, nocopy=true, kwargs...)
+end
 
 Base.summary(io::IO, prob::DelayJumpProblem) = string(DiffEqBase.parameterless_type(prob)," with problem ",DiffEqBase.parameterless_type(prob.prob)," and aggregator ",typeof(prob.aggregator))
 function Base.show(io::IO, mime::MIME"text/plain", A::DelayJumpProblem)

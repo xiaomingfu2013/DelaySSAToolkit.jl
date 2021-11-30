@@ -3,8 +3,11 @@ module DelaySSAToolkit
 using Reexport
 @reexport using DiffEqBase
 import DiffEqBase: DiscreteCallback, init, solve, solve!, plot_indices, initialize!
-import DiffEqJump: AbstractAggregatorAlgorithm, AbstractJumpAggregator, AbstractJump, AbstractSSAJumpAggregator, JumpProblem, ConstantRateJump, VariableRateJump, RegularJump, MassActionJump, JumpSet,  SSAStepper
+import DiffEqJump: AbstractAggregatorAlgorithm, AbstractJumpAggregator, AbstractJump, AbstractSSAJumpAggregator, JumpProblem, ConstantRateJump, VariableRateJump, RegularJump, MassActionJump, JumpSet, SSAStepper
 import DiffEqJump: using_params, get_jump_info_fwrappers, build_jump_aggregation, isinplace_jump, extend_problem, build_variable_callback, get_num_majumps, evalrxrate, executerx!, executerx
+import DiffEqJump: make_dependency_graph, add_self_dependencies!, var_to_jumps_map
+import Catalyst: JumpSystem, states, equations, assemble_jumps, asgraph,  variable_dependencies, eqeq_dependencies, value
+import ModelingToolkit: JumpSysMajParamMapper, assemble_maj, assemble_vrj, assemble_crj
 import DataStructures: update!
 
 using DataStructures, UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays
