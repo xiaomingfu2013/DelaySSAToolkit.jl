@@ -36,7 +36,7 @@ where $t$ is the current time of the system. These ideas form the heart of our N
 
 11. For each k, set $T_k = T_k + a_k \Delta$.
 
-12. If reaction $\mu$ initiated, let $r$ be uniform$(0,1)$ and set $P_µ = P_µ + \ln(1/r)$.
+12. If reaction $\mu$ initiated, let $r$ be uniform$(0,1)$ and set $P_\mu = P_\mu + \ln(1/r)$.
 
 13. Recalculate the propensity functions, $a_k$.
 
