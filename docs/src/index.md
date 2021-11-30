@@ -29,6 +29,4 @@ using DelaySSAToolkit
 [2]: Xiaodong Cai, "Exact stochastic simulation of coupled chemical reactions with delays", The Journal of Chemical Physics 126, 124108(2007).
 [https://doi/10.1063/1.2710253](https://aip.scitation.org/doi/10.1063/1.2710253).
 
-```@autodocs
-Modules = [DelaySSAToolkit]
-```
+
