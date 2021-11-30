@@ -54,7 +54,7 @@ end
 """
 Create delta based on the shawdow variable u_shadow
 """
-@fastmath function generate_delta!(p::DelayDirectJumpAggregation, integrator, params, t)
+@inline function generate_delta!(p::DelayDirectJumpAggregation, integrator, params, t)
     @unpack delay_complete = integrator.delayjumpsets
     
     fill_cum_rates_and_sum!(p, p.u_shadow, params, t)
@@ -82,11 +82,43 @@ Create delta based on the shawdow variable u_shadow
             end
         end
         sum_rate = calculate_sum_rate(p, p.u_shadow,  params, t+T1[i])
-        ttnj = T1[i]-(log(1-r1)+ aₜ -sum_rate*(T1[i+1]-T1[i]))/sum_rate
+        ttnj = T1[i]+(-log(1-r1) - aₜ + sum_rate*(T1[i+1]-T1[i]))/sum_rate
     end
     fill_cum_rates_and_sum!(p, p.u_shadow, params, t+ttnj)
     p.time_to_next_jump = ttnj
 end
+# @inline function generate_delta!(p::DelayDirectJumpAggregation, integrator, params, t)
+#     @unpack delay_complete = integrator.delayjumpsets
+    
+#     fill_cum_rates_and_sum!(p, p.u_shadow, params, t)
+#     r1 = rand(p.rng)
+#     T1, T2 = create_Tstruct(integrator.de_chan)
+#     if isempty(T1)
+#         ttnj = -log(r1)/p.sum_rate
+#     else
+#         prepend!(T1,zero(t))
+#         append!(T1,Inf)
+#         i = 0
+#         aₜ = p.sum_rate*T1[2]
+#         F = 0
+#         while F < r1
+#             F = 1 - exp(-aₜ)
+#             u_ = copy(p.u_shadow)
+#             i += 1
+#             update_delay_complete!(u_, [T2[i]], [1], delay_complete)
+#             sum_rate_ = calculate_sum_rate(p, u_,  params, t+T1[i+1])
+#             aₜ += sum_rate_*(T1[i+1]-T1[i])
+#             if i > 1
+#                 update_delay_complete!(p.u_shadow, [T2[i-1]], [1], delay_complete)
+#             end
+#         end
+#         i -= 1
+#         sum_rate = calculate_sum_rate(p, p.u_shadow,  params, t+T1[i+1])
+#         ttnj = T1[i+1]+(-log(1-r1) - aₜ + sum_rate*(T1[i+2]-T1[i+1]))/sum_rate
+#     end
+#     fill_cum_rates_and_sum!(p, p.u_shadow, params, t+ttnj)
+#     p.time_to_next_jump = ttnj
+# end
 
 function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
     prev_rate = zero(t)

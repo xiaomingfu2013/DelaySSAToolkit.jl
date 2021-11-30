@@ -28,7 +28,7 @@ where $t$ is the current time of the system. These ideas form the heart of our N
    - Update the system according to reaction $\mu$.
 
 9. Elseif reaction $\mu$ initiated and $\mu\in$ CD
-   - Update sµ by inserting $t + \tau_\mu$ into $s_\mu$ in the second to last position.
+   - Update $s_\mu$ by inserting $t + \tau_\mu$ into $s_\mu$ in the second to last position.
 
 10. Elseif reaction $\mu$ initiated and $\mu\in$ ICD
     - Update the system based upon the initiation of reaction $\mu$.
