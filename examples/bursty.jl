@@ -14,7 +14,7 @@ begin # construct reaction network
     burst_sup = 30
     rxs = [Reaction(a*b^i/(1+b)^(i+1),nothing,[X],nothing,[i]) for i in 1:burst_sup]
     rxs = vcat(rxs)
-    @named rs_new = ReactionSystem(rxs,t,[X],[a,b])
+    @named rs = ReactionSystem(rxs,t,[X],[a,b])
 end
 
 jumpsys = convert(JumpSystem, rs_new, combinatoric_ratelaws=false)
@@ -48,7 +48,7 @@ using DifferentialEquations.EnsembleAnalysis
 sol_end = componentwise_vectors_timepoint(ens,tf)
 histogram(sol_end,bins=0:1:80,normalize=:pdf)
 
-# Check with the exact solution
+# Check with the exact probability distribution
 using TaylorSeries
 function taylor_coefficients(NT::Int,at_x,gen::Function)
     Q = zeros(NT)

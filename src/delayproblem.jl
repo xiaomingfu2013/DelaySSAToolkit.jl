@@ -97,7 +97,7 @@ end
 #     MassActionJump(rs, ns; param_mapper=pmapper, nocopy=true)
 # end
 
-## TODO can't fix it for Jump System
+
 function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; kwargs...)
     statetoid = Dict(value(state) => i for (i,state) in enumerate(states(js)))
     eqs       = equations(js)

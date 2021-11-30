@@ -185,7 +185,7 @@ Update state according up the next_jump;
         @inbounds p.affects![idx](integrator)
     end
     # shift delay channel !
-    shift_delay_channel!(integrator.de_chan,ttnj) 
+    shift_delay_channel!(integrator.de_chan, ttnj) 
     update_delay_channel!(integrator.de_chan)
     if next_jump in delay_interrupt_set
         # delay_chan is changed according to affect_chan!

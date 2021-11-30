@@ -210,7 +210,7 @@ Update the delay channel
 """
 @inline function update_delay_channel!(de_chan::Vector)
     for idx in eachindex(de_chan)
-        filter!(x->x.>0,de_chan[idx])
+        filter!(x->x.>0, de_chan[idx])
     end 
 end
 
