@@ -98,7 +98,7 @@ Sample_size = Int(1e4)
 ens_prob = EnsembleProblem(djprob)
 ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1, save_delay_channel =false)
 ```
-![Visualisation](doc/src/assets/delay_degradation1.svg)
+![degradation1](doc/src/assets/delay_degradation1.svg)
 
 ### Verification with the exact solution
 Lastkt, we can compare with the mean values of the exact solutions $X_I, X_A$
@@ -108,8 +108,8 @@ a = β + γ
 mean_x_A(t) = C/a*(1-exp(-a*t))
 mean_x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((1-exp(-γ*τ))/γ + exp(-a*t)*(1-exp((a-γ)τ))/(a-γ))
 ```
-![Visualisation](doc/src/assets/delay_degradation2.svg)
-![Visualisation](doc/src/assets/delay_degradation3.svg)
+![degradation2](doc/src/assets/delay_degradation2.svg)
+![degradation3](doc/src/assets/delay_degradation3.svg)
 
 
 
