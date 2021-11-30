@@ -16,7 +16,7 @@ begin # construct reaction network
     rxs = vcat(rxs)
     @named rs = ReactionSystem(rxs,t,[X],[a,b])
 end
-
+# convert the ReactionSystem to a JumpSystem
 jumpsys = convert(JumpSystem, rs_new, combinatoric_ratelaws=false)
 
 u0 = [0]
@@ -44,9 +44,6 @@ jprob = DelayJumpProblem(jumpsys, dprob, DelayMNRM(), delayjumpset, de_chan0, sa
 using DiffEqJump
 ensprob = EnsembleProblem(jprob)
 @time ens = solve(ensprob, SSAStepper(), EnsembleThreads(),saveat=timestamp, trajectories=10^5)
-using DifferentialEquations.EnsembleAnalysis
-sol_end = componentwise_vectors_timepoint(ens,tf)
-histogram(sol_end,bins=0:1:80,normalize=:pdf)
 
 # Check with the exact probability distribution
 using TaylorSeries
@@ -64,5 +61,9 @@ function delay_bursty(params,NT::Int)
     taylor_coefficients(NT,-1,gen1)
 end
 
+
+using DifferentialEquations.EnsembleAnalysis
+sol_end = componentwise_vectors_timepoint(ens,tf)
+histogram(sol_end,bins=0:1:80,normalize=:pdf)
 sol_exact = delay_bursty([ps;130;200], 80)
 plot!(0:79,sol_exact)

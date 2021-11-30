@@ -2,7 +2,6 @@
 #TODO
 
 """
-
 mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,uType} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int
