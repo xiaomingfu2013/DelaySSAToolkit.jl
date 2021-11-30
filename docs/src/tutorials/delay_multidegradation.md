@@ -2,9 +2,9 @@
 
 ## Model definition
 
-The model is defined as follows: 1. $C:\emptyset \rightarrow X_A$; 2. $\gamma : X_A \rightarrow \emptyset $ ; 3. $\beta : X_A \rightarrow  X_{I1}+X_{I2}$, which triggers $X_{I1},X_{I2}\rightarrow \emptyset $ after $\tau$ time; 4. $\gamma : X_{I1} \rightarrow \emptyset $; 5. $\gamma : X_{I2} \rightarrow \emptyset $. The 4th and 5th reactions will cause the delay channel to change its state during a schduled delay reaction. Note this example is to test multiple delay reactions. The exact solution can be found in [this example](@ref delay_degradation).
+The model is defined as follows: 1. $C:\emptyset \rightarrow X_A$; 2. $\gamma : X_A \rightarrow \emptyset $ ; 3. $\beta : X_A \rightarrow  X_{I1}+X_{I2}$, which triggers $X_{I1},X_{I2}\rightarrow \emptyset $ after $\tau$ time; 4. $\gamma : X_{I1} \rightarrow \emptyset$; 5. $\gamma : X_{I2} \rightarrow \emptyset$. The 4th and 5th reactions will cause the delay channel to change its state during a schduled delay reaction. Note this example is to test multiple delay reactions. The exact solution can be found in [this example](@ref delay_degradation).
 
-We first define the parameters and the mass-action jump (see [Defining a Mass Action Jump](https://diffeq.sciml.ai/stable/types/jump_types/#Defining-a-Mass-Action-Jump) for details)
+We first define the parameters and the mass-action jump (see [Defining a Mass Action Jump](https://diffeq.sciml.ai/stable/types/jump_types/#Defining-a-Mass-Action-Jump) for details).
 
 ```julia
 C, γ, β, τ = [2., 0.1, 0.5, 15.]
@@ -14,8 +14,7 @@ net_stoch = [[1=>1],[1=>-1],[1=>-1,2=>1,3=>1],[2=>-1],[3=>-1]]
 mass_jump = MassActionJump(rate1, reactant_stoch, net_stoch; scale_rates =false)
 jumpsets = JumpSet((),(),nothing,[mass_jump])
 ```
-
-We can see the definition of the parameters in [define the parameters](@ref delay_degradation)
+We can see the definition of the parameters in [this example](@ref Model_definition).
 
 ### Defining a `DelayJumpSet`
 
@@ -93,11 +92,5 @@ ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_s
 
 ### Verification with the exact solution
 
-Lastkt, we can compare with the mean values of the exact solutions $X_I,X_A$
+Lastly, we can compare with the mean values of the exact solutions $X_I,X_A$
 
-```julia
-timestamps = 0:0.1:tf
-a = β + γ 
-x_A(t) = C/a*(1-exp(-a*t))
-x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((1-exp(-γ*τ))/γ + exp(-a*t)*(1-exp((a-γ)τ))/(a-γ))
-```
