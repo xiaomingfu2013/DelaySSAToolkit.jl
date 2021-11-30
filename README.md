@@ -36,13 +36,11 @@ rn = @reaction_network begin
     r, I --> R
 end ρ r
 
-jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false)
 u0 = [999,1,0,0]
 de_chan0 = [[]]
 tf = 400.
 tspan = (0,tf)
 ps = [1e-4, 1e-2]
-dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 τ = 20.
 delay_trigger_affect! = function (de_chan, rng)
     append!(de_chan[1], τ)
@@ -50,8 +48,10 @@ end
 delay_trigger = Dict(1=>delay_trigger_affect!) # Add τ to delay channel
 delay_complete = Dict(1=>[2=>1, 3=>-1]) # Transfer from E to I after the completed delay reaction
 delay_interrupt = Dict()
-
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
+
+jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false)
+dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
 sol = solve(jprob, SSAStepper())
 ```
