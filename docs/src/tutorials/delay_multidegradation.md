@@ -80,6 +80,7 @@ Now we can solve the problem and plot a trajectory
 ```julia
 sol =@time solve(djprob, SSAStepper(),seed=10, saveat =.1, save_delay_channel = false)
 ```
+![Visualisation](doc/src/assets/delay_multidegradation1.svg)
 
 Then we simulate $10^4$ trajectories and calculate the evolution of mean value for each reactant
 
@@ -89,7 +90,8 @@ Sample_size = Int(1e4)
 ens_prob = EnsembleProblem(djprob)
 ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1, save_delay_channel =false)
 ```
-
+![Visualisation](doc/src/assets/delay_multidegradation2.svg)
+![Visualisation](doc/src/assets/delay_multidegradation3.svg)
 ### Verification with the exact solution
 
 Lastly, we can compare with the mean values of the exact solutions $X_I,X_A$
