@@ -8,9 +8,9 @@ Consider a system consisting of $N≥1$ chemical species, $\{X_1, . . . , X_N\}$
 ```math
 \begin{equation}
 \begin{aligned}
-a_m(t)dt =& \text{the probability, given } X(t)=x, \\
-& \text{that one reaction }R_m \text{ will occur in the}\\
-& \text{next infinitesimal time interval }[t,t+d_t].
+a_m(t)dt & =\text{ the probability, given } X(t)=x, \\
+&\quad \text{that one reaction }R_m \text{ will occur in the}\\
+&\quad \text{next infinitesimal time interval }[t,t+d_t].
 \end{aligned}
 \end{equation}
 ```
@@ -22,7 +22,7 @@ a_m(t)dt =& \text{the probability, given } X(t)=x, \\
 ```math
 \begin{equation}
 \begin{aligned}
-\text{E:} & \text{no reaction occurs in the time interval }[t,t+\tau],\\
+\text{E: } & \text{no reaction occurs in the time interval }[t,t+\tau],\\
 & \text{and a reaction }R_\mu \ \text{occurs in the infinitesimal}\\
 & \text{time interval }[t+\tau,t+\tau+d_\tau].
 \end{aligned}
@@ -69,7 +69,11 @@ P_0(\tau)=P(E_0,...,E_i)=P(E_0) \prod_{j=1}^i P(E_j丨E_0,...,E_{j-1}).
 \end{equation}
 ```
 
-  From the derivation of Gillespie’s exact SSA,we know that  $P(E_0) = \exp (−a_0(t)T_1)$,  $P(E_j丨E_0,...,E_{j-1}) = \exp(-a_0(t+T_j)T_1) × (T_{j+1}−T_j),j=0,...,i−1$,   and   $P(E_i丨E_0,...,E_{i-1}) = \exp(-a_0(t+T_i)(\tau-T_i))$.  Notice that propensity functions change at $t+T_j$ after a delayed reaction finishes, and we use $a_0(t+T_j)$ to represent the new $a_0$. The probability $P_0(\tau)$ is then given by
+  From the derivation of Gillespie’s exact SSA,we know that  $P(E_0) = \exp (−a_0(t)T_1)$,
+```math
+P(E_j丨E_0,...,E_{j-1}) = \exp(-a_0(t+T_j)T_1) × (T_{j+1}−T_j),j=0,\ldots,i−1,
+```
+and $P(E_i丨E_0,...,E_{i-1}) = \exp(-a_0(t+T_i)(\tau-T_i))$.  Notice that propensity functions change at $t+T_j$ after a delayed reaction finishes, and we use $a_0(t+T_j)$ to represent the new $a_0$. The probability $P_0(\tau)$ is then given by
 
 ```math
 \begin{equation}
@@ -119,6 +123,6 @@ Then, we can generate $\tau$ from a standard uniform random variable $u_2$, by t
 \end{aligned}
 ```
 
-  Since we need $T_1,...,T_d$ to generate $\tau$ and $\mu$, we define an array of data structures, named $Tstruct$, whose $i$th $(i=1,...,d)$ cell stores $T_i$ and the index, $\mu_i$, of the reaction that $T_i$ is associated with. The reaction index $\mu_i$ is needed during the generation of $\tau$, when we update the propensity functions affected by the reaction that is delayed but finishes at $t+T_i$. During simulation, we need to generate $\tau$ and $\mu$, maintain *Tstruct*, and then update the state vector $X(t)$.
+  Since we need $T_1,...,T_d$ to generate $\tau$ and $\mu$, we define an array of data structures, named *Tstruct*, whose $i$th $(i=1,...,d)$ cell stores $T_i$ and the index, $\mu_i$, of the reaction that $T_i$ is associated with. The reaction index $\mu_i$ is needed during the generation of $\tau$, when we update the propensity functions affected by the reaction that is delayed but finishes at $t+T_i$. During simulation, we need to generate $\tau$ and $\mu$, maintain *Tstruct*, and then update the state vector $X(t)$.
 
 ### Delay Rejection Method

@@ -63,7 +63,7 @@ Create delta based on the shawdow variable u_shadow
     if isempty(T1)
         ttnj = -log(r1)/p.sum_rate
     else
-        prepend!(T1,0)
+        prepend!(T1,zero(t))
         append!(T1,Inf)
         i = 1
         aₜ = p.sum_rate*T1[2]
@@ -82,7 +82,7 @@ Create delta based on the shawdow variable u_shadow
             end
         end
         sum_rate = calculate_sum_rate(p, p.u_shadow,  params, t+T1[i])
-        ttnj = T1[i]-(log(1-r1)+aₜ-sum_rate*(T1[i+1]-T1[i]))/sum_rate
+        ttnj = T1[i]-(log(1-r1)+ aₜ -sum_rate*(T1[i+1]-T1[i]))/sum_rate
     end
     fill_cum_rates_and_sum!(p, p.u_shadow, params, t+ttnj)
     p.time_to_next_jump = ttnj
