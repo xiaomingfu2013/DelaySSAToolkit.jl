@@ -42,7 +42,7 @@ de_chan0 = [[0.1,0.2,0.3],[5.,9.]]  #first being production of N delay channel, 
 tspan = (0.,tf)
 dprob = DiscreteProblem(u0, tspan)
 djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delaysets, de_chan0, save_positions = (false,false))
-delay_sol =@time solve(djprob, SSAStepper(), seed=1, saveat=1.)
+delay_sol =@time solve(djprob, SSAStepper(), seed=2, saveat=1.)
 n_N = delay_sol[3,:]
 n_M = delay_sol[4,:]
 n_P = delay_sol[5,:]
