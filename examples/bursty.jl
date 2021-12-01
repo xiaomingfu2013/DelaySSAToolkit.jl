@@ -64,7 +64,7 @@ end
 using DifferentialEquations.EnsembleAnalysis
 theme(:vibrant)
 sol_end = componentwise_vectors_timepoint(ens, tf)
-histogram(sol_end,bins=0:1:60,normalize=:pdf, label = "SSA",fillalpha = 0.6, linecolor = :orange)
+histogram(sol_end,bins=0:1:60,normalize=:pdf, label = "Delay SSA",fillalpha = 0.6, linecolor = :orange)
 sol_exact = delay_bursty([ps;130;200], 61)
 fig = plot!(0:60,sol_exact, linewidth = 3, label = "Exact solution", fmt=:svg, xlabel = "# of products", ylabel = "Probability")
 savefig(fig, "docs/src/assets/bursty.svg")
