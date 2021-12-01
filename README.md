@@ -100,4 +100,4 @@ ensprob = EnsembleProblem(jprob)
 [1] Daniel T. Gillespie "Exact stochastic simulation of coupled chemical reactions", J. Phys. Chem. 1977, 81, 25, 2340–2361.
 [https://doi.org/10.1021/j100540a008](https://pubs.acs.org/doi/10.1021/j100540a008)
 
-[2] Qingchao Jiang#, Xiaoming Fu#, Shifu Yan#, Runlai Li, Wenli Du, Zhixing Cao*, Feng Qian, Ramon Grima*, "[Neural network aided approximation and parameter inference of non-Markovian models of gene expression](https://www.nature.com/articles/s41467-021-22919-1)". Nature communications, (2021) 12(1), 1-12. 
+[2] Qingchao Jiang#, Xiaoming Fu#, Shifu Yan#, Runlai Li, Wenli Du, Zhixing Cao*, Feng Qian, Ramon Grima*, "Neural network aided approximation and parameter inference of non-Markovian models of gene expression". Nature communications, (2021) 12(1), 1-12. [https://doi.org/10.1038/s41467-021-22919-1](https://doi.org/10.1038/s41467-021-22919-1)
