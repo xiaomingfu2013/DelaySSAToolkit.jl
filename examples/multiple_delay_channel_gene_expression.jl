@@ -19,7 +19,7 @@ jumpset = JumpSet((),(),nothing,mass_jump)
 τ1, τ2 = [1., 10.]
 delay_trigger_affect! = function (de_chan, rng)
     append!(de_chan[1],τ1)
-    append!(de_chan[2],τ1+τ2)
+    # append!(de_chan[2],τ1+τ2)
 end
 delay_trigger =Dict(3=>delay_trigger_affect!) # 可以 trigger 多个delay_reactions 这个表示 10s 后同时增加作用 两次 1 号delay 反应
 delay_complete_affect1! = function (u, de_chan)
@@ -35,15 +35,15 @@ end
 delay_interrupt = Dict(5=>delay_interrupt_affect!) # reactions 能够对 delay channel中造成影响 keys: reaction idx -> values: delay_affect! 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 using Random
-u0 = [1,0,0,0,0]
+u0 = [1,0,2,0,0]
 tf = 500.
-# de_chan0 = [[0.1,0.2,0.3],[5.,9.]]  #first being production of N delay channel, second being N ==> M delay channel 
-de_chan0 = [[],[]]  #first being production of N delay channel, second being N ==> M delay channel 
+de_chan0 = [[0.1,0.2,0.3],[5.,9.]]  #first being production of N delay channel, second being N ==> M delay channel 
+# de_chan0 = [[],[]]  #first being production of N delay channel, second being N ==> M delay channel 
 tspan = (0.,tf)
 dprob = DiscreteProblem(u0, tspan)
 djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delaysets, de_chan0, save_positions = (false,false))
 delay_sol =@time solve(djprob, SSAStepper(), seed=1, saveat=1.)
-n_N = delay_sol[3,19]
+n_N = delay_sol[3,:]
 n_M = delay_sol[4,:]
 n_P = delay_sol[5,:]
 
