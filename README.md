@@ -57,8 +57,8 @@ sol = solve(jprob, SSAStepper())
 ```
 ![seir](docs/src/assets/seir.svg)
 
-### A bursty model
-Check the [`bursty`](@ref) for more details.
+### A bursty model [2]
+Check this [`example`](@ref) for more details.
 ```julia
 using DelaySSAToolkit
 using Catalyst, DiffEqJump
@@ -97,8 +97,7 @@ ensprob = EnsembleProblem(jprob)
 ![bursty](docs/src/assets/bursty.svg)
 
 ## References
-[1]: Daniel T. Gillespie "Exact stochastic simulation of coupled chemical reactions", J. Phys. Chem. 1977, 81, 25, 2340–2361.
+[1] Daniel T. Gillespie "Exact stochastic simulation of coupled chemical reactions", J. Phys. Chem. 1977, 81, 25, 2340–2361.
 [https://doi.org/10.1021/j100540a008](https://pubs.acs.org/doi/10.1021/j100540a008)
 
-[2]: Xiaodong Cai, "Exact stochastic simulation of coupled chemical reactions with delays", The Journal of Chemical Physics 126, 124108(2007).
-[https://doi/10.1063/1.2710253](https://aip.scitation.org/doi/10.1063/1.2710253).
+[2] Qingchao Jiang#, Xiaoming Fu#, Shifu Yan#, Runlai Li, Wenli Du, Zhixing Cao*, Feng Qian, Ramon Grima*, "[Neural network aided approximation and parameter inference of non-Markovian models of gene expression](https://www.nature.com/articles/s41467-021-22919-1)". Nature communications, (2021) 12(1), 1-12. 
