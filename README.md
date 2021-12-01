@@ -94,7 +94,7 @@ jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan
 ensprob = EnsembleProblem(jprob)
 @time ens = solve(ensprob, SSAStepper(), EnsembleThreads(),saveat=timestamp, trajectories=10^5)
 ```
-![bursty](docs/src/assets/bursty.pdf)
+![bursty](docs/src/assets/bursty.svg)
 
 ## References
 [1]: Daniel T. Gillespie "Exact stochastic simulation of coupled chemical reactions", J. Phys. Chem. 1977, 81, 25, 2340–2361.
