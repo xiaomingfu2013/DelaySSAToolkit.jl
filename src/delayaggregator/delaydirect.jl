@@ -68,10 +68,10 @@ Create delta based on the shawdow variable u_shadow
         aₜ = p.sum_rate*T1[2]
         F = 1 - exp(-aₜ)
         while F < r1
-            update_delay_complete!(p.u_shadow, [T2[i]], [1], delay_complete)
+            update_delay_complete_u!(p.u_shadow, [T2[i]], [1], delay_complete)
             if i < length(T1)-2
                 u_ = copy(p.u_shadow)
-                update_delay_complete!(u_, [T2[i+1]], [1], delay_complete)
+                update_delay_complete_u!(u_, [T2[i+1]], [1], delay_complete)
                 sum_rate_ = calculate_sum_rate(p, u_,  params, t+T1[i+2])
                 aₜ += sum_rate_*(T1[i+2]-T1[i+1])
                 F = 1 - exp(-aₜ)

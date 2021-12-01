@@ -11,7 +11,7 @@
 """
 struct DelayJumpSet
     delay_trigger::Dict
-    delay_complete::Dict{Int,Vector{Pair}}
+    delay_complete::Dict{Int,Any}
     delay_interrupt::Dict
     delay_trigger_set::Vector{Int}
     delay_interrupt_set::Vector{Int}

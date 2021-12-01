@@ -19,7 +19,7 @@ x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((
 
 
 # Create a 
-using DelaySSA
+using DelaySSAToolkit
 rate1 = [C,γ,β,γ,γ]
 reactant_stoch = [[],[1=>1],[1=>1],[2=>1],[3=>1]]
 net_stoch = [[1=>1],[1=>-1],[1=>-1,2=>1,3=>1],[2=>-1],[3=>-1]]
@@ -58,8 +58,8 @@ de_chan0 = [[],[]]
 p = 0.
 tspan = (0.,tf)
 # aggregatoralgo = DelayMNRM()
-# aggregatoralgo = DelayRejection()
-aggregatoralgo = DelayDirect()
+aggregatoralgo = DelayRejection()
+# aggregatoralgo = DelayDirect()
 save_positions = (false,false)
 dprob = DiscreteProblem(u0, tspan, p)
 # jprob = JumpProblem( )

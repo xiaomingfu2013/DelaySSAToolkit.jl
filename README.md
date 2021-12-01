@@ -93,7 +93,7 @@ delay_interrupt = Dict()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false,false))
 ensprob = EnsembleProblem(jprob)
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(),saveat=timestamp, trajectories=10^5)
+@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
 ```
 ![bursty](docs/src/assets/bursty.svg)
 

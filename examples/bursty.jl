@@ -42,7 +42,7 @@ sol = solve(jprob, SSAStepper(), seed= 1)
 
 using Plots, DiffEqBase
 ensprob = EnsembleProblem(jprob)
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(),saveat=timestamp, trajectories=10^5)
+@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
 
 # Check with the exact probability distribution
 using TaylorSeries
