@@ -40,12 +40,12 @@ delay_complete = Dict(1=>[1=>-1])
 delay_interrupt = Dict()
 
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, DelayDirect(), delayjumpset, de_chan0, save_positions=(true,true))
+jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
 sol = solve(jprob, SSAStepper(), seed= 1)
 
 using Plots, DiffEqBase
 ensprob = EnsembleProblem(jprob)
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(),saveat=timestamp, trajectories=10^4)
+@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(),saveat=timestamp, trajectories=10^5)
 
 # Check with the exact probability distribution
 using TaylorSeries
@@ -68,5 +68,6 @@ using DifferentialEquations.EnsembleAnalysis
 theme(:vibrant)
 sol_end = componentwise_vectors_timepoint(ens, tf)
 histogram(sol_end,bins=0:1:60,normalize=:pdf, label = "SSA",fillalpha = 0.6, linecolor = :orange)
-sol_exact = delay_bursty([ps;130;200], 60)
-plot!(0:59,sol_exact, linewidth = 3, label = "Exact solution")
+sol_exact = delay_bursty([ps;130;200], 61)
+fig = plot!(0:60,sol_exact, linewidth = 3, label = "Exact solution", fmt=:pdf, xlabel = "# of products", ylabel = "Probability")
+savefig(fig, "docs/src/assets/bursty.pdf")

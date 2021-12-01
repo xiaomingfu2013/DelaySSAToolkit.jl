@@ -1,6 +1,5 @@
 """
 #TODO
-
 """
 mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,uType} <: AbstractDSSAJumpAggregator
     next_jump::Int
@@ -38,7 +37,7 @@ function initialize!(p::DelayDirectJumpAggregation, integrator, u, params, t)
 end
 
 @inline function execute_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t)
-    integrator.u = copy(p.u_shadow) # Update the delay complete reactions
+    integrator.u = copy(p.u_shadow) #TODO
     update_state_delay_Direct!(p, integrator, integrator.u, t)
     nothing
 end
@@ -62,7 +61,7 @@ Create delta based on the shawdow variable u_shadow
     T1, T2 = create_Tstruct(integrator.de_chan)
     if isempty(T1)
         ttnj = -log(r1)/p.sum_rate
-    else
+    else #TODO
         prepend!(T1,zero(t))
         append!(T1,Inf)
         i = 1
