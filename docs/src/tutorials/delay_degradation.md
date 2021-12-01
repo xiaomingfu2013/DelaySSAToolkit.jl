@@ -2,7 +2,7 @@
 
 ## Model definition
 
-The model is defined as follows: 1. $C:\emptyset \rightarrow X_A$; 2. $\gamma : X_A \rightarrow \emptyset$; 3. $\beta : X_A \rightarrow  X_I$, which triggers $X_I\rightarrow \emptyset$ after $\tau$ time; 4. $\gamma: X_I \rightarrow \emptyset$, which causes the delay channel to change its state during a schduled delay reaction.
+The model is defined as follows: 1. $C:\emptyset \rightarrow X_A$; 2. $\gamma : X_A \rightarrow \emptyset$; 3. $\beta : X_A \rightarrow  X_I$, which triggers $X_I\Rightarrow \emptyset$ after $\tau$ time; 4. $\gamma: X_I \rightarrow \emptyset$, which causes the delay channel to change its state during a schduled delay reaction.
 
 This example is studied by Lafuerza and Toral in [1], where one can solve the solution analytically. If we denote $\langle X_A\rangle(t)$ to be the mean value of $X_A$ at time $t$, and $\langle X_I\rangle(t)$ the mean value of $X_I$ at time $t$, then
 ```math

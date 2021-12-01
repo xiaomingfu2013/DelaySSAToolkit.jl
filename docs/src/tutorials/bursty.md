@@ -3,13 +3,9 @@
 ## Model definition
 We study the following model which does not have an explicit gene state description
 and that the product (RNA or protein denoted as P) is actively transcribed in bursts whose size are distributed according to a geometric distribution. This means the propensity functions is is given by $f(n) = ab^n/(1+b)^{n+1}$ for any positive integer $n$. Our bursty model writes: 
+The system has an explict solution which is obtained in [1, Supplementary Note Section 2]. We first construct reaction network
 ```math
-\begin{align*}
-\frac{ab}{(1+b)^{2}}:\emptyset \rightarrow P:\text{triggers}\quad
-P\rightarrow\emptyset \text{ after $\tau$ time}\\
-\frac{ab^2}{(1+b)^3}:\emptyset \rightarrow 2P :\text{triggers}\quad2P\rightarrow\emptyset \text{ after $\tau$ time}\\
-\vdots\\
-\end{align*}
+\frac{ab^n}{(1+b)^{n+1}}: \emptyset \rightarrow nP \text{ triggers }nP\Rightarrow\emptyset \text{ after $\tau$ time}\\
 ```
 The system has an explict solution which is obtained in [1, Supplementary Note Section 2]. We first construct reaction network
 ```julia
@@ -57,6 +53,7 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 - ```delay_complete:``` 
   - Keys: Indices of delay channel. Here we only have one delay channel for $P$.
   - Values: A vector of `Pair`s, mapping species id to net change of stoichiometric coefficient.
+  
 We define the delay SSA problem
 ```julia
 dprob = DiscreteProblem(jumpsys,u0,tspan,ps)

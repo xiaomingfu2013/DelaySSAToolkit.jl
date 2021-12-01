@@ -2,7 +2,7 @@
 
 ## Model definition
 
-The model is defined as follows: 1. $C:\emptyset \rightarrow X_A$; 2. $\gamma : X_A \rightarrow \emptyset $ ; 3. $\beta : X_A \rightarrow  X_{I1}+X_{I2}$, which triggers $X_{I1},X_{I2}\rightarrow \emptyset $ after $\tau$ time; 4. $\gamma : X_{I1} \rightarrow \emptyset$; 5. $\gamma : X_{I2} \rightarrow \emptyset$. The 4th and 5th reactions will cause the delay channel to change its state during a schduled delay reaction. Note this example is to test multiple delay reactions. The exact solution can be found in [this example](@ref delay_degradation).
+The model is defined as follows: 1. $C:\emptyset \rightarrow X_A$; 2. $\gamma : X_A \rightarrow \emptyset $ ; 3. $\beta : X_A \rightarrow  X_{I1}+X_{I2}$, which triggers $X_{I1},X_{I2}\Rightarrow \emptyset$ after $\tau$ time; 4. $\gamma : X_{I1} \rightarrow \emptyset$; 5. $\gamma : X_{I2} \rightarrow \emptyset$. The 4th and 5th reactions will cause the delay channel to change its state during a schduled delay reaction. Note this example is to test multiple delay reactions. The exact solution can be found in [this example](@ref delay_degradation).
 
 We first define the parameters and the mass-action jump (see [Defining a Mass Action Jump](https://diffeq.sciml.ai/stable/types/jump_types/#Defining-a-Mass-Action-Jump) for details).
 

@@ -18,9 +18,9 @@
 
 ## Installation
 DelaySSAToolkit can be installed through the Julia package manager:
-```julia
-]add https://github.com/palmtree2013/DelaySSAToolkit.jl
-using DelaySSAToolkit
+```julia-repl
+julia> ]add https://github.com/palmtree2013/DelaySSAToolkit.jl
+julia> using DelaySSAToolkit
 ```
 More information is available in the [documentation](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/). Please feel free to open issues and submit pull requests!
 
