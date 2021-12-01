@@ -26,5 +26,5 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(true,true))
 sol = solve(jprob, SSAStepper(), seed = 1234)
 using Plots
-fig = plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individual", xlabel = "Time", fmt=:svg)
+fig = plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:svg)
 savefig(fig,"docs/src/assets/seir.svg")
