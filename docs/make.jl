@@ -18,6 +18,7 @@ makedocs(;
         "Home" => "index.md",
         "Tutorials" => [
             "tutorials/tutorials.md", 
+            "tutorials/bursty.md",
             "tutorials/delay_degradation.md",
             "tutorials/delay_multidegradation.md",
             ],

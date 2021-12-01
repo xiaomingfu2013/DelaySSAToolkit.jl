@@ -5,8 +5,6 @@
 
 using DelaySSAToolkit
 using Catalyst, DiffEqJump
-
-
 begin # construct reaction network
     @parameters a b t
     @variables X(t)
@@ -23,7 +21,6 @@ u0 = [0]
 de_chan0 = [[]]
 tf = 200.
 tspan = (0,tf)
-timestamp = 0:1:tf
 ps = [0.0282, 3.46]
 dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 τ = 130.
@@ -40,7 +37,7 @@ delay_complete = Dict(1=>[1=>-1])
 delay_interrupt = Dict()
 
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
+jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false,false))
 sol = solve(jprob, SSAStepper(), seed= 1)
 
 using Plots, DiffEqBase

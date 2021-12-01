@@ -55,7 +55,46 @@ dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
 sol = solve(jprob, SSAStepper())
 ```
-![Visualisation](docs/src/assets/seir.svg)
+![seir](docs/src/assets/seir.pdf)
+
+### A bursty model
+Check the [`bursty`](@ref) for more details.
+```julia
+using DelaySSAToolkit
+using Catalyst, DiffEqJump
+begin # construct reaction network
+    @parameters a b t
+    @variables X(t)
+    burst_sup = 30
+    rxs = [Reaction(a*b^i/(1+b)^(i+1),nothing,[X],nothing,[i]) for i in 1:burst_sup]
+    rxs = vcat(rxs)
+    @named rs = ReactionSystem(rxs,t,[X],[a,b])
+end
+# convert the ReactionSystem to a JumpSystem
+jumpsys = convert(JumpSystem, rs, combinatoric_ratelaws=false)
+u0 = [0]
+de_chan0 = [[]]
+tf = 200.
+tspan = (0,tf)
+ps = [0.0282, 3.46]
+dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
+τ = 130.
+delay_trigger_affect! = []
+for i in 1:burst_sup
+    push!(delay_trigger_affect!, function (de_chan, rng)
+    append!(de_chan[1], fill(τ, i))
+    end)
+end
+delay_trigger_affect!
+delay_trigger = Dict([Pair(i, delay_trigger_affect![i]) for i in 1:burst_sup])
+delay_complete = Dict(1=>[1=>-1])
+delay_interrupt = Dict()
+delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
+jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false,false))
+ensprob = EnsembleProblem(jprob)
+@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(),saveat=timestamp, trajectories=10^5)
+```
+![bursty](docs/src/assets/bursty.pdf)
 
 ## References
 [1]: Daniel T. Gillespie "Exact stochastic simulation of coupled chemical reactions", J. Phys. Chem. 1977, 81, 25, 2340–2361.
