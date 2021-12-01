@@ -240,9 +240,7 @@ function execute_delay_complete!(delay_complete::Vector{Pair{Int64,Int64}}, num_
 end
 
 function execute_delay_complete!(delay_complete::Function, num_next_delay::Int64, u, de_chan)
-    @inbounds for _ in 1:num_next_delay
-        delay_complete(u, de_chan)
-    end
+    delay_complete(u, de_chan)
 end
 
 
