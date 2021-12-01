@@ -7,14 +7,14 @@
 
 
 
-`DelaySSAToolkit.jl` is a tool developed on top of `DiffEqJump.jl` which solves the stochastic simulation with **delay** and contains the following features:
+DelaySSAToolkit.jl is a tool developed on top of [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl) which solves the stochastic simulation with **delay** and contains the following features:
 
 ## Features
 - Various delay stochastic simulation algorithms are provided;
 - Stochastic delay type is supported;
 - Multiple delay channels and simultaneous delay reactions are supported;
 - Priority queue and dependency graph are integrated for high computational performance;
-- Ecosystem with Catalyst, DiffEqJump, DifferentialEquations and more...
+- Ecosystem with [Catalyst](https://github.com/SciML/Catalyst.jl), [DiffEqJump](https://github.com/SciML/DiffEqJump.jl), [DifferentialEquations](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
 
 ## Installation
 DelaySSAToolkit can be installed through the Julia package manager:
