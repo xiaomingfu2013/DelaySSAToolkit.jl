@@ -51,7 +51,6 @@ delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
   - Values: A vector of `Pair`s, mapping species id to net change of stoichiometric coefficient.
 
 Now we can initialise the problem by setting
-
 ```julia
 u0 = [0,0,0]
 tf = 30.
@@ -60,7 +59,6 @@ de_chan0 = [[],[]]
 p = 0.
 tspan = (0.,tf)
 ```
-
 where `de_chan0` is the initial condition for the delay channel, which is a vector of arrays whose `k`th entry stores the schduled delay time for `k`th delay channel. Here we assume $X_{I1}(0),X_{I2}(0)=0$, thus only two empty arrays. Next, we choose a delay SSA algorithm `DelayDirect()` and define the problem
 
 ```julia
@@ -70,29 +68,24 @@ dprob = DiscreteProblem(u0, tspan, p)
 jprob = JumpProblem(dprob, aggregatoralgo, jumpsets, save_positions = (false,false))
 djprob = DelayJumpProblem(jprob,delaysets,de_chan0)
 ```
-
 where `DelayJumpProblem` inputs `JumpProblem`, `DelayJumpSet` and the initial condition of the delay channel `de_chan0`.
 
 ## Visualisation
-
 Now we can solve the problem and plot a trajectory
-
 ```julia
 sol =@time solve(djprob, SSAStepper(),seed=10, saveat =.1, save_delay_channel = false)
 ```
-![multidegradation1](doc/src/assets/delay_multidegradation1.svg)
+![multidegradation1](../assets/delay_multidegradation1.svg)
 
 Then we simulate $10^4$ trajectories and calculate the evolution of mean value for each reactant
-
 ```julia
 using StatsBase
 Sample_size = Int(1e4)
 ens_prob = EnsembleProblem(djprob)
 ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1, save_delay_channel =false)
 ```
-![multidegradation2](doc/src/assets/delay_multidegradation2.svg)
-![multidegradation3](doc/src/assets/delay_multidegradation3.svg)
 ### Verification with the exact solution
-
 Lastly, we can compare with the mean values of the exact solutions $X_I,X_A$
+![multidegradation2](../assets/delay_multidegradation2.svg)
+![multidegradation3](../assets/delay_multidegradation3.svg)
 

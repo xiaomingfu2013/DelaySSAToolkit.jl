@@ -58,7 +58,7 @@ sol = solve(jprob, SSAStepper())
 ![seir](docs/src/assets/seir.svg)
 
 ### A bursty model [2]
-Check this [`example`](@ref) for more details.
+Check this [example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/bursty/) for more details.
 ```julia
 using DelaySSAToolkit
 using Catalyst, DiffEqJump
