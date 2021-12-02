@@ -136,8 +136,9 @@ function Base.show(io::IO, mime::MIME"text/plain", A::DelayJumpProblem)
   if (A.massaction_jump !== nothing) && (get_num_majumps(A.massaction_jump) > 0)
     println(io,"Have a mass action jump")
   end
-  if (A.delayjumpsets !== nothing) && (length(A.delayjumpsets.delay_trigger) > 0)
-    println(io,"Number of delay trigger jumps: ",length(A.delayjumpsets.delay_trigger))
+  if A.delayjumpsets !== nothing
+    println(io,"Number of delay trigger reactions: ",length(A.delayjumpsets.delay_trigger))
+    println(io,"Number of delay interrupt reactions: ",length(A.delayjumpsets.delay_interrupt))
   end
 end
 #END DelayJump

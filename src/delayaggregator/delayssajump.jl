@@ -154,7 +154,7 @@ end
         # p.num_next_delay = num_next_delay
         shift_delay_channel!(integrator.de_chan,ttnj)
         update_delay_channel!(integrator.de_chan)
-        update_delay_complete!(integrator.u, integrator.de_chan, next_delay, num_next_delay, delay_complete)
+        update_delay_complete!(p, integrator, next_delay, num_next_delay, delay_complete)
     end
     # save jump that was just executed
     p.prev_jump = next_jump
@@ -225,23 +225,26 @@ function update_delay_complete_u!(u, next_delay_vec, num_next_delay_vec, delay_c
         end
     end
 end
-function update_delay_complete!(u, de_chan, next_delay_vec, num_next_delay_vec, delay_complete::Dict{Int64,Any})
+function update_delay_complete!(p, integrator, next_delay_vec, num_next_delay_vec, delay_complete::Dict{Int64,Any})
     @inbounds for j in eachindex(next_delay_vec)
         next_delay = next_delay_vec[j]
         num_next_delay = num_next_delay_vec[j]
-        execute_delay_complete!(delay_complete[next_delay], num_next_delay, u, de_chan)
+        execute_delay_complete!(delay_complete[next_delay], num_next_delay, integrator, p.rng)
     end
 end
 
-function execute_delay_complete!(delay_complete::Vector{Pair{Int64,Int64}}, num_next_delay::Int64, u, de_chan)
+function execute_delay_complete!(delay_complete::Vector{Pair{Int64,Int64}}, num_next_delay::Int64, integrator, rng)
+    u = integrator.u
     @inbounds for (i, ξ) in delay_complete
         u[i] += num_next_delay*ξ
     end
 end
 
-function execute_delay_complete!(delay_complete::Function, num_next_delay::Int64, u, de_chan)
-    delay_complete(u, de_chan)
-end
+function execute_delay_complete!(delay_complete::Function, num_next_delay::Int64, integrator, rng)
+    for _ in 1:num_next_delay
+        delay_complete(integrator, rng)
+    end
+end 
 
 
 # """

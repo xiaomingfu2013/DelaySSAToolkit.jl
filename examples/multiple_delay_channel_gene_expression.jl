@@ -19,12 +19,11 @@ jumpset = JumpSet((),(),nothing,mass_jump)
 τ1, τ2 = [1., 10.]
 delay_trigger_affect! = function (de_chan, rng)
     append!(de_chan[1],τ1)
-    # append!(de_chan[2],τ1+τ2)
 end
 delay_trigger =Dict(3=>delay_trigger_affect!) # 可以 trigger 多个delay_reactions 这个表示 10s 后同时增加作用 两次 1 号delay 反应
-delay_complete_affect1! = function (u, de_chan)
-    u[3] += 1
-    append!(de_chan[2], τ2)
+delay_complete_affect1! = function (integrator, rng)
+    integrator.u[3] += 1
+    append!(integrator.de_chan[2], τ2)
 end
 delay_complete = Dict(1=>delay_complete_affect1!, 2=>[3=>-1,4=>1])
 
@@ -49,3 +48,9 @@ n_P = delay_sol[5,:]
 
 using Plots; theme(:vibrant)
 plot(0:1:500,[n_N n_M n_P],label=["N" "M" "P"], xlabel = "Time", ylabel = "# of reactants")
+
+ens_prob = EnsembleProblem(djprob)
+@time ens = solve(ens_prob, SSAStepper(), EnsembleThreads(), trajectories=10^4)
+using DifferentialEquations.EnsembleAnalysis
+slice_end = componentwise_vectors_timepoint(ens, tf)
+histogram(slice_end[5], bins = 0:1:100)
