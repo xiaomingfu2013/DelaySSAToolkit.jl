@@ -1,6 +1,5 @@
 using DelaySSAToolkit, DiffEqJump
 # Gon, Goff, N, M, P
-
 #     k10, Gon + P --> Goff
 #     k01, Goff  --> Gon + P
 #     ρ1, Gon  --> Gon ==>τ1 N, N ==>τ2 M
@@ -18,7 +17,7 @@ jumpset = JumpSet((),(),nothing,mass_jump)
 # reaction_idx =>  Dict( delay_react_idx => delay_time )
 τ1, τ2 = [1., 10.]
 delay_trigger_affect! = function (integrator, rng)
-    append!(integrator.de_chan[1],τ1)
+    append!(integrator.de_chan[1], τ1)
 end
 # delay_trigger =Dict(3=>delay_trigger_affect!) # 可以 trigger 多个delay_reactions 这个表示 10s 后同时增加作用 两次 1 号delay 反应
 delay_trigger =Dict(3=>[1=>τ1]) # 可以 trigger 多个delay_reactions 这个表示 10s 后同时增加作用 两次 1 号delay 反应

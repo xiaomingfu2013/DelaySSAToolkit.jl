@@ -252,20 +252,17 @@ function update_delay_complete!(p, integrator)
         execute_delay_complete!(delay_complete[next_delay], num_next_delay, integrator, p.rng)
     end
 end
-
 function execute_delay_complete!(delay_complete::Vector{Pair{Int64,Int64}}, num_next_delay::Int64, integrator, rng)
     u = integrator.u
     @inbounds for (i, ξ) in delay_complete
         u[i] += num_next_delay*ξ
     end
 end
-
 function execute_delay_complete!(delay_complete::Function, num_next_delay::Int64, integrator, rng)
     for _ in 1:num_next_delay
         delay_complete(integrator, rng)
     end
-end 
-
+end
 # """
 #     function find_next_delay(de_chan::Vector{Vector{T}})
 
