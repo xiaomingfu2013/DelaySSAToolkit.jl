@@ -54,18 +54,6 @@ end
 
 ############################## Generic Routines ###############################
 
-"""
-    register_next_jump_time!(integrator, p::AbstractDSSAJumpAggregator, t)
-
-Adds a `tstop` to the integrator at the next jump time.
-"""
-# @inline function register_next_jump_time!(integrator, p::AbstractDSSAJumpAggregator, t)
-#     if p.next_jump_time < p.end_time
-#         add_tstop!(integrator, p.next_jump_time)
-#     end
-#     nothing
-# end
-
 
 """
     fill_rates_and_sum!(p::AbstractDSSAJumpAggregator, u, params, t)
@@ -117,7 +105,7 @@ end
     ttnj = p.time_to_next_jump
     @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
     if next_jump !=nothing || next_jump in delay_trigger_set || next_jump in delay_interrupt_set
-        p.dt_delay = find_next_delay_dt(integrator.de_chan)
+        find_next_delay_dt!(p, integrator)
     else
         p.dt_delay -= ttnj
     end
@@ -142,16 +130,13 @@ end
             @inbounds p.affects![idx](integrator)
         end
         # shift delay channel !
-        shift_delay_channel!(integrator.de_chan,ttnj) #更新 delay channel 里面的时间 for all channels
+        shift_delay_channel!(integrator.de_chan,ttnj) #shift delays in all channel
         if next_jump in delay_interrupt_set
-            # delay_chan is changed according to affect_chan!
-            # delay_interrupt[next_jump](integrator.de_chan, p.rng) #affect_chan! decide how to modify the molecules in the delay channels
             update_delay_interrupt!(p, integrator)
         elseif next_jump in delay_trigger_set
             update_delay_trigger!(p, integrator)
         end
     else
-        # p.num_next_delay = num_next_delay
         shift_delay_channel!(integrator.de_chan,ttnj)
         update_delay_channel!(integrator.de_chan)
         update_delay_complete!(p, integrator)
@@ -170,8 +155,6 @@ function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_rea
         num_next_delay = nothing
     elseif dt_reaction >= dt_delay && dt_delay < Inf
         ttnj = dt_delay
-        # next_delay = find_next_delay(de_chan)
-        # num_next_delay = check_num_next_delay(de_chan[next_delay],dt_delay)
         next_delay, num_next_delay = find_next_delay_vec(de_chan, ttnj)
     else
         error("Infinite waiting time for next jump")
@@ -187,31 +170,31 @@ end
 find the minimal dt_delay in various delay channel
 """
 
-function find_next_delay_dt(de_chan::Vector{Vector{T}}) where {T}
-    val_vec = Vector{T}(undef,length(de_chan))
+function find_next_delay_dt!(p, integrator)
+    de_chan = integrator.de_chan
+    val_vec = Vector{typeof(integrator.t)}(undef,length(de_chan))
     @inbounds for i in eachindex(de_chan)
         val_vec[i] = isempty(de_chan[i]) ? Inf : minimum(de_chan[i])
     end
-    minimum(val_vec)
+    p.dt_delay = minimum(val_vec)
 end
 
 """
 Shift delay channel according to ttnj
 """
-
-@inline function shift_delay_channel!(de_chan::Vector,ttnj)
+@inline function shift_delay_channel!(de_chan::Vector{Vector{T}},ttnj::T) where {T<:Real}
     for idx in eachindex(de_chan)
-        de_chan[idx] .-=ttnj
+        de_chan[idx] .-= ttnj
     end
 end
 
 """
 Update the delay channel 
 """
-@inline function update_delay_channel!(de_chan::Vector)
+@inline function update_delay_channel!(de_chan::Vector{Vector{T}}) where {T<:Real}
     for idx in eachindex(de_chan)
-        filter!(x->x.>0, de_chan[idx])
-    end 
+        filter!(x->x.>zero(T), de_chan[idx])
+    end
 end
 """
     function update_delay_interrupt!(p, integrator)

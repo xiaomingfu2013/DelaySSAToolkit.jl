@@ -40,18 +40,26 @@ de_chan0 = [[0.1,0.2,0.3],[5.,9.]]  #first being production of N delay channel, 
 tspan = (0.,tf)
 dprob = DiscreteProblem(u0, tspan)
 djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delaysets, de_chan0, save_positions = (false,false))
-delay_sol =@time solve(djprob, SSAStepper(), seed=2, saveat=1.)
+delay_sol =@time solve(djprob, SSAStepper(), seed=2, saveat=1., save_delay_channel=true)
+delay_sol.chan_sol
+
+show(delay_sol)
+
+delay_sol.chan_sol
+
+
 n_N = delay_sol[3,:]
 n_M = delay_sol[4,:]
 n_P = delay_sol[5,:]
+ens_prob = EnsembleProblem(djprob)
+@time ens = solve(ens_prob, SSAStepper(), EnsembleThreads(), trajectories=10^4)
+
+
+supertype(typeof(delay_sol))
 
 using Plots; theme(:vibrant)
 plot(0:1:500,[n_N n_M n_P],label=["N" "M" "P"], xlabel = "Time", ylabel = "# of reactants")
-
-ens_prob = EnsembleProblem(djprob)
-@time ens = solve(ens_prob, SSAStepper(), EnsembleThreads(), trajectories=10^4)
 using DifferentialEquations.EnsembleAnalysis
 slice_end = componentwise_vectors_timepoint(ens, tf)
 histogram(slice_end[5], bins = 0:1:100)
-
 

@@ -34,8 +34,20 @@ end
 -delay_interrupt: Dict reactions 能够对 delay channel中造成影响的 keys : reaction idx ->  returns a Function :  how the molecules in a channel or multiple channels  will be consumed
 -delay_complete: Dict keys:第 i 个delay channel values 完成后会引起一个 (post-delay) state-update, values: stoichiometric vector 长度是反应物长度
 """
+
 mutable struct ChannelSolution{deType}
     de_chan::Vector{deType} # [(num_reaction, left_time),...]
+end
+
+struct DSSASolution
+    sol::ODESolution
+    chan_sol::Vector
+end
+
+function Base.show(io::IO, mime::MIME"text/plain", delaysol::DSSASolution)
+    println("Use *.sol to get the SSA solution, *.chan_sol to get the delay channel solution")
+    # show(io, delaysol.sol)
+    # println("delay channel solution:"); show(io,delaysol.chan_sol)
 end
 
 (integrator::DSSAIntegrator)(t) = copy(integrator.u)
@@ -50,8 +62,11 @@ function DiffEqBase.__solve(djump_prob::DelayJumpProblem,
                             kwargs...)
     integrator = init(djump_prob,alg;kwargs...)
     solve!(integrator)
-    integrator.sol #TODO
-    # integrator.sol, integrator.chan_sol #TODO
+    if integrator.save_delay_channel
+        DSSASolution(integrator.sol, integrator.chan_sol)
+    else
+        integrator.sol
+    end
 end
 
 
@@ -108,7 +123,7 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
                          callback = nothing,
                          tstops = eltype(djump_prob.prob.tspan)[],
                          numsteps_hint=100,
-                         save_delay_channel=true)
+                         save_delay_channel=false)
     if !(djump_prob.prob isa DiscreteProblem)
         error("SSAStepper only supports DiscreteProblems.")
     end
