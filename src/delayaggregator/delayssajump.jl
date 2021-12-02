@@ -145,16 +145,16 @@ end
         shift_delay_channel!(integrator.de_chan,ttnj) #更新 delay channel 里面的时间 for all channels
         if next_jump in delay_interrupt_set
             # delay_chan is changed according to affect_chan!
-            delay_interrupt[next_jump](integrator.de_chan, p.rng) #affect_chan! decide how to modify the molecules in the delay channels
+            # delay_interrupt[next_jump](integrator.de_chan, p.rng) #affect_chan! decide how to modify the molecules in the delay channels
+            update_delay_interrupt!(p, integrator)
         elseif next_jump in delay_trigger_set
-            # delay_trigger[next_jump] will affect de_channel
-            delay_trigger[next_jump](integrator.de_chan, p.rng) # change to affect!
+            update_delay_trigger!(p, integrator)
         end
     else
         # p.num_next_delay = num_next_delay
         shift_delay_channel!(integrator.de_chan,ttnj)
         update_delay_channel!(integrator.de_chan)
-        update_delay_complete!(p, integrator, next_delay, num_next_delay, delay_complete)
+        update_delay_complete!(p, integrator)
     end
     # save jump that was just executed
     p.prev_jump = next_jump
@@ -213,19 +213,39 @@ Update the delay channel
         filter!(x->x.>0, de_chan[idx])
     end 
 end
+"""
+    function update_delay_interrupt!(p, integrator)
+"""
+function update_delay_interrupt!(p, integrator)
+    delay_interrupt = integrator.delayjumpsets.delay_interrupt
+    execute_delay_interrupt!(delay_interrupt[p.next_jump], p, integrator)
+end
+function execute_delay_interrupt!(delay_interrupt_affect!::Function, p, integrator)
+    delay_interrupt_affect!(integrator, p.rng)
+end
+
+"""
+    function update_delay_trigger!(p, integrator)
+"""
+function update_delay_trigger!(p, integrator)
+    delay_trigger = integrator.delayjumpsets.delay_trigger
+    execute_delay_trigger!(delay_trigger[p.next_jump], p, integrator)
+end
+function execute_delay_trigger!(delay_trigger_affect!::Function, p, integrator)
+    delay_trigger_affect!(integrator, p.rng)
+end
+function execute_delay_trigger!(delay_trigger_affect!::Vector{Pair{Int64,T}}, p, integrator) where {T}
+    for (chan_idx, τ) in delay_trigger_affect!
+        append!(integrator.de_chan[chan_idx], τ)
+    end
+end
 
 """
 Update the state upon delay completion
 """
-function update_delay_complete_u!(u, next_delay_vec, num_next_delay_vec, delay_complete::Vector{Pair})
-    @inbounds for j in eachindex(next_delay_vec)
-        next_delay = next_delay_vec[j]
-        @inbounds for (i, ξ) in delay_complete[next_delay]
-            u[i] += num_next_delay_vec[j]*ξ
-        end
-    end
-end
-function update_delay_complete!(p, integrator, next_delay_vec, num_next_delay_vec, delay_complete::Dict{Int64,Any})
+function update_delay_complete!(p, integrator)
+    delay_complete = integrator.delayjumpsets.delay_complete
+    next_delay_vec, num_next_delay_vec = p.next_delay, p.num_next_delay
     @inbounds for j in eachindex(next_delay_vec)
         next_delay = next_delay_vec[j]
         num_next_delay = num_next_delay_vec[j]
@@ -245,7 +265,6 @@ function execute_delay_complete!(delay_complete::Function, num_next_delay::Int64
         delay_complete(integrator, rng)
     end
 end 
-
 
 # """
 #     function find_next_delay(de_chan::Vector{Vector{T}})

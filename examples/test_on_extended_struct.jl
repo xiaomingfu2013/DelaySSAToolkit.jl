@@ -31,3 +31,10 @@ end
 
 Core.eval(@__MODULE__, ODESolution)
 ODESolution
+
+
+delay_trigger_aff = [1=>1.,2=>3.]
+
+for (chan_idx, τ) in delay_trigger_aff
+    println([chan_idx], [τ])
+end

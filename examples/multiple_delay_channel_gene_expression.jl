@@ -17,19 +17,19 @@ jumpset = JumpSet((),(),nothing,mass_jump)
 
 # reaction_idx =>  Dict( delay_react_idx => delay_time )
 τ1, τ2 = [1., 10.]
-delay_trigger_affect! = function (de_chan, rng)
-    append!(de_chan[1],τ1)
+delay_trigger_affect! = function (integrator, rng)
+    append!(integrator.de_chan[1],τ1)
 end
-delay_trigger =Dict(3=>delay_trigger_affect!) # 可以 trigger 多个delay_reactions 这个表示 10s 后同时增加作用 两次 1 号delay 反应
+# delay_trigger =Dict(3=>delay_trigger_affect!) # 可以 trigger 多个delay_reactions 这个表示 10s 后同时增加作用 两次 1 号delay 反应
+delay_trigger =Dict(3=>[1=>τ1]) # 可以 trigger 多个delay_reactions 这个表示 10s 后同时增加作用 两次 1 号delay 反应
 delay_complete_affect1! = function (integrator, rng)
     integrator.u[3] += 1
     append!(integrator.de_chan[2], τ2)
 end
 delay_complete = Dict(1=>delay_complete_affect1!, 2=>[3=>-1,4=>1])
-
-delay_interrupt_affect! = function (de_chan, rng)
-   i = rand(rng, 1:length(de_chan[2])) # second channel is for N => M
-   deleteat!(de_chan[2],i)
+delay_interrupt_affect! = function (integrator, rng)
+   i = rand(rng, 1:length(integrator.de_chan[2])) # second channel is for N => M
+   deleteat!(integrator.de_chan[2],i)
 end
 delay_interrupt = Dict(5=>delay_interrupt_affect!) # reactions 能够对 delay channel中造成影响 keys: reaction idx -> values: delay_affect! 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
@@ -54,3 +54,5 @@ ens_prob = EnsembleProblem(djprob)
 using DifferentialEquations.EnsembleAnalysis
 slice_end = componentwise_vectors_timepoint(ens, tf)
 histogram(slice_end[5], bins = 0:1:100)
+
+

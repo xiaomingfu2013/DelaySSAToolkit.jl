@@ -86,6 +86,14 @@ Create delta based on the shawdow variable u_shadow
     fill_cum_rates_and_sum!(p, p.u_shadow, params, t+ttnj)
     p.time_to_next_jump = ttnj
 end
+function update_delay_complete_u!(u, next_delay_vec, num_next_delay_vec, delay_complete::Vector{Pair})
+    @inbounds for j in eachindex(next_delay_vec)
+        next_delay = next_delay_vec[j]
+        @inbounds for (i, ξ) in delay_complete[next_delay]
+            u[i] += num_next_delay_vec[j]*ξ
+        end
+    end
+end
 # @inline function generate_delta!(p::DelayDirectJumpAggregation, integrator, params, t)
 #     @unpack delay_complete = integrator.delayjumpsets
     
