@@ -31,15 +31,15 @@ mass_jump = MassActionJump(rate1, reactant_stoch, net_stoch; scale_rates =false)
 jumpset = JumpSet((),(),nothing,[mass_jump])
 # DelaySSA.var_to_jumps_map(2,mass_jump)
 
-delay_trigger_affect! = function (de_chan, rng)
-   append!(de_chan[1], τ)
+delay_trigger_affect! = function (integrator, rng)
+   append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(3=>delay_trigger_affect!)
 delay_complete = Dict(1=>[2=>-1]) # 1 代表 delay channel idx , value 代表 对 第 2 个 species -1 
 
-delay_affect! = function (de_chan, rng)
-    i = rand(rng, 1:length(de_chan[1]))
-    deleteat!(de_chan[1],i)
+delay_affect! = function (integrator, rng)
+    i = rand(rng, 1:length(integrator.de_chan[1]))
+    deleteat!(integrator.de_chan[1],i)
  end
  delay_interrupt = Dict(4=>delay_affect!) 
  delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
@@ -77,7 +77,7 @@ plot(sol, label = ["X_A" "X_I"])
 
 Sample_size = Int(1e4)
 ens_prob = EnsembleProblem(djprob)
-ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1, save_delay_channel =false)
+ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
 
 using StatsBase
 mean_A(t) = mean([ens[s](t)[1] for s in 1:Sample_size])
