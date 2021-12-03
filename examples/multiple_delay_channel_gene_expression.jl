@@ -41,7 +41,7 @@ tspan = (0.,tf)
 dprob = DiscreteProblem(u0, tspan)
 djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delaysets, de_chan0, save_positions = (false,false))
 delay_sol =@time solve(djprob, SSAStepper(), seed=2, saveat=1., save_delay_channel=true)
-delay_sol.chan_sol
+delay_sol(2)
 
 show(delay_sol)
 
@@ -63,3 +63,4 @@ using DifferentialEquations.EnsembleAnalysis
 slice_end = componentwise_vectors_timepoint(ens, tf)
 histogram(slice_end[5], bins = 0:1:100)
 
+# DiffEqBase

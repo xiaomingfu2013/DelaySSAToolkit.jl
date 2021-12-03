@@ -39,15 +39,42 @@ mutable struct ChannelSolution{deType}
     de_chan::Vector{deType} # [(num_reaction, left_time),...]
 end
 
-struct DSSASolution
-    sol::ODESolution
-    chan_sol::Vector
+struct DSSASolution{uType,uType2,DType,tType,rateType,P,A,IType,DE}
+    u::uType
+    u_analytic::uType2
+    errors::DType
+    t::tType
+    k::rateType
+    prob::P
+    alg::A
+    interp::IType
+    dense::Bool
+    tslocation::Int
+    destats::DE
+    retcode::Symbol
+    delay::Vector
+end
+function DSSASolution(ode_sol::DiffEqBase.ODESolution, chan_sol::Vector)
+    @unpack u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode = ode_sol
+    DSSASolution{typeof(u), typeof(u_analytic), typeof(errors), typeof(t), typeof(k), typeof(prob), typeof(alg), typeof(interp), typeof(destats)}(u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode, chan_sol)
 end
 
-function Base.show(io::IO, mime::MIME"text/plain", delaysol::DSSASolution)
-    println("Use *.sol to get the SSA solution, *.chan_sol to get the delay channel solution")
-    # show(io, delaysol.sol)
-    # println("delay channel solution:"); show(io,delaysol.chan_sol)
+function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)
+    println(io,string("retcode: ",A.retcode))
+    println(io,string("Interpolation: "),DiffEqBase.interp_summary(A.interp))
+    print(io,"t: ")
+    show(io,m,A.t)
+    println(io)
+    print(io,"u: ")
+    show(io,m,A.u)
+    println(io)
+    print(io,"delay: ")
+    show(io,m,A.delay)
+end
+function (delay_sol::DSSASolution)(t)
+    @unpack u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode = delay_sol
+    ode_sol = ODESolution{T, N, typeof(u), typeof(u_analytic), typeof(errors), typeof(t), typeof(k), typeof(prob), typeof(alg), typeof(interp), typeof(destats)}(u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode)
+    ode_sol(t)
 end
 
 (integrator::DSSAIntegrator)(t) = copy(integrator.u)
