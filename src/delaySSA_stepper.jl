@@ -1,9 +1,13 @@
-export DSSAIntegrator, ChannelSolution
+export DSSAIntegrator
+# mutable struct ChannelSolution{chanType}
+#     de_chan::Vector{chanType} # [(num_reaction, left_time),...]
+# end
+
 """
 - de_chan: 记录delay_channel, Dict(), keys 记录哪一个delay_channel, values 记录在这个delay_channel中所等待的时间列表
 - prev_de_chan:  For saveat update
 """
-mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,deType,chanS} <: DiffEqBase.DEIntegrator{SSAStepper,Nothing,uType,tType}
+mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,chanType, chanS} <: DiffEqBase.DEIntegrator{SSAStepper,Nothing,uType,tType}
     f::F
     u::uType
     t::tType
@@ -22,8 +26,8 @@ mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,deType,chanS} <: Di
     tstops_idx::Int
     u_modified::Bool
     keep_stepping::Bool  # false if should terminate a simulation
-    de_chan::deType 
-    prev_de_chan::deType 
+    de_chan::chanType 
+    prev_de_chan::chanType 
     chan_sol::chanS
     delayjumpsets::DelayJumpSet
     save_delay_channel::Bool
@@ -34,12 +38,7 @@ end
 -delay_interrupt: Dict reactions 能够对 delay channel中造成影响的 keys : reaction idx ->  returns a Function :  how the molecules in a channel or multiple channels  will be consumed
 -delay_complete: Dict keys:第 i 个delay channel values 完成后会引起一个 (post-delay) state-update, values: stoichiometric vector 长度是反应物长度
 """
-
-mutable struct ChannelSolution{deType}
-    de_chan::Vector{deType} # [(num_reaction, left_time),...]
-end
-
-struct DSSASolution{uType,uType2,DType,tType,rateType,P,A,IType,DE}
+mutable struct DSSASolution{uType,uType2,DType,tType,rateType,P,A,IType,DE,chanS}
     u::uType
     u_analytic::uType2
     errors::DType
@@ -52,11 +51,11 @@ struct DSSASolution{uType,uType2,DType,tType,rateType,P,A,IType,DE}
     tslocation::Int
     destats::DE
     retcode::Symbol
-    delay::Vector
+    chansol::chanS
 end
-function DSSASolution(ode_sol::DiffEqBase.ODESolution, chan_sol::Vector)
+function DSSASolution(ode_sol::DiffEqBase.ODESolution, chan_sol)
     @unpack u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode = ode_sol
-    DSSASolution{typeof(u), typeof(u_analytic), typeof(errors), typeof(t), typeof(k), typeof(prob), typeof(alg), typeof(interp), typeof(destats)}(u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode, chan_sol)
+    DSSASolution{typeof(u), typeof(u_analytic), typeof(errors), typeof(t), typeof(k), typeof(prob), typeof(alg), typeof(interp), typeof(destats), typeof(chan_sol)}(u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode, chan_sol)
 end
 
 function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)
@@ -69,13 +68,23 @@ function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)
     show(io,m,A.u)
     println(io)
     print(io,"delay: ")
-    show(io,m,A.delay)
+    show(io,m,A.chansol)
 end
-function (delay_sol::DSSASolution)(t)
-    @unpack u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode = delay_sol
-    ode_sol = ODESolution{T, N, typeof(u), typeof(u_analytic), typeof(errors), typeof(t), typeof(k), typeof(prob), typeof(alg), typeof(interp), typeof(destats)}(u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode)
-    ode_sol(t)
-end
+
+
+Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int) = [A.u[i], A.chansol[i]]
+Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int, ::Colon) = [A.u[j][i] for j in 1:length(A.t)]
+
+function (A::DSSASolution)(s::Symbol,i::Int)
+    if s == :chansol
+        @assert i <= length(A.chansol[1])
+        return [A.chansol[j][i] for j in 1:length(A.t)]
+    elseif s ==:u
+        @assert i <= length(A.u[1])
+        return [A.u[j][i] for j in 1:length(A.t)]
+    end
+end 
+
 
 (integrator::DSSAIntegrator)(t) = copy(integrator.u)
 (integrator::DSSAIntegrator)(out,t) = (out .= integrator.u)
@@ -172,11 +181,11 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
 
     opts = (callback = CallbackSet(callback),)
     prob = djump_prob.prob
-    de_chan0 = convert(Vector{Vector{typeof(prob.tspan[1])}},deepcopy(djump_prob.de_chan0))
+    de_chan0 = convert(Vector{Vector{typeof(prob.tspan[1])}},djump_prob.de_chan0)
     if save_start
         t = [prob.tspan[1]]
         u = [copy(prob.u0)]
-        chan_sol = [de_chan0] # DelaySSA: build chan_sol
+        chan_sol = [deepcopy(de_chan0)] # DelaySSA: build chan_sol
     else
         t = typeof(prob.tspan[1])[]
         u = typeof(prob.u0)[]
@@ -211,7 +220,7 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
      sizehint!(t,save_start+save_end)
    end
 
-    integrator = DSSAIntegrator(prob.f,copy(prob.u0),prob.tspan[1],prob.tspan[1],prob.p, sol,1,prob.tspan[1],cb,_saveat,save_everystep,save_end,cur_saveat,opts,tstops,1,false,true,de_chan0,de_chan0,chan_sol,djump_prob.delayjumpsets, save_delay_channel)
+    integrator = DSSAIntegrator(prob.f,copy(prob.u0),prob.tspan[1],prob.tspan[1],prob.p, sol,1,prob.tspan[1],cb,_saveat,save_everystep,save_end,cur_saveat,opts,tstops,1,false,true,deepcopy(de_chan0),deepcopy(de_chan0),chan_sol,djump_prob.delayjumpsets, save_delay_channel)
 
     cb.initialize(cb,integrator.u,prob.tspan[1],integrator) 
     DiffEqBase.initialize!(opts.callback,integrator.u,prob.tspan[1],integrator)

@@ -41,21 +41,18 @@ tspan = (0.,tf)
 dprob = DiscreteProblem(u0, tspan)
 djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delaysets, de_chan0, save_positions = (false,false))
 delay_sol =@time solve(djprob, SSAStepper(), seed=2, saveat=1., save_delay_channel=true)
-delay_sol(2)
 
-show(delay_sol)
+delay_sol.u[2]
+delay_sol.chansol[2]
 
-delay_sol.chan_sol
-
+delay_sol(:chansol, 2)
 
 n_N = delay_sol[3,:]
 n_M = delay_sol[4,:]
 n_P = delay_sol[5,:]
 ens_prob = EnsembleProblem(djprob)
 @time ens = solve(ens_prob, SSAStepper(), EnsembleThreads(), trajectories=10^4)
-
-
-supertype(typeof(delay_sol))
+# ens[2]
 
 using Plots; theme(:vibrant)
 plot(0:1:500,[n_N n_M n_P],label=["N" "M" "P"], xlabel = "Time", ylabel = "# of reactants")
