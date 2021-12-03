@@ -1,7 +1,7 @@
 """
 #TODO
 """
-mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,uType} <: AbstractDSSAJumpAggregator
+mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,IType} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int
     next_jump_time::T
@@ -13,13 +13,22 @@ mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,uType} <: AbstractDSSAJu
     affects!::F2
     save_positions::Tuple{Bool,Bool}
     rng::RNG
+    next_delay::Union{Nothing,Vector{Int}}
+    num_next_delay::Union{Nothing,Vector{Int}}
     time_to_next_jump::T
-    u_shadow::uType
+    shadow_integrator::IType
+end
+mutable struct Shadow_Integrator{uType,chanType}
+    u::uType
+    de_chan::chanType
+    delayjumpsets::DelayJumpSet
 end
 function DelayDirectJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; u0, kwargs...) where {T,S,F1,F2,RNG}
     ttnj = zero(et)
-    u_shadow = u0
-    DelayDirectJumpAggregation{T,S,F1,F2,RNG,typeof(u0)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, ttnj, u_shadow)
+    shadow_integrator = Shadow_Integrator{typeof(u0),Vector{Vector{T}}}(copy(u0),[Vector{T}()],DelayJumpSet(Dict(),Dict(),Dict())) 
+    nd = nothing
+    nnd = [1] # in the Direct Method the number of next delay equals always 1
+    DelayDirectJumpAggregation{T,S,F1,F2,RNG,typeof(shadow_integrator)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, nd, nnd, ttnj, shadow_integrator)
 end
 
 function aggregate(aggregator::DelayDirect, u, p, t, end_time, constant_jumps,
@@ -32,20 +41,18 @@ function aggregate(aggregator::DelayDirect, u, p, t, end_time, constant_jumps,
 end
 
 function initialize!(p::DelayDirectJumpAggregation, integrator, u, params, t)
+    p.shadow_integrator.delayjumpsets = integrator.delayjumpsets
     generate_jumps!(p, integrator, u, params, t)
     nothing
 end
 
 @inline function execute_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t)
-    integrator.u = copy(p.u_shadow) #TODO
     update_state_delay_Direct!(p, integrator, integrator.u, t)
     nothing
 end
 
 function generate_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t)
-    p.u_shadow = copy(u) #TODO
     generate_delta!(p, integrator, params, t)
-
     @fastmath p.next_jump_time = t + p.time_to_next_jump
     @inbounds p.next_jump = searchsortedfirst(p.cur_rates, rand(p.rng) * p.sum_rate) # 
     nothing
@@ -55,8 +62,10 @@ Create delta based on the shawdow variable u_shadow
 """
 @inline function generate_delta!(p::DelayDirectJumpAggregation, integrator, params, t)
     @unpack delay_complete = integrator.delayjumpsets
-    
-    fill_cum_rates_and_sum!(p, p.u_shadow, params, t)
+    p.shadow_integrator.u = copy(integrator.u) #TODO
+    p.shadow_integrator.de_chan = deepcopy(integrator.de_chan) #TODO
+
+    fill_cum_rates_and_sum!(p, p.shadow_integrator.u, params, t)
     r1 = rand(p.rng)
     T1, T2 = create_Tstruct(integrator.de_chan)
     if isempty(T1)
@@ -67,33 +76,51 @@ Create delta based on the shawdow variable u_shadow
         i = 1
         aₜ = p.sum_rate*T1[2]
         F = 1 - exp(-aₜ)
+        u_ = copy(p.shadow_integrator.u)
+        de_chan_ = deepcopy(p.shadow_integrator.de_chan)
         while F < r1
-            update_delay_complete_u!(p.u_shadow, [T2[i]], [1], delay_complete)
+            # 用 不改变内在函数的方法这边只是想修改
+            p.next_delay = [T2[i]]
+            update_delay_complete!(p, p.shadow_integrator)
+            u_ = copy(p.shadow_integrator.u) # backup the u and de_chan before the next update delay complete
+            de_chan_ = deepcopy(p.shadow_integrator.de_chan)
             if i < length(T1)-2
-                u_ = copy(p.u_shadow)
-                update_delay_complete_u!(u_, [T2[i+1]], [1], delay_complete)
-                sum_rate_ = calculate_sum_rate(p, u_,  params, t+T1[i+2])
+                p.next_delay = [T2[i+1]]
+                update_delay_complete!(p, p.shadow_integrator)
+                sum_rate_ = calculate_sum_rate(p, p.shadow_integrator.u, params, t+T1[i+2])
                 aₜ += sum_rate_*(T1[i+2]-T1[i+1])
                 F = 1 - exp(-aₜ)
-                i += 1
             else
                 F = 1
             end
+            i += 1
         end
-        sum_rate = calculate_sum_rate(p, p.u_shadow,  params, t+T1[i])
+        p.shadow_integrator.u = copy(u_)
+        p.shadow_integrator.de_chan = deepcopy(de_chan_)
+        sum_rate = calculate_sum_rate(p, p.shadow_integrator.u,  params, t+T1[i])
         ttnj = T1[i]+(-log(1-r1) - aₜ + sum_rate*(T1[i+1]-T1[i]))/sum_rate
     end
-    fill_cum_rates_and_sum!(p, p.u_shadow, params, t+ttnj)
+    shift_delay_channel!(p.shadow_integrator.de_chan, ttnj)
+    update_delay_channel!(p.shadow_integrator.de_chan)
+    fill_cum_rates_and_sum!(p, p.shadow_integrator.u, params, t+ttnj)
     p.time_to_next_jump = ttnj
 end
-function update_delay_complete_u!(u, next_delay_vec, num_next_delay_vec, delay_complete::Vector{Pair})
+
+function update_delay_complete_u!(u, next_delay_vec, num_next_delay_vec, delay_complete)
     @inbounds for j in eachindex(next_delay_vec)
         next_delay = next_delay_vec[j]
-        @inbounds for (i, ξ) in delay_complete[next_delay]
-            u[i] += num_next_delay_vec[j]*ξ
-        end
+        num_next_delay = num_next_delay_vec[j]
+        execute_delay_complete_u!(delay_complete[next_delay], num_next_delay, u, p.rng)
     end
 end
+# function update_delay_complete_u!(u, next_delay_vec, num_next_delay_vec, delay_complete::Function)
+#     @inbounds for j in eachindex(next_delay_vec)
+#         next_delay = next_delay_vec[j]
+#         @inbounds for (i, ξ) in delay_complete[next_delay]
+#             u[i] += num_next_delay_vec[j]*ξ
+#         end
+#     end
+# end
 # @inline function generate_delta!(p::DelayDirectJumpAggregation, integrator, params, t)
 #     @unpack delay_complete = integrator.delayjumpsets
     
@@ -126,7 +153,11 @@ end
 #     fill_cum_rates_and_sum!(p, p.u_shadow, params, t+ttnj)
 #     p.time_to_next_jump = ttnj
 # end
+"""
+    function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
 
+This function modifies `p.cur_rates` and `p.sum_rate`
+"""
 function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
     prev_rate = zero(t)
     new_rate  = zero(t)
@@ -208,9 +239,10 @@ Update state according up the next_jump;
 """
 @inline function update_state_delay_Direct!(p::DelayDirectJumpAggregation, integrator, u, t)
     @unpack ma_jumps, next_jump, time_to_next_jump = p
-    @unpack delay_interrupt, delay_trigger, delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
-
-    ttnj = time_to_next_jump
+    @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
+    integrator.u = copy(p.shadow_integrator.u) #TODO
+    integrator.de_chan = deepcopy(p.shadow_integrator.de_chan)
+    # ttnj = time_to_next_jump
     num_ma_rates = get_num_majumps(ma_jumps)
     if next_jump <= num_ma_rates # if the next jump is a mass action jump
         if u isa SVector
@@ -223,14 +255,12 @@ Update state according up the next_jump;
         @inbounds p.affects![idx](integrator)
     end
     # shift delay channel !
-    shift_delay_channel!(integrator.de_chan, ttnj) 
-    update_delay_channel!(integrator.de_chan)
+    # shift_delay_channel!(integrator.de_chan, ttnj) 
+    # update_delay_channel!(integrator.de_chan)
     if next_jump in delay_interrupt_set
-        # delay_chan is changed according to affect_chan!
-        delay_interrupt[next_jump](integrator.de_chan, p.rng) #affect_chan! decides how to modify the molecules in the delay channels
+        update_delay_interrupt!(p, integrator)
     elseif next_jump in delay_trigger_set
-        # delay_trigger[next_jump] will affect de_channel
-        delay_trigger[next_jump](integrator.de_chan, p.rng) # change to affect!
+        update_delay_trigger!(p, integrator)
     end
     # save jump that was just executed
     p.prev_jump = next_jump

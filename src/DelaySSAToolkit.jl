@@ -24,12 +24,13 @@ import Base.Threads
 else
   seed_multiplier() = 1
 end
+include("delaysystem.jl")
 include("delayaggregator/aggregators.jl")
 include("delayaggregator/delayssajump.jl")
 include("delayaggregator/delayrejection.jl")
 include("delayaggregator/delaymnrm.jl")
 include("delayaggregator/delaydirect.jl")
-include("delaysystem.jl")
+
 include("delayproblem.jl")
 
 include("delaySSA_stepper.jl")

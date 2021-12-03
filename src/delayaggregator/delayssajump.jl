@@ -224,7 +224,9 @@ function execute_delay_trigger!(delay_trigger_affect!::Vector{Pair{Int64,T}}, p,
 end
 
 """
-Update the state upon delay completion
+    function update_delay_complete!(p, integrator)
+
+This function modifies `integrator.u` and `integrator.de_chan` upon delay completion
 """
 function update_delay_complete!(p, integrator)
     delay_complete = integrator.delayjumpsets.delay_complete

@@ -14,17 +14,17 @@ tspan = (0,tf)
 ps = [1e-4, 1e-2]
 dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 τ = 20.
-delay_trigger_affect! = function (de_chan, rng)
-    append!(de_chan[1], τ)
-end
-delay_trigger = Dict(1=>delay_trigger_affect!)
+# delay_trigger_affect! = function (de_chan, rng)
+#     append!(de_chan[1], τ)
+# end
+delay_trigger = Dict(1=>[1=>τ])
 delay_complete = Dict(1=>[2=>1, 3=>-1])
 delay_interrupt = Dict()
-# algo = DelayDirect()
-algo = DelayRejection()
+algo = DelayDirect()
+# algo = DelayRejection()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(true,true))
-sol = solve(jprob, SSAStepper(), seed = 1234)
+@time sol = solve(jprob, SSAStepper(), seed = 1234, save_delay_channel=true)
 using Plots
 fig = plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:svg)
-savefig(fig,"docs/src/assets/seir.svg")
+# savefig(fig,"docs/src/assets/seir.svg")

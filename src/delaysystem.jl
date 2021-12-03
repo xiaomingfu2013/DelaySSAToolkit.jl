@@ -18,7 +18,3 @@ struct DelayJumpSet
 end
 DelayJumpSet(delay_trigger,delay_complete,delay_interrupt) = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt, collect(keys(delay_trigger)), collect(keys(delay_interrupt)))
 
-struct DelayJumpSystem
-    jumpset::JumpSet
-    delayjumpsets::DelayJumpSet
-end
