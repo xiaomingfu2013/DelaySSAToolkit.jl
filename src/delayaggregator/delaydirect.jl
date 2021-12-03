@@ -87,11 +87,15 @@ Create delta based on the shawdow variable u_shadow
             u_ = copy(p.shadow_integrator.u) # backup the u and de_chan before the next update delay complete
             de_chan_ = deepcopy(p.shadow_integrator.de_chan)
 
-            p.next_delay = [T2[i]]
-            update_delay_complete!(p, p.shadow_integrator)
-            sum_rate_ = calculate_sum_rate(p, p.shadow_integrator.u, params, t+T1[i])
-            aₜ += sum_rate_*(T1[i+1]-T1[i])
-            F = 1 - exp(-aₜ)
+            if i <= length(T1) - 2
+                p.next_delay = [T2[i]]
+                update_delay_complete!(p, p.shadow_integrator)
+                sum_rate_ = calculate_sum_rate(p, p.shadow_integrator.u, params, t+T1[i])
+                aₜ += sum_rate_*(T1[i+1]-T1[i])
+                F = 1 - exp(-aₜ)
+            else
+                F = 1
+            end
             i += 1
         end
         i -= 1
