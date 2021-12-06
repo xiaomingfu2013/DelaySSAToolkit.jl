@@ -38,8 +38,10 @@ delay_interrupt = Dict()
 
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false, false))
-sol = solve(jprob, SSAStepper(), seed= 2, saveat=1,  save_delay_channel = true)
-# sol = solve(jprob, SSAStepper(), seed= 2,   save_delay_channel = true)
+seed = 102
+sol = solve(jprob, SSAStepper(), seed= seed, saveat=1,  save_delay_channel = true)
+sol = solve(jprob, SSAStepper(), seed= seed,   save_delay_channel = true)
+
 
 using Plots, DiffEqBase
 ensprob = EnsembleProblem(jprob)
