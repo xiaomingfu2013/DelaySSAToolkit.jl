@@ -35,13 +35,13 @@ delay_trigger_affect!
 delay_trigger = Dict([Pair(i, delay_trigger_affect![i]) for i in 1:burst_sup])
 delay_complete = Dict(1=>[1=>-1])
 delay_interrupt = Dict()
-
+alg = DelayRejection()
+# alg = DelayMNRM()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false, false))
-seed = 102
+jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false))
+seed = 1
 sol = solve(jprob, SSAStepper(), seed= seed, saveat=1,  save_delay_channel = true)
 sol = solve(jprob, SSAStepper(), seed= seed,   save_delay_channel = true)
-
 
 using Plots, DiffEqBase
 ensprob = EnsembleProblem(jprob)

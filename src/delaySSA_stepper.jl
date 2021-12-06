@@ -224,7 +224,7 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
                     save_prev_de_chan = false
                 end
                 shift_delay_channel!(prev_de_chan, tgap) #更新 delay channel 里面的时间 for all channels
-                push!(integrator.chan_sol,prev_de_chan) ## DelaySSA
+                push!(integrator.chan_sol,deepcopy(prev_de_chan)) ## DelaySSA
             end
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
@@ -300,11 +300,12 @@ function DiffEqBase.step!(integrator::DSSAIntegrator)
                     save_prev_de_chan = false
                 end
                 shift_delay_channel!(prev_de_chan,tgap) #更新 delay channel 里面的时间 for all channels
-                push!(integrator.chan_sol,prev_de_chan) ## DelaySSA
+                push!(integrator.chan_sol,deepcopy(prev_de_chan)) ## DelaySSA
             end
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
         end
+    
     end
 
     # FP error means the new time may equal the old if the next jump time is 
