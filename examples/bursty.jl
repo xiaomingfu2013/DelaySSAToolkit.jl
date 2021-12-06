@@ -27,8 +27,8 @@ dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 
 delay_trigger_affect! = []
 for i in 1:burst_sup
-    push!(delay_trigger_affect!, function (de_chan, rng)
-    append!(de_chan[1], fill(τ, i))
+    push!(delay_trigger_affect!, function (integrator, rng)
+    append!(integrator.de_chan[1], fill(τ, i))
     end)
 end
 delay_trigger_affect!
@@ -37,8 +37,9 @@ delay_complete = Dict(1=>[1=>-1])
 delay_interrupt = Dict()
 
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false,false))
-sol = solve(jprob, SSAStepper(), seed= 1)
+jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false, false))
+sol = solve(jprob, SSAStepper(), seed= 2, saveat=1,  save_delay_channel = true)
+# sol = solve(jprob, SSAStepper(), seed= 2,   save_delay_channel = true)
 
 using Plots, DiffEqBase
 ensprob = EnsembleProblem(jprob)

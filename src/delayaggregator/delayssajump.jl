@@ -137,7 +137,7 @@ end
             update_delay_trigger!(p, integrator)
         end
     else
-        shift_delay_channel!(integrator.de_chan,ttnj)
+        shift_delay_channel!(integrator.de_chan, ttnj)
         update_delay_channel!(integrator.de_chan)
         update_delay_complete!(p, integrator)
     end

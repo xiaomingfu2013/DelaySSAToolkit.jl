@@ -73,41 +73,38 @@ Create delta based on the shawdow variable u_shadow
     else #TODO
         prepend!(T1,zero(t))
         append!(T1,Inf)
-        i = 2
-        aₜ = p.sum_rate*T1[i]
+        i = 1
+        aₜ = p.sum_rate*T1[2]
         F = 1 - exp(-aₜ)
         u_ = copy(p.shadow_integrator.u)
         de_chan_ = deepcopy(p.shadow_integrator.de_chan)
-        minus_i = false
+        aₜ_ = zero(aₜ)
         while F < r1
-            minus_i = true
             # 用 不改变内在函数的方法这边只是想修改
-            p.next_delay = [T2[i-1]]
+            p.next_delay = [T2[i]]
             update_delay_complete!(p, p.shadow_integrator)
-            u_ = copy(p.shadow_integrator.u) # backup the u and de_chan before the next update delay complete
-            de_chan_ = deepcopy(p.shadow_integrator.de_chan)
 
-            if i <= length(T1) - 2
-                p.next_delay = [T2[i]]
-                update_delay_complete!(p, p.shadow_integrator)
-                sum_rate_ = calculate_sum_rate(p, p.shadow_integrator.u, params, t+T1[i])
-                aₜ += sum_rate_*(T1[i+1]-T1[i])
-                F = 1 - exp(-aₜ)
-            else
-                F = 1
-            end
+            # backup the u and de_chan before the next update delay complete
+            u_ = copy(p.shadow_integrator.u) 
+            de_chan_ = deepcopy(p.shadow_integrator.de_chan)
+            aₜ_ = copy(aₜ)
+
+            sum_rate_ = calculate_sum_rate(p, u_, params, t+T1[i+1])
+            aₜ += sum_rate_*(T1[i+2]-T1[i+1])
+            F = 1 - exp(-aₜ)
             i += 1
         end
-        i -= 1
-        p.shadow_integrator.u = copy(u_)
-        p.shadow_integrator.de_chan = deepcopy(de_chan_)
-        p.sum_rate = calculate_sum_rate(p, p.shadow_integrator.u, params, t+T1[i])
-        ttnj = T1[i]+(-log(1-r1) - aₜ + p.sum_rate*(T1[i+1]-T1[i]))/p.sum_rate
+        p.sum_rate = calculate_sum_rate(p, u_, params, t+T1[i])
+        ttnj = T1[i]+(-log(1-r1) - aₜ_)/p.sum_rate
+        if i > 1
+            p.shadow_integrator.u = copy(u_)
+            p.shadow_integrator.de_chan = deepcopy(de_chan_)
+        end 
     end
     shift_delay_channel!(p.shadow_integrator.de_chan, ttnj)
     update_delay_channel!(p.shadow_integrator.de_chan)
     fill_cum_rates_and_sum!(p, p.shadow_integrator.u, params, t+ttnj)
-    p.time_to_next_jump = ttnj 
+    p.time_to_next_jump = ttnj
 end
 
 """
@@ -197,9 +194,10 @@ Update state according up the next_jump;
 @inline function update_state_delay_Direct!(p::DelayDirectJumpAggregation, integrator, u, t)
     @unpack ma_jumps, next_jump, time_to_next_jump = p
     @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
-    integrator.u = copy(p.shadow_integrator.u) #TODO
+    
+    integrator.u = copy(p.shadow_integrator.u) 
     integrator.de_chan = deepcopy(p.shadow_integrator.de_chan)
-    # ttnj = time_to_next_jump
+
     num_ma_rates = get_num_majumps(ma_jumps)
     if next_jump <= num_ma_rates # if the next jump is a mass action jump
         if u isa SVector
@@ -211,9 +209,7 @@ Update state according up the next_jump;
         idx = next_jump - num_ma_rates
         @inbounds p.affects![idx](integrator)
     end
-    # shift delay channel !
-    # shift_delay_channel!(integrator.de_chan, ttnj) 
-    # update_delay_channel!(integrator.de_chan)
+
     if next_jump in delay_interrupt_set
         update_delay_interrupt!(p, integrator)
     elseif next_jump in delay_trigger_set
