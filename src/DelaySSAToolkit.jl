@@ -2,19 +2,25 @@ module DelaySSAToolkit
 
 using Reexport
 @reexport using DiffEqBase
+
 import DiffEqBase: DiscreteCallback, init, solve, solve!, plot_indices, initialize!
 # Types and Structs
+using DiffEqJump
 import DiffEqJump: AbstractAggregatorAlgorithm, AbstractJumpAggregator, AbstractJump, AbstractSSAJumpAggregator, JumpProblem, ConstantRateJump, VariableRateJump, RegularJump, MassActionJump, JumpSet, SSAStepper
 # Dependency graph functions
 import DiffEqJump: make_dependency_graph, add_self_dependencies!, var_to_jumps_map
 # other functions
 import DiffEqJump: using_params, get_jump_info_fwrappers, build_jump_aggregation, isinplace_jump, extend_problem, build_variable_callback, get_num_majumps, evalrxrate, executerx!, executerx
 
+using Catalyst
 import Catalyst: JumpSystem, states, equations, assemble_jumps, asgraph,  variable_dependencies, eqeq_dependencies, value
+using ModelingToolkit
 import ModelingToolkit: JumpSysMajParamMapper, assemble_maj, assemble_vrj, assemble_crj
+
+using DataStructures
 import DataStructures: update!
 
-using DataStructures, UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays
+using UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays
 using FunctionWrappers, ArrayInterface, TreeViews, RandomNumbers
 import RecursiveArrayTools: recursivecopy!
 using StaticArrays, Base.Threads
