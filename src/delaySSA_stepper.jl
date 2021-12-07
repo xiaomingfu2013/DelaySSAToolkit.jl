@@ -301,10 +301,6 @@ end
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
         end
-        # TODO
-        if !save_prev_de_chan 
-            integrator.de_chan = prev_de_chan
-        end
     end 
 end
 
