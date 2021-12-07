@@ -202,30 +202,46 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
     last_t = copy(integrator.t)
     integrator.t = end_time
 
-    saveat_function!(integrator, last_t)
+    if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation
+        saveat_function_direct_method!(integrator, last_t)
+    else
+        saveat_function!(integrator, last_t)
+    end
 
-    saveat_end_function!(integrator, last_t)
-
+    if integrator.save_end && integrator.sol.t[end] != end_time
+        saveat_end_function!(integrator, last_t)
+    end
     DiffEqBase.finalize!(integrator.opts.callback, integrator.u, integrator.t, integrator)
 end
 
-@inbounds function saveat_end_function!(integrator, prev_t)
+
+@inbounds function saveat_end_function!(integrator, prev_t)  
     end_time = integrator.sol.prob.tspan[2]
-    if integrator.save_end && integrator.sol.t[end] != end_time
-        push!(integrator.sol.t,end_time)
-        push!(integrator.sol.u,copy(integrator.u))
-        if integrator.save_delay_channel
-            if integrator.saveat !== nothing && !isempty(integrator.saveat)
-                t_final_gap = end_time - integrator.sol.t[end-1]
-                last_chan = deepcopy(integrator.chan_sol[end])
-            else
-                t_final_gap = end_time - prev_t
-                last_chan = deepcopy(integrator.de_chan)
-            end
-            shift_delay_channel!(last_chan, t_final_gap)
-            push!(integrator.chan_sol,last_chan)
-        end
+    push!(integrator.sol.t,end_time)
+
+    if integrator.saveat !== nothing && !isempty(integrator.saveat)
+        t_final_gap = end_time - integrator.sol.t[end-1]
+    else
+        t_final_gap = end_time - prev_t
     end
+    if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation 
+        # t_final_gap = end_time - prev_t
+        T1, T2 = create_Tstruct(integrator.de_chan)
+        update_state_final_jump!(integrator.cb.affect!, integrator, t_final_gap, T1, T2)
+    end
+    push!(integrator.sol.u,copy(integrator.u))
+
+    if integrator.save_delay_channel
+        if integrator.saveat !== nothing && !isempty(integrator.saveat)
+            last_chan = deepcopy(integrator.chan_sol[end])
+        else
+            last_chan = deepcopy(integrator.de_chan)
+        end
+        shift_delay_channel!(last_chan, t_final_gap)
+        update_delay_channel!(last_chan)
+        push!(integrator.chan_sol,last_chan)
+    end
+    
 end
 
 @inbounds function saveat_function!(integrator, prev_t)
@@ -253,6 +269,38 @@ end
     end 
 end
 
+
+@inbounds function saveat_function_direct_method!(integrator, prev_t)
+    # Special to Direct method
+    T1, T2 = create_Tstruct(integrator.de_chan)
+    if integrator.saveat !== nothing && !isempty(integrator.saveat)
+        save_prev_de_chan = true 
+        # Split to help prediction
+        last_saved_t = prev_t
+        prev_de_chan = [typeof(last_saved_t)[]]
+        while integrator.cur_saveat < length(integrator.saveat) &&
+           integrator.saveat[integrator.cur_saveat] < integrator.t
+            tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
+            push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
+
+            # Special to Direct method
+            update_state_final_jump!(integrator.cb.affect!, integrator, tgap, T1, T2)
+            push!(integrator.sol.u,copy(integrator.u))
+            if integrator.save_delay_channel
+                if save_prev_de_chan 
+                    prev_de_chan = deepcopy(integrator.de_chan)
+                    save_prev_de_chan = false
+                end
+                shift_delay_channel!(prev_de_chan, tgap) #更新 delay channel 里面的时间 for all channels
+                # Special for Direct method
+                update_delay_channel!(prev_de_chan) #更新 delay channel 里面的时间 for all channels
+                push!(integrator.chan_sol,deepcopy(prev_de_chan)) ## DelaySSA
+            end
+            last_saved_t = integrator.saveat[integrator.cur_saveat]
+            integrator.cur_saveat += 1
+        end
+    end 
+end
 
 # The Jump aggregators should not register the next jump through add_tstop! for SSAIntegrator
 # such that we can achieve maximum performance

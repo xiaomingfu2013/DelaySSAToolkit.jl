@@ -237,6 +237,7 @@ function update_delay_complete!(p, integrator)
         execute_delay_complete!(delay_complete[next_delay], num_next_delay, integrator, p.rng)
     end
 end
+
 function execute_delay_complete!(delay_complete::Vector{Pair{Int64,Int64}}, num_next_delay::Int64, integrator, rng)
     u = integrator.u
     @inbounds for (i, ξ) in delay_complete

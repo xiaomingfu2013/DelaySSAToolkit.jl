@@ -67,10 +67,10 @@ Create delta based on the shawdow variable u_shadow
 
     fill_cum_rates_and_sum!(p, p.shadow_integrator.u, params, t)
     r1 = rand(p.rng)
-    T1, T2 = create_Tstruct(integrator.de_chan)
-    if isempty(T1)
+    if isempty(reduce(vcat,integrator.de_chan))
         ttnj = -log(r1)/p.sum_rate
-    else #TODO
+    else
+        T1, T2 = create_Tstruct(integrator.de_chan)
         prepend!(T1,zero(t))
         append!(T1,Inf)
         i = 1
@@ -106,6 +106,18 @@ Create delta based on the shawdow variable u_shadow
     fill_cum_rates_and_sum!(p, p.shadow_integrator.u, params, t+ttnj)
     p.time_to_next_jump = ttnj
 end
+
+@inbounds function update_state_final_jump!(p, integrator, tgap, T1, T2)
+    idx = count(x->x<=tgap, T1)
+    for i in 1:idx
+        p.next_delay = [T2[i]]
+        update_delay_complete!(p, integrator)
+    end
+    deleteat!(T1, 1:idx)
+    deleteat!(T2, 1:idx)
+    T1 .-= tgap
+end
+
 
 """
     function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
