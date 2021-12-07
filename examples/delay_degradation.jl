@@ -58,9 +58,9 @@ using Random
 de_chan0 = [rand(Random.seed!(1234),0)]
 p = 0.
 tspan = (0.,tf)
-# aggregatoralgo = DelayRejection()
+aggregatoralgo = DelayRejection()
 # aggregatoralgo = DelayMNRM()
-aggregatoralgo = DelayDirect()
+# aggregatoralgo = DelayDirect()
 save_positions = (false,false)
 dprob = DiscreteProblem(u0, tspan, p)
 # DelaySSAToolkit.aggregate
@@ -77,7 +77,7 @@ plot(sol, label = ["X_A" "X_I"])
 
 Sample_size = Int(1e4)
 ens_prob = EnsembleProblem(djprob)
-ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
+@time ens = solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
 
 using StatsBase
 mean_A(t) = mean([ens[s](t)[1] for s in 1:Sample_size])

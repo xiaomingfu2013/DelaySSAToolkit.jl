@@ -66,7 +66,7 @@ function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)
     print(io,"u: ")
     show(io,m,A.u)
     println(io)
-    print(io,"delay: ")
+    print(io,"delay channel: ")
     show(io,m,A.chansol)
 end
 
@@ -202,20 +202,41 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
     last_t = copy(integrator.t)
     integrator.t = end_time
 
+    saveat_function!(integrator, last_t)
+
+    saveat_end_function!(integrator, last_t)
+
+    DiffEqBase.finalize!(integrator.opts.callback, integrator.u, integrator.t, integrator)
+end
+
+@inbounds function saveat_end_function!(integrator, prev_t)
+    end_time = integrator.sol.prob.tspan[2]
+    if integrator.save_end && integrator.sol.t[end] != end_time
+        push!(integrator.sol.t,end_time)
+        push!(integrator.sol.u,copy(integrator.u))
+        if integrator.save_delay_channel
+            if integrator.saveat !== nothing && !isempty(integrator.saveat)
+                t_final_gap = end_time - integrator.sol.t[end-1]
+                last_chan = deepcopy(integrator.chan_sol[end])
+            else
+                t_final_gap = end_time - prev_t
+                last_chan = deepcopy(integrator.de_chan)
+            end
+            shift_delay_channel!(last_chan, t_final_gap)
+            push!(integrator.chan_sol,last_chan)
+        end
+    end
+end
+
+@inbounds function saveat_function!(integrator, prev_t)
     if integrator.saveat !== nothing && !isempty(integrator.saveat)
-        save_prev_de_chan = true # DelaySSA: add save_prev_de_chan
-        # last_saved_flag = true
+        save_prev_de_chan = true 
         # Split to help prediction
-        last_saved_t = last_t
+        last_saved_t = prev_t
         prev_de_chan = [typeof(last_saved_t)[]]
         while integrator.cur_saveat < length(integrator.saveat) &&
            integrator.saveat[integrator.cur_saveat] < integrator.t
-            # if last_saved_flag 
-            #     last_saved_t = last
-            #     last_saved_flag = false
-            # end
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
-            saved = true
             push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
             push!(integrator.sol.u,copy(integrator.u))
             if integrator.save_delay_channel
@@ -229,27 +250,7 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
         end
-    end
-
-
-    if integrator.save_end && integrator.sol.t[end] != end_time
-        push!(integrator.sol.t,end_time)
-        push!(integrator.sol.u,copy(integrator.u))
-        if integrator.save_delay_channel
-            if integrator.saveat !== nothing && !isempty(integrator.saveat)
-                t_final_gap = end_time - integrator.sol.t[end-1]
-                last_chan = deepcopy(integrator.chan_sol[end])
-                shift_delay_channel!(last_chan, t_final_gap)
-                push!(integrator.chan_sol,last_chan)
-            else
-                t_final_gap = end_time - last_t
-                shift_delay_channel!(integrator.de_chan, t_final_gap)
-                push!(integrator.chan_sol,deepcopy(integrator.de_chan))
-            end
-        end
-    end
-
-    DiffEqBase.finalize!(integrator.opts.callback, integrator.u, integrator.t, integrator)
+    end 
 end
 
 
@@ -278,35 +279,7 @@ function DiffEqBase.step!(integrator::DSSAIntegrator)
         doaffect = true # delay effect until after saveat
     end
 
-    @inbounds if integrator.saveat !== nothing && !isempty(integrator.saveat)
-        save_prev_de_chan = true # DelaySSA: add save_prev_de_chan
-        last_saved_flag = true
-        # Split to help prediction
-        last_saved_t = zero(integrator.t)
-        prev_de_chan = [typeof(last_saved_t)[]]
-        while integrator.cur_saveat < length(integrator.saveat) &&
-           integrator.saveat[integrator.cur_saveat] < integrator.t
-           if last_saved_flag
-                last_saved_t = copy(integrator.tprev)
-                last_saved_flag = false
-            end
-            tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
-            saved = true
-            push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
-            push!(integrator.sol.u,copy(integrator.u))
-            if integrator.save_delay_channel
-                if save_prev_de_chan 
-                    prev_de_chan = deepcopy(integrator.de_chan) # TODO modify prev_de_chan, not necessary
-                    save_prev_de_chan = false
-                end
-                shift_delay_channel!(prev_de_chan,tgap) #更新 delay channel 里面的时间 for all channels
-                push!(integrator.chan_sol,deepcopy(prev_de_chan)) ## DelaySSA
-            end
-            last_saved_t = integrator.saveat[integrator.cur_saveat]
-            integrator.cur_saveat += 1
-        end
-    
-    end
+    saveat_function!(integrator, copy(integrator.tprev))
 
     # FP error means the new time may equal the old if the next jump time is 
     # sufficiently small, hence we add this check to execute jumps until
