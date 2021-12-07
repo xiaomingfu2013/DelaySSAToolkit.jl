@@ -227,7 +227,6 @@ end
         t_final_gap = end_time - prev_t
     end
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation 
-        # t_final_gap = end_time - prev_t
         T1, T2 = create_Tstruct(integrator.de_chan)
         update_state_final_jump!(integrator.cb.affect!, integrator, t_final_gap, T1, T2)
     end
@@ -302,6 +301,10 @@ end
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
         end
+        # TODO
+        if !save_prev_de_chan 
+            integrator.de_chan = prev_de_chan
+        end
     end 
 end
 
@@ -330,7 +333,12 @@ function DiffEqBase.step!(integrator::DSSAIntegrator)
         doaffect = true # delay effect until after saveat
     end
 
-    saveat_function!(integrator, copy(integrator.tprev))
+    if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation
+        saveat_function_direct_method!(integrator, copy(integrator.tprev))
+    else
+        saveat_function!(integrator, copy(integrator.tprev))
+    end
+    
 
     # FP error means the new time may equal the old if the next jump time is 
     # sufficiently small, hence we add this check to execute jumps until
