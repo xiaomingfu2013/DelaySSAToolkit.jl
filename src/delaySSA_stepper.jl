@@ -216,9 +216,11 @@ end
 
 
 @inbounds function saveat_end_function!(integrator, prev_t)  
+    # save last t
     end_time = integrator.sol.prob.tspan[2]
     push!(integrator.sol.t,end_time)
-
+    
+    # save last u 
     if integrator.saveat !== nothing && !isempty(integrator.saveat)
         t_final_gap = end_time - integrator.sol.t[end-1]
     else
@@ -231,6 +233,7 @@ end
     end
     push!(integrator.sol.u,copy(integrator.u))
 
+    # save last de_chan
     if integrator.save_delay_channel
         if integrator.saveat !== nothing && !isempty(integrator.saveat)
             last_chan = deepcopy(integrator.chan_sol[end])
@@ -260,8 +263,8 @@ end
                     prev_de_chan = deepcopy(integrator.de_chan)
                     save_prev_de_chan = false
                 end
-                shift_delay_channel!(prev_de_chan, tgap) #更新 delay channel 里面的时间 for all channels
-                push!(integrator.chan_sol,deepcopy(prev_de_chan)) ## DelaySSA
+                shift_delay_channel!(prev_de_chan, tgap) 
+                push!(integrator.chan_sol,deepcopy(prev_de_chan)) 
             end
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
@@ -291,10 +294,10 @@ end
                     prev_de_chan = deepcopy(integrator.de_chan)
                     save_prev_de_chan = false
                 end
-                shift_delay_channel!(prev_de_chan, tgap) #更新 delay channel 里面的时间 for all channels
+                shift_delay_channel!(prev_de_chan, tgap) 
                 # Special for Direct method
-                update_delay_channel!(prev_de_chan) #更新 delay channel 里面的时间 for all channels
-                push!(integrator.chan_sol,deepcopy(prev_de_chan)) ## DelaySSA
+                update_delay_channel!(prev_de_chan) #
+                push!(integrator.chan_sol,deepcopy(prev_de_chan))
             end
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1

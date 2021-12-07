@@ -58,9 +58,9 @@ using Random
 de_chan0 = [rand(Random.seed!(1234),0)]
 p = 0.
 tspan = (0.,tf)
-aggregatoralgo = DelayRejection()
+# aggregatoralgo = DelayRejection()
 # aggregatoralgo = DelayMNRM()
-# aggregatoralgo = DelayDirect()
+aggregatoralgo = DelayDirect()
 save_positions = (false,false)
 dprob = DiscreteProblem(u0, tspan, p)
 # DelaySSAToolkit.aggregate
@@ -75,7 +75,7 @@ sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1, save_delay_channel 
 using Plots, DiffEqBase
 plot(sol, label = ["X_A" "X_I"])
 
-Sample_size = Int(1e4)
+Sample_size = Int(2e4)
 ens_prob = EnsembleProblem(djprob)
 @time ens = solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
 
