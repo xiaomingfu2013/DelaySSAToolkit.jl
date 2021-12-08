@@ -20,24 +20,24 @@ equations(jumpsys).x[3]
 
 
 function get_reaction_idx(rn::Catalyst.ReactionSystem)
-    massaction_order = []
-    constantrate_order = []
+    massactionjump_order = []
+    constantjump_order = []
     rxvars = []
     for (i,rx) in enumerate(ModelingToolkit.get_eqs(rn))
+        empty!(rxvars)
         (rx.rate isa ModelingToolkit.Symbolic) && ModelingToolkit.get_variables!(rxvars, rx.rate)
         @inbounds for i = 1:length(rxvars)
             if isequal(rxvars[i], ModelingToolkit.get_iv(rn))
                 error("Does not support VariableRateJump")
-                break
             end
         end
         if Catalyst.ismassaction(rx, rn)
-            push!(massaction_order, i)
+            push!(massactionjump_order, i)
         else
-            push!(constantrate_order, i)
+            push!(constantjump_order, i)
         end
     end
-    order = vcat(massaction_order,constantrate_order)
+    order = vcat(massactionjump_order,constantjump_order)
     vcat( [[rn.eqs[i] order[i]] for i in eachindex(order)]...) 
 end
 get_reaction_idx(rn)
