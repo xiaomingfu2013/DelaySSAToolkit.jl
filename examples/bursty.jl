@@ -41,18 +41,13 @@ alg = DelayRejection()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false))
 seed = 2
-sol = solve(jprob, SSAStepper(), seed = seed, saveat = 1,  save_delay_channel = true)
+sol = solve(jprob, SSAStepper(), seed = seed, saveat = 100,  save_delay_channel = true)
 sol = solve(jprob, SSAStepper(), seed = seed, save_delay_channel = true)
-# sol
-# sol.u[150]
-# length.(sol.chansol[3])
-
-sum([sol.u[i][1]!=length(sol.chansol[i][1]) for i in eachindex(sol.t)])
 
 
 using Plots, DiffEqBase
 ensprob = EnsembleProblem(jprob)
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
+@time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=10^5)
 
 # Check with the exact probability distribution
 using TaylorSeries

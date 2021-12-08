@@ -109,12 +109,14 @@ end
 
 @inbounds function update_state_final_jump!(p, integrator, tgap, T1, T2)
     idx = count(x->x<=tgap, T1)
-    for i in 1:idx
-        p.next_delay = [T2[i]]
-        update_delay_complete!(p, integrator)
+    if idx >=1
+        for i in 1:idx
+            p.next_delay = [T2[i]]
+            update_delay_complete!(p, integrator)
+        end
+        deleteat!(T1, 1:idx)
+        deleteat!(T2, 1:idx)
     end
-    deleteat!(T1, 1:idx)
-    deleteat!(T2, 1:idx)
     T1 .-= tgap
 end
 

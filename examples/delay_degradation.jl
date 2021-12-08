@@ -70,7 +70,9 @@ dprob = DiscreteProblem(u0, tspan, p)
 # djprob = DelayJumpProblem(jprob,delaysets,de_chan0)
 djprob = DelayJumpProblem(dprob, aggregatoralgo, jumpset, delaysets, de_chan0, save_positions = (false, false))
 
-sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1, save_delay_channel = false)
+sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1, save_delay_channel = true)
+sol =@time solve(djprob, SSAStepper(), seed = 2, save_delay_channel = true)
+
 
 using Plots, DiffEqBase
 plot(sol, label = ["X_A" "X_I"])
