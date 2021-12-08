@@ -35,17 +35,17 @@ delay_trigger_affect!
 delay_trigger = Dict([Pair(i, delay_trigger_affect![i]) for i in 1:burst_sup])
 delay_complete = Dict(1=>[1=>-1])
 delay_interrupt = Dict()
-# alg = DelayRejection()
+alg = DelayRejection()
 # alg = DelayMNRM()
-alg = DelayDirect()
+# alg = DelayDirect()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false))
 seed = 2
-sol = solve(jprob, SSAStepper(), seed = seed, saveat=100,  save_delay_channel = true)
+sol = solve(jprob, SSAStepper(), seed = seed, saveat = 1,  save_delay_channel = true)
 sol = solve(jprob, SSAStepper(), seed = seed, save_delay_channel = true)
 # sol
 # sol.u[150]
-# length.(sol.chansol[150])
+# length.(sol.chansol[3])
 
 sum([sol.u[i][1]!=length(sol.chansol[i][1]) for i in eachindex(sol.t)])
 

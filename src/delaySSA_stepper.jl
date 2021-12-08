@@ -193,6 +193,8 @@ function DiffEqBase.add_tstop!(integrator::DSSAIntegrator,tstop)
 end
 
 
+
+
 function DiffEqBase.solve!(integrator::DSSAIntegrator)
 
     end_time = integrator.sol.prob.tspan[2]
@@ -221,11 +223,11 @@ end
     push!(integrator.sol.t,end_time)
     
     # save last u 
-    if integrator.saveat !== nothing && !isempty(integrator.saveat)
-        t_final_gap = end_time - integrator.sol.t[end-1]
-    else
-        t_final_gap = end_time - prev_t
-    end
+    # if integrator.saveat !== nothing && !isempty(integrator.saveat)
+    #     t_final_gap = end_time - integrator.sol.t[end-1]
+    # else
+    t_final_gap = end_time - prev_t
+    # end
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation 
         T1, T2 = create_Tstruct(integrator.de_chan)
         update_state_final_jump!(integrator.cb.affect!, integrator, t_final_gap, T1, T2)
@@ -234,34 +236,30 @@ end
 
     # save last de_chan
     if integrator.save_delay_channel
-        if integrator.saveat !== nothing && !isempty(integrator.saveat)
-            last_chan = deepcopy(integrator.chan_sol[end])
-        else
-            last_chan = deepcopy(integrator.de_chan)
-        end
+        # t_final_gap = end_time - prev_t
+        last_chan = deepcopy(integrator.de_chan)
         shift_delay_channel!(last_chan, t_final_gap)
         update_delay_channel!(last_chan)
         push!(integrator.chan_sol,last_chan)
     end
-    
 end
+
+```
+    function saveat_function!(integrator, prev_t)
+
+Note that this function does not change u and de_chan, but only takes the snapshots of u and de_chan accordingly
+```
 
 @inbounds function saveat_function!(integrator, prev_t)
     if integrator.saveat !== nothing && !isempty(integrator.saveat)
-        save_prev_de_chan = true 
         # Split to help prediction
         last_saved_t = prev_t
-        prev_de_chan = [typeof(last_saved_t)[]]
-        while integrator.cur_saveat < length(integrator.saveat) &&
-           integrator.saveat[integrator.cur_saveat] < integrator.t
+        prev_de_chan = deepcopy(integrator.de_chan)
+        while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
             push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
             push!(integrator.sol.u,copy(integrator.u))
             if integrator.save_delay_channel
-                if save_prev_de_chan 
-                    prev_de_chan = deepcopy(integrator.de_chan)
-                    save_prev_de_chan = false
-                end
                 shift_delay_channel!(prev_de_chan, tgap) 
                 push!(integrator.chan_sol,deepcopy(prev_de_chan)) 
             end
@@ -274,12 +272,11 @@ end
 
 @inbounds function saveat_function_direct_method!(integrator, prev_t)
     # Special to Direct method
-    T1, T2 = create_Tstruct(integrator.de_chan)
     if integrator.saveat !== nothing && !isempty(integrator.saveat)
-        save_prev_de_chan = true 
+        T1, T2 = create_Tstruct(integrator.de_chan)
         # Split to help prediction
         last_saved_t = prev_t
-        prev_de_chan = [typeof(last_saved_t)[]]
+        prev_de_chan = deepcopy(integrator.de_chan)
         while integrator.cur_saveat < length(integrator.saveat) &&
            integrator.saveat[integrator.cur_saveat] < integrator.t
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
@@ -289,10 +286,6 @@ end
             update_state_final_jump!(integrator.cb.affect!, integrator, tgap, T1, T2)
             push!(integrator.sol.u,copy(integrator.u))
             if integrator.save_delay_channel
-                if save_prev_de_chan 
-                    prev_de_chan = deepcopy(integrator.de_chan)
-                    save_prev_de_chan = false
-                end
                 shift_delay_channel!(prev_de_chan, tgap) 
                 # Special for Direct method
                 update_delay_channel!(prev_de_chan) #

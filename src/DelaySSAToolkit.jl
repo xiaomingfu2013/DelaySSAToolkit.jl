@@ -21,8 +21,7 @@ using DataStructures
 import DataStructures: update!
 
 using UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays
-using FunctionWrappers, ArrayInterface, TreeViews, RandomNumbers
-import RecursiveArrayTools: recursivecopy!
+using FunctionWrappers, ArrayInterface, RandomNumbers
 using StaticArrays, Base.Threads
 import Base.Threads
 @static if VERSION < v"1.3"
