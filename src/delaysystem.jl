@@ -9,7 +9,7 @@
 
 - delay_interrupt_set: 把所有会引发delay channel 改变的 reactions 的 idx 收集起来
 """
-struct DelayJumpSet
+mutable struct DelayJumpSet
     delay_trigger::Dict
     delay_complete::Dict{Int,Any}
     delay_interrupt::Dict
