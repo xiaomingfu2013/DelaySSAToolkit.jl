@@ -44,6 +44,7 @@ function prob_func_simple(prob, i, repeat)
     rng = Random.seed!(i)
     α = rand(rng, Gamma(63,1/9)) # the Gamma distribution uses shape α, scale θ, Gamma(α,θ). In the paper, Gamma distribution uses shape α and rate  β. One needs to set the inverse.
     β = rand(rng, Gamma(10.,1/10.))
+    
     A = rand(rng, Gamma(8,1/0.23))
     B = rand(rng, Gamma(9,1/625))
     τ  = rand(rng, Gamma(α,1/β))
@@ -66,7 +67,7 @@ histogram(last_slice[2], bins=0:1:30, normalize=:pdf)
 delayjumpset
 
 
-new_djprob = DelaySSAToolkit.remake(djprob, delay_trigger = Dict(2=>[1=>2]), p = [1,2.], de_chan0 = [[1.]], u0 = [1,0], delay_complete = Dict(2=>[2=>-1]))
+new_djprob = remake(djprob, delay_trigger = Dict(2=>[1=>2]), p = [1,2.], de_chan0 = [[1.]], u0 = [1,0], delay_complete = Dict(2=>[2=>-1]), delay_interrupt_set = [2])
 
 new_djprob.prob.p
 new_djprob.massaction_jump

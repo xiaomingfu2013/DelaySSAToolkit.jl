@@ -77,27 +77,6 @@ function DelayJumpProblem(prob, aggregator::AbstractAggregatorAlgorithm, jumps::
                         jumps.regular_jump, maj, delayjumpsets, de_chan0)
 end
 
-# function numericrstoich(mtrs::Vector{Pair{V,W}}, statetoid) where {V,W}
-#     rs = Vector{Pair{Int,W}}()
-#     for (wspec,stoich) in mtrs
-#         spec = value(wspec)
-#         if !istree(spec) && _iszero(spec)
-#             push!(rs, 0 => stoich)
-#         else
-#             push!(rs, statetoid[spec] => stoich)
-#         end
-#     end
-#     sort!(rs)
-#     rs
-# end
-
-# function assemble_maj(majv::Vector{U}, statetoid, pmapper) where {U <: MassActionJump}
-#     rs = [numericrstoich(maj.reactant_stoch, statetoid) for maj in majv]
-#     ns = [numericnstoich(maj.net_stoch, statetoid) for maj in majv]
-#     MassActionJump(rs, ns; param_mapper=pmapper, nocopy=true)
-# end
-
-
 function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; kwargs...)
     statetoid = Dict(value(state) => i for (i,state) in enumerate(states(js)))
     eqs       = equations(js)
@@ -130,9 +109,9 @@ end
 function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
 
   errmesg = """
-  DelayJumpProblems can currently only be remade with new u0, de_chan0, p, tspan, delay_trigger, delay_interrupt, delay_complete, prob fields. 
+  DelayJumpProblems can currently only be remade with new u0, de_chan0, p, tspan, delayjumpsets fields, prob fields. 
   """
-  !issubset(keys(kwargs),(:u0,:de_chan0,:p,:tspan,:prob,:delay_trigger,:delay_interrupt,:delay_complete)) && error(errmesg)
+  !issubset(keys(kwargs),((:u0,:de_chan0,:p,:tspan,:prob)...,propertynames(thing.delayjumpsets)...)) && error(errmesg)
 
   if :prob ∉ keys(kwargs)
     dprob = DiffEqBase.remake(thing.prob; kwargs...)
@@ -149,7 +128,9 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
       DiffEqJump.update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
     end 
   end
-  delayjumpsets = update_delayjumpsets(thing.delayjumpsets; kwargs...)
+  if any(k -> k in keys(kwargs), propertynames(thing.delayjumpsets)) 
+      delayjumpsets = update_delayjumpsets(thing.delayjumpsets; kwargs...)
+  end
   de_chan0 = :de_chan0 ∈ keys(kwargs) ? kwargs[:de_chan0] : thing.de_chan0
 
   DelayJumpProblem(dprob, thing.aggregator, thing.discrete_jump_aggregation, thing.jump_callback,
