@@ -125,6 +125,38 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
     DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=false, nocopy=true, kwargs...)
 end
 
+
+# for remaking
+Base.@pure remaker_of(prob::T) where {T <: DelayJumpProblem} = DiffEqBase.parameterless_type(T)
+function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
+  T = remaker_of(thing)
+
+  errmesg = """
+  DelayJumpProblems can currently only be remade with new u0, p, tspan or prob fields. 
+  """
+  !issubset(keys(kwargs),(:u0,:p,:tspan,:prob)) && error(errmesg)
+
+  if :prob ∉ keys(kwargs)
+    dprob = DiffEqBase.remake(thing.prob; kwargs...)
+
+    # if the parameters were changed we must remake the MassActionJump too
+    if (:p ∈ keys(kwargs)) && using_params(thing.massaction_jump)
+      update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
+    end 
+  else
+    any(k -> k in keys(kwargs), (:u0,:p,:tspan)) && error("If remaking a DelayJumpProblem you can not pass both prob and any of u0, p, or tspan.")
+    dprob = kwargs[:prob]
+
+    # we can't know if p was changed, so we must remake the MassActionJump
+    if using_params(thing.massaction_jump)
+      update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
+    end 
+  end
+
+  T(dprob, thing.aggregator, thing.discrete_jump_aggregation, thing.jump_callback,
+     thing.variable_jumps, thing.regular_jump, thing.massaction_jump)
+end
+
 Base.summary(io::IO, prob::DelayJumpProblem) = string(DiffEqBase.parameterless_type(prob)," with problem ",DiffEqBase.parameterless_type(prob.prob)," and aggregator ",typeof(prob.aggregator))
 function Base.show(io::IO, mime::MIME"text/plain", A::DelayJumpProblem)
   println(io,summary(A))

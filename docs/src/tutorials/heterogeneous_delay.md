@@ -43,18 +43,16 @@ jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan
 ```julia
 function prob_func(prob, i ,repeat)
     rng = Random.seed!(i)
-    α = rand(rng, Gamma(63,1/9)) # the Gamma distribution uses shape α, scale θ, Gamma(α,θ). In the paper, Gamma distribution uses shape α and rate  β. One needs to set the inverse.
-    β = rand(rng, Gamma(10.,1/10.))
-    A = rand(rng, Gamma(8,1/0.23))
+    A = rand(rng, Gamma(8,1/0.23)) # the Gamma distribution uses shape α, scale θ, Gamma(α,θ). In the paper, Gamma distribution uses shape α and rate  β. One needs to set the inverse.
     B = rand(rng, Gamma(9,1/625))
-    τ = rand(rng, Gamma(α,1/β))
+    τ = rand(rng, Gamma(7,1))
     delay_trigger_i = Dict(1=>[1=>τ])
     prob.delayjumpsets.delay_trigger = delay_trigger_i
     @. prob.prob.p = [A, B]
     prob
 end
 ensprob = EnsembleProblem(jprob, prob_func = prob_func)
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories = 10^4, saveat = 1.)
+@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories = 40, saveat = 1.)
 ```
 
 For distributed delay, one can easily use the following setting.
@@ -77,9 +75,9 @@ ensprob = EnsembleProblem(jprob, prob_func = prob_func)
 
 ## Visualisation
 ```julia
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories = 10^4, saveat = 1.)
+@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories = 10^4)
 ```
 ```julia-repl
-30.610441 seconds (196.13 M allocations: 39.616 GiB, 22.67% gc time)
+ 23.070054 seconds (81.35 M allocations: 8.336 GiB, 5.62% gc time)
 EnsembleSolution Solution of length 10000 with uType
 ```

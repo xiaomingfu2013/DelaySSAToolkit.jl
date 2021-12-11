@@ -39,8 +39,8 @@ function prob_func(prob, i ,repeat)
     prob
 end
 ensprob = EnsembleProblem(jprob, prob_func = prob_func)
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories = 10^4, saveat = 1.)
-plot(ens[1])
+@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories = 10^4)
+# plot(ens[1])
 
 using Plots
 using DifferentialEquations.EnsembleAnalysis
