@@ -36,13 +36,29 @@ function prob_func(prob, i ,repeat)
     delay_trigger_i = Dict(1=>[1=>τ])
     prob.delayjumpsets.delay_trigger = delay_trigger_i
     @. prob.prob.p = [A, B]
+    DiffEqJump.update_parameters!(prob.massaction_jump, [A, B])
     prob
 end
-ensprob = EnsembleProblem(jprob, prob_func = prob_func)
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories = 10^4)
-# plot(ens[1])
+
+function prob_func_simple(prob, i, repeat)
+    rng = Random.seed!(i)
+    α = rand(rng, Gamma(63,1/9)) # the Gamma distribution uses shape α, scale θ, Gamma(α,θ). In the paper, Gamma distribution uses shape α and rate  β. One needs to set the inverse.
+    β = rand(rng, Gamma(10.,1/10.))
+    A = rand(rng, Gamma(8,1/0.23))
+    B = rand(rng, Gamma(9,1/625))
+    τ  = rand(rng, Gamma(α,1/β))
+    remake(prob, p = [A,B], delay_trigger=Dict(1=>[1=>τ]))
+end
+prob1 = EnsembleProblem(djprob, prob_func = prob_func)
+prob2 = EnsembleProblem(djprob, prob_func = prob_func_simple)
+
+@time ens = solve(prob1, SSAStepper(), EnsembleThreads(), trajectories = 10^3, saveat= 1.)
+@time ens2 = solve(prob2, SSAStepper(), EnsembleThreads(), trajectories = 10^3, saveat=1.)
 
 using Plots
+plot(ens[1])
+plot!(ens2[1])
+
 using DifferentialEquations.EnsembleAnalysis
 last_slice = componentwise_vectors_timepoint(ens, tf)
 histogram(last_slice[2], bins=0:1:30, normalize=:pdf)
