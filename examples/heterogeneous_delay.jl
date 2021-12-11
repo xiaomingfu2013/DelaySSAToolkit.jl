@@ -24,7 +24,7 @@ dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 # use ensemble problem 
 algo = DelayRejection()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(false,false))
+djprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(false,false))
 
 function prob_func(prob, i ,repeat)
     rng = Random.seed!(i)
@@ -46,3 +46,16 @@ using Plots
 using DifferentialEquations.EnsembleAnalysis
 last_slice = componentwise_vectors_timepoint(ens, tf)
 histogram(last_slice[2], bins=0:1:30, normalize=:pdf)
+
+delayjumpset
+
+
+new_djprob = DelaySSAToolkit.remake(djprob, delay_trigger = Dict(2=>[1=>2]), p = [1,2.], de_chan0 = [[1.]], u0 = [1,0], delay_complete = Dict(2=>[2=>-1]))
+
+new_djprob.prob.p
+new_djprob.massaction_jump
+new_djprob.de_chan0
+new_djprob.prob.u0
+new_djprob.delayjumpsets
+
+djprob.delayjumpsets

@@ -127,34 +127,45 @@ end
 
 
 # for remaking
-Base.@pure remaker_of(prob::T) where {T <: DelayJumpProblem} = DiffEqBase.parameterless_type(T)
 function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
-  T = remaker_of(thing)
 
   errmesg = """
-  DelayJumpProblems can currently only be remade with new u0, p, tspan or prob fields. 
+  DelayJumpProblems can currently only be remade with new u0, de_chan0, p, tspan, delay_trigger, delay_interrupt, delay_complete, prob fields. 
   """
-  !issubset(keys(kwargs),(:u0,:p,:tspan,:prob)) && error(errmesg)
+  !issubset(keys(kwargs),(:u0,:de_chan0,:p,:tspan,:prob,:delay_trigger,:delay_interrupt,:delay_complete)) && error(errmesg)
 
   if :prob ∉ keys(kwargs)
     dprob = DiffEqBase.remake(thing.prob; kwargs...)
-
     # if the parameters were changed we must remake the MassActionJump too
-    if (:p ∈ keys(kwargs)) && using_params(thing.massaction_jump)
-      update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
-    end 
+    if (:p ∈ keys(kwargs)) && DiffEqJump.using_params(thing.massaction_jump)
+        DiffEqJump.update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
+    end      
   else
     any(k -> k in keys(kwargs), (:u0,:p,:tspan)) && error("If remaking a DelayJumpProblem you can not pass both prob and any of u0, p, or tspan.")
     dprob = kwargs[:prob]
 
     # we can't know if p was changed, so we must remake the MassActionJump
-    if using_params(thing.massaction_jump)
-      update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
+    if DiffEqJump.using_params(thing.massaction_jump)
+      DiffEqJump.update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
     end 
   end
+  delayjumpsets = update_delayjumpsets(thing.delayjumpsets; kwargs...)
+  de_chan0 = :de_chan0 ∈ keys(kwargs) ? kwargs[:de_chan0] : thing.de_chan0
 
-  T(dprob, thing.aggregator, thing.discrete_jump_aggregation, thing.jump_callback,
-     thing.variable_jumps, thing.regular_jump, thing.massaction_jump)
+  DelayJumpProblem(dprob, thing.aggregator, thing.discrete_jump_aggregation, thing.jump_callback,
+     thing.variable_jumps, thing.regular_jump, thing.massaction_jump, delayjumpsets, de_chan0)
+end
+
+function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)
+    delayjumpsets_ = deepcopy(delayjumpsets)
+    for (key, value) in kwargs
+        if toexpr(key) in [:delay_trigger,:delay_interrupt, :delay_complete] 
+            setproperty!(delayjumpsets_, toexpr(key), value)
+        end
+    end    
+    setproperty!(delayjumpsets_, :delay_interrupt_set, collect(keys(delayjumpsets_.delay_interrupt)))
+    setproperty!(delayjumpsets_, :delay_trigger_set, collect(keys(delayjumpsets_.delay_trigger)))
+    return delayjumpsets_
 end
 
 Base.summary(io::IO, prob::DelayJumpProblem) = string(DiffEqBase.parameterless_type(prob)," with problem ",DiffEqBase.parameterless_type(prob.prob)," and aggregator ",typeof(prob.aggregator))

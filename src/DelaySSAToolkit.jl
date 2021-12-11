@@ -41,6 +41,6 @@ include("delayproblem.jl")
 include("delaySSA_stepper.jl")
 export DelayJumpProblem, DelaySSAsolve, DelayJumpSet
 export DelayRejection, DelayMNRM, DelayDirect
-export solve
+export solve, remake
 
 end
