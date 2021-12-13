@@ -109,7 +109,6 @@ mean_x_A(t) = C/a*(1-exp(-a*t))
 mean_x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((1-exp(-γ*τ))/γ + exp(-a*t)*(1-exp((a-γ)τ))/(a-γ))
 ```
 ![degradation2](../assets/delay_degradation2.svg)
-![degradation3](../assets/delay_degradation3.svg)
 
 
 
