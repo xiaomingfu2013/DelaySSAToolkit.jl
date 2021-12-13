@@ -26,45 +26,38 @@ algo = DelayRejection()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 djprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(false,false))
 
-function prob_func(prob, i ,repeat)
+
+function prob_func1(prob, i, repeat)
     rng = Random.seed!(i)
-    α = rand(rng, Gamma(63,1/9)) # the Gamma distribution uses shape α, scale θ, Gamma(α,θ). In the paper, Gamma distribution uses shape α and rate  β. One needs to set the inverse.
-    β = rand(rng, Gamma(10.,1/10.))
     A = rand(rng, Gamma(8,1/0.23))
     B = rand(rng, Gamma(9,1/625))
-    τ  = rand(rng, Gamma(α,1/β))
-    delay_trigger_i = Dict(1=>[1=>τ])
-    prob.delayjumpsets.delay_trigger = delay_trigger_i
-    @. prob.prob.p = [A, B]
-    DiffEqJump.update_parameters!(prob.massaction_jump, [A, B])
-    prob
+    τ  = rand(rng, Gamma(1,1/7))
+    remake(prob, p = [A,B], delay_trigger=Dict(1=>[1=>τ]))
 end
-
-function prob_func_simple(prob, i, repeat)
+function prob_func2(prob, i, repeat)
     rng = Random.seed!(i)
     α = rand(rng, Gamma(63,1/9)) # the Gamma distribution uses shape α, scale θ, Gamma(α,θ). In the paper, Gamma distribution uses shape α and rate  β. One needs to set the inverse.
     β = rand(rng, Gamma(10.,1/10.))
-    
     A = rand(rng, Gamma(8,1/0.23))
     B = rand(rng, Gamma(9,1/625))
     τ  = rand(rng, Gamma(α,1/β))
     remake(prob, p = [A,B], delay_trigger=Dict(1=>[1=>τ]))
 end
-prob1 = EnsembleProblem(djprob, prob_func = prob_func)
-prob2 = EnsembleProblem(djprob, prob_func = prob_func_simple)
 
-@time ens = solve(prob1, SSAStepper(), EnsembleThreads(), trajectories = 10^3, saveat= 1.)
-@time ens2 = solve(prob2, SSAStepper(), EnsembleThreads(), trajectories = 10^3, saveat=1.)
-
-using Plots
-plot(ens[1])
-plot!(ens2[1])
-
+prob1 = EnsembleProblem(djprob, prob_func = prob_func1)
+@time ens1 = solve(prob1, SSAStepper(), EnsembleThreads(), trajectories = 40, saveat= 1.)
+Y_evolution  = [ens[i][2,:] for i in 1:40]
 using DifferentialEquations.EnsembleAnalysis
-last_slice = componentwise_vectors_timepoint(ens, tf)
-histogram(last_slice[2], bins=0:1:30, normalize=:pdf)
+using Plots;theme(:vibrant)
+plot(Y_evolution, linealpha=0.4, legend=false , linewidth = 2, fmt=:svg, xlabel = "Time", ylabel="# of Y individuals")
+savefig("docs/src/assets/heterogeneous_delay1.svg")
 
-delayjumpset
+prob2 = EnsembleProblem(djprob, prob_func = prob_func2)
+@time ens2 = solve(prob2, SSAStepper(), EnsembleThreads(), trajectories = 10^4)
+
+last_slice = componentwise_vectors_timepoint(ens2, tf)
+histogram(last_slice[1], bins=0:20:1000, normalize=:pdf, xlabel = "# of X individuals", ylabel = "Probability",fillalpha = 0.6, linecolor = :orange, legend = false)
+savefig("docs/src/assets/heterogeneous_delay2.svg")
 
 
 new_djprob = remake(djprob, delay_trigger = Dict(2=>[1=>2]), p = [1,2.], de_chan0 = [[1.]], u0 = [1,0], delay_complete = Dict(2=>[2=>-1]), delay_interrupt_set = [2])
