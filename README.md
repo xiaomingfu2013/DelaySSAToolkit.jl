@@ -52,7 +52,7 @@ ps = [1e-4, 1e-2]
 delay_trigger_affect! = function (integrator, rng)
     append!(integrator.de_chan[1], τ)
 end
-delay_trigger = Dict(1=>delay_trigger_affect!) # the first reaction S+I -> E+I will trigger a delay reaction by adding τ to delay channel 
+delay_trigger = Dict(1=>delay_trigger_affect!) # the first reaction S+I -> E+I will trigger a delay reaction by adding τ to the delay channel 
 delay_complete = Dict(1=>[2=>1, 3=>-1]) # Transfer from E to I after the completed delay reaction
 delay_interrupt = Dict()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
