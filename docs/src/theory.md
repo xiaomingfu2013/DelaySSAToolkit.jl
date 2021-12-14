@@ -29,7 +29,7 @@ For a chemical system in a given state $X(t)=x$ at time $t$,assuming that all re
 \end{equation}
 ```
 
-  Based upon the fundamental premise Eq. (1), Gillespie showed that that $\Delta$ and $\mu$ are two independent random variables and have the following probability density functions (PDFs), respectively:
+Based upon the fundamental premise Eq. (1), Gillespie showed that that $\Delta$ and $\mu$ are two independent random variables and have the following probability density functions (PDFs), respectively:
 
 ```math
 \begin{equation}
@@ -51,9 +51,9 @@ where $a_0(t)=\begin{matrix} \sum_{k=1}^M a_k(t) \end{matrix}$. According to the
 
 ### Delay Direct method
 
-  As in the derivation of Gillespie’s exact SSA, we first need to find the probability of event Eq.(2), that is defined as $P(\Delta,\mu)d\Delta$, where $P(\Delta,\mu)$ is the joint PDF of $\Delta$ and $\mu$. Suppose that there are $d$ ongoing reactions at timet, which will finish at $t+T_1,\ldots,t+T_{d}$, respectively. Without loss of generality, we assume that $T_1 \leq T_2 \leq \ldots \leq T_d$. Unlike in the reaction system without delays where the propensity functions remain unchanged in the time interval $[t,t+\Delta]$, the propensity functions here change at $t+T_i,i=1,\ldots,d$, due to delayed reactions. We need to take into account such changes in propensity functions when deriving  $P(\Delta,\mu)$.
+As in the derivation of Gillespie’s exact SSA, we first need to find the probability of event Eq.(2), that is defined as $P(\Delta,\mu)d\Delta$, where $P(\Delta,\mu)$ is the joint PDF of $\Delta$ and $\mu$. Suppose that there are $d$ ongoing reactions at timet, which will finish at $t+T_1,\ldots,t+T_{d}$, respectively. Without loss of generality, we assume that $T_1 \leq T_2 \leq \ldots \leq T_d$. Unlike in the reaction system without delays where the propensity functions remain unchanged in the time interval $[t,t+\Delta]$, the propensity functions here change at $t+T_i,i=1,\ldots,d$, due to delayed reactions. We need to take into account such changes in propensity functions when deriving  $P(\Delta,\mu)$.
 
-  As in the derivation of Gillespie’s exact SSA, $P(\Delta,\mu)d\Delta$ can be found from the fundamental premise Eq.(1) as
+As in the derivation of Gillespie’s exact SSA, $P(\Delta,\mu)d\Delta$ can be found from the fundamental premise Eq.(1) as
 
 ```math
 \begin{equation}

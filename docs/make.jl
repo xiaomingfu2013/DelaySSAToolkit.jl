@@ -21,6 +21,7 @@ makedocs(;
             "tutorials/bursty.md",
             "tutorials/delay_degradation.md",
             "tutorials/delay_multidegradation.md",
+            "tutorials/heterogenous_delay.md",
             ],
         "Algorithm" => [
             "algorithms/notations.md",      

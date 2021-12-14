@@ -1,4 +1,4 @@
-# A bursty model with delay
+# [A bursty model with delay](@id bursty_model)
 
 ## Model definition
 We study the following model which does not have an explicit gene state description
@@ -68,4 +68,5 @@ ensprob = EnsembleProblem(jprob)
 Then check with the exact probability distribution
 ![bursty](../assets/bursty.svg)
 
-[1] Qingchao Jiang#, Xiaoming Fu#, Shifu Yan#, Runlai Li, Wenli Du, Zhixing Cao\*, Feng Qian, Ramon Grima\*, "Neural network aided approximation and parameter inference of non-Markovian models of gene expression". Nature communications, (2021) 12(1), 1-12. [https://doi.org/10.1038/s41467-021-22919-1](https://doi.org/10.1038/s41467-021-22919-1)
+## Reference
+[1] Qingchao Jiang, Xiaoming Fu, Shifu Yan, Runlai Li, Wenli Du, Zhixing Cao, Feng Qian, Ramon Grima, "Neural network aided approximation and parameter inference of non-Markovian models of gene expression". Nature communications, (2021) 12(1), 1-12. [https://doi.org/10.1038/s41467-021-22919-1](https://doi.org/10.1038/s41467-021-22919-1)
