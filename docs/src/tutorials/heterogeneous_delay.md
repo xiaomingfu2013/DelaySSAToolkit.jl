@@ -1,4 +1,4 @@
-# A stochastic birth-death model with heterogeneous fixed delays
+# A birth-death model with heterogeneous fixed delays
 
 ## Model definition
 We study the following model with delayed production
@@ -6,7 +6,7 @@ We study the following model with delayed production
 A_n: \emptyset \rightarrow X \text{ triggers } X \Rightarrow Y \text{ after $\tau$ time}\\
 B_n: Y \rightarrow \emptyset
 ```
-This model is studied in 
+This model is studied in ...
 
 ### Markovian part
 ```julia
