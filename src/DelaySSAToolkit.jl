@@ -6,7 +6,7 @@ using Reexport
 import DiffEqBase: DiscreteCallback, init, solve, solve!, plot_indices, initialize!
 # Types and Structs
 using DiffEqJump
-import DiffEqJump: AbstractAggregatorAlgorithm, AbstractJumpAggregator, AbstractJump, AbstractSSAJumpAggregator, JumpProblem, ConstantRateJump, VariableRateJump, RegularJump, MassActionJump, JumpSet, SSAStepper
+import DiffEqJump: AbstractJumpAggregator, AbstractJump, JumpProblem, ConstantRateJump, VariableRateJump, RegularJump, MassActionJump, JumpSet, SSAStepper
 # Dependency graph functions
 import DiffEqJump: make_dependency_graph, add_self_dependencies!, var_to_jumps_map
 # other functions
@@ -35,6 +35,7 @@ include("delayaggregator/delayssajump.jl")
 include("delayaggregator/delayrejection.jl")
 include("delayaggregator/delaymnrm.jl")
 include("delayaggregator/delaydirect.jl")
+# include("delayaggregator/delaydirectCR.jl")
 
 include("delayproblem.jl")
 

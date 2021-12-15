@@ -14,7 +14,7 @@ end
 
 function DelayJumpProblem(jprob::JumpProblem, delayjumpsets::DelayJumpSet,de_chan0)
     @unpack prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump = jprob
-    if aggregator in [DelayRejection(), DelayMNRM(), DelayDirect()]
+    if aggregator<:AbstractDSSAJumpAggregator
     else
     error("DelayJumpProblem has to use one of the delay aggregators")
     end
@@ -28,7 +28,7 @@ end
 
 
 
-function DelayJumpProblem(prob, aggregator::AbstractAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
+function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
                      save_positions = typeof(prob) <: DiffEqBase.AbstractDiscreteProblem ? (false,true) : (true,true),
                      rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = true, useiszero = true, spatial_system=nothing, hopping_constants=nothing, kwargs...)
 

@@ -17,24 +17,17 @@ tspan = (0,tf)
 
 ps = [1e-4, 1e-2]
 τ = 20.
-function generate_traj(ps, τ)
-    dprob = DiscreteProblem(jumpsys,u0,tspan, ps)
-    delay_trigger_affect! = function (integrator, rng)
-        append!(integrator.de_chan[1], τ)
-    end
-    delay_trigger = Dict(1=>delay_trigger_affect!)
-    delay_complete = Dict(1=>[2=>1, 3=>-1])
-    delay_interrupt = Dict()
-    algo = DelayDirect()
-    # algo = DelayRejection()
-    delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-    jprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(false,false))
-    sol = solve(jprob, SSAStepper(), seed = 1234)
-    sol[end]   
+dprob = DiscreteProblem(jumpsys,u0,tspan, ps)
+delay_trigger_affect! = function (integrator, rng)
+    append!(integrator.de_chan[1], τ)
 end
-
-@time generate_traj(ps, τ)
-
+delay_trigger = Dict(1=>delay_trigger_affect!)
+delay_complete = Dict(1=>[2=>1, 3=>-1])
+delay_interrupt = Dict()
+algo = DelayDirect()
+# algo = DelayRejection()
+delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
+jprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(true,true))
 @time sol = solve(jprob, SSAStepper(), seed = 1234)
 using Plots; theme(:vibrant)
 fig = plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:svg)

@@ -73,7 +73,7 @@ function execute_jumps!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
     # execute jump
     update_state_delay!(p, integrator, u, t)
     # update current jump rates and times
-    update_dependent_rates!(p, integrator, u, params, t)
+    update_dependent_rates_delay!(p, integrator, u, params, t)
     nothing
 end
 
@@ -94,7 +94,7 @@ end
 
 
 # recalculate jump rates for jumps that depend on the just executed jump (p.next_jump)
-function update_dependent_rates!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
+function update_dependent_rates_delay!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
     if p.next_delay == nothing  # if next reaction is not delay reaction 
         @inbounds dep_rxs = p.dep_gr[p.next_jump]
     else
@@ -136,7 +136,6 @@ function update_dependent_rates!(p::DelayMNRMJumpAggregation, integrator, u, par
     end
     nothing
 end
-
 
 # reevaulate all rates, recalculate all jump times, and reinit the priority queue
 function fill_rates_and_get_times!(p::DelayMNRMJumpAggregation, u, params, t)

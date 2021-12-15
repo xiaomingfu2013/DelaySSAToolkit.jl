@@ -10,7 +10,7 @@ by S. Mauch and M. Stalzer, ACM Trans. Comp. Biol. and Bioinf., 8, No. 1, 27-35 
 
 const MINJUMPRATE = 2.0^exponent(1e-12)
 
-mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:PriorityTable,W<:Function} <: AbstractSSAJumpAggregator
+mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.PriorityTable,W<:Function} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int
     next_jump_time::T
@@ -58,10 +58,10 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
 
     # use the largest power of two that is <= the passed in minrate
     minrate = 2.0^minexponent
-    ratetogroup = rate -> priortogid(rate, minexponent)
+    ratetogroup = rate -> DiffEqJump.priortogid(rate, minexponent)
 
     # construct an empty initial priority table -- we'll reset this in init
-    rt = PriorityTable(ratetogroup, zeros(T, 1), minrate, 2*minrate)
+    rt = DiffEqJump.PriorityTable(ratetogroup, zeros(T, 1), minrate, 2*minrate)
     nd = nothing
     nnd = nothing
     ttnj = zero(et)
@@ -85,7 +85,7 @@ function aggregate(aggregator::DelayDirectCR, u, p, t, end_time, constant_jumps,
                            rates, affects!, save_positions, rng; num_specs=length(u), kwargs...)
 end
 
-## TODO
+
 # set up a new simulation and calculate the first jump / jump time
 function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
 
@@ -93,9 +93,9 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
     fill_rates_and_sum!(p, u, params, t)
 
     # setup PriorityTable
-    reset!(p.rt)
+    DiffEqJump.reset!(p.rt)
     for (pid,priority) in enumerate(p.cur_rates)
-        insert!(p.rt, pid, priority)
+        DiffEqJump.insert!(p.rt, pid, priority)
     end
 
     generate_jumps!(p, integrator, u, params, t)
@@ -105,31 +105,52 @@ end
 # execute one jump, changing the system state
 function execute_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
     # execute jump
-    u = update_state!(p, integrator, u)
+    u = update_state_delay!(p, integrator, u, t)
 
     # update current jump rates
     update_dependent_rates!(p, u, params, t)
     nothing
 end
 
+## TODO
 # calculate the next jump / jump time
 function generate_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
     p.next_jump_time  = t + randexp(p.rng) / p.sum_rate
     
     if p.next_jump_time < p.end_time
-        p.next_jump = sample(p.rt, p.cur_rates, p.rng)
+        p.next_jump = DiffEqJump.sample(p.rt, p.cur_rates, p.rng)
     end    
     nothing
 end
+
+
 
 
 ######################## SSA specific helper routines #########################
 
 # recalculate jump rates for jumps that depend on the just executed jump
 # requires dependency graph
-function update_dependent_rates!(p::DelayDirectCRJumpAggregation, u, params, t)
+function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, u, params, t)
     @unpack cur_rates, rates, ma_jumps, rt = p
     @inbounds dep_rxs = p.dep_gr[p.next_jump]
+
+    if p.next_delay == nothing  # if next reaction is not delay reaction 
+        @inbounds dep_rxs = p.dep_gr[p.next_jump]
+    else
+        # find the dep_rxs w.r.t next_delay vectors
+        vars_ = Vector{Vector{Int}}(undef,length(p.next_delay))
+        var_to_jumps = var_to_jumps_map(length(u),p.ma_jumps)
+        @inbounds for i in eachindex(p.next_delay)
+            vars_[i] = first.(integrator.delayjumpsets.delay_complete[p.next_delay[i]])
+        end
+        vars = reduce(vcat, vars_)
+        dep_rxs_ = Vector{Vector{Int}}(undef,length(vars))
+        @inbounds for i in eachindex(dep_rxs_)
+            dep_rxs_[i] = var_to_jumps[vars[i]]
+        end
+        dep_rxs = reduce(vcat, dep_rxs_)
+    end
+    @unpack cur_rates, rates, ma_jumps = p
     num_majumps = get_num_majumps(ma_jumps)
 
     @inbounds for rx in dep_rxs
@@ -139,9 +160,9 @@ function update_dependent_rates!(p::DelayDirectCRJumpAggregation, u, params, t)
         cur_rates[rx] = calculate_jump_rate(ma_jumps, num_majumps, rates, u, params, t, rx)
 
         # update table
-        update!(rt, rx, oldrate, cur_rates[rx])
+        DiffEqJump.update!(rt, rx, oldrate, cur_rates[rx])
     end
 
     p.sum_rate = groupsum(rt)
     nothing
-  end
+end
