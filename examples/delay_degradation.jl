@@ -58,10 +58,10 @@ using Random
 de_chan0 = [rand(Random.seed!(1234),0)]
 p = 0.
 tspan = (0.,tf)
-aggregatoralgo = DelayRejection()
+# aggregatoralgo = DelayRejection()
 # aggregatoralgo = DelayMNRM()
 # aggregatoralgo = DelayDirect()
-save_positions = (false,false)
+aggregatoralgo = DelayDirectCR()
 dprob = DiscreteProblem(u0, tspan, p)
 # DelaySSAToolkit.aggregate
 # DiffEqJump.aggregate
@@ -70,28 +70,27 @@ dprob = DiscreteProblem(u0, tspan, p)
 # djprob = DelayJumpProblem(jprob,delaysets,de_chan0)
 djprob = DelayJumpProblem(dprob, aggregatoralgo, jumpset, delaysets, de_chan0, save_positions = (false, false))
 
-sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1, save_delay_channel = false)
+
+sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1, save_delay_channel = true)
 sol =@time solve(djprob, SSAStepper(), seed = 2, save_delay_channel = true)
 
-
 using Plots, DiffEqBase; theme(:vibrant)
-plot(sol, label = ["X_A" "X_I"], fmt =:svg)
+ens_prob = EnsembleProblem(djprob)
+Sample_size = Int(10^4)
+@time ens = solve(ens_prob, SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
+plot(ens[1], label = ["X_A" "X_I"], fmt =:svg)
 savefig("docs/src/assets/delay_degradation1.svg")
 
-Sample_size = Int(1e4)
-ens_prob = EnsembleProblem(djprob)
-@time ens = solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
 
 using StatsBase
 mean_A(t) = mean([ens[s](t)[1] for s in 1:Sample_size])
 mean_I(t) = mean([ens[s](t)[2] for s in 1:Sample_size])
 
 timestamps = 0:0.1:tf
-using LaTeXStrings
 plot(timestamps,x_A.(timestamps),linewidth=3, label = "X_A Exact", xlabel = "Time", ylabel = "# of X_A")
 plot!(timestamps,mean_A.(timestamps),linewidth=3,line=:dash, label =  "X_A SSA")
 plot!(timestamps,x_I.(timestamps),linewidth=3, label = "X_I Exact")
-plot!(timestamps,mean_I.(timestamps),linewidth=3,line=:dash, legend = :topleft, label = L"X_I \text{SSA}")
+plot!(timestamps,mean_I.(timestamps),linewidth=3,line=:dash, legend = :topleft, label = "X_I SSA")
 savefig("docs/src/assets/delay_degradation2.svg")
 
 

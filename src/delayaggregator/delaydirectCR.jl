@@ -1,6 +1,5 @@
 """
-Composition-Rejection Direct Method (DirectCR), implementation combining
-features from the original article:
+A modifed Composition-Rejection Direct Method with delays (DelayDirectCR), implementation combining features from the original article and from the code in  `DiffEqJump` package: DirectCR :
 *A constant-time kinetic Monte Carlo algorithm for simulation of large biochemical reaction networks*,
 by A. Slepoy, A.P. Thompson and S.J. Plimpton, J. Chem. Phys, 128, 205101 (2008).
 and
@@ -105,20 +104,24 @@ end
 # execute one jump, changing the system state
 function execute_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
     # execute jump
-    u = update_state_delay!(p, integrator, u, t)
+    update_state_delay!(p, integrator, u, t)
 
     # update current jump rates
-    update_dependent_rates!(p, u, params, t)
+    update_dependent_rates_delay!(p, integrator, u, params, t)
     nothing
 end
 
-## TODO
 # calculate the next jump / jump time
 function generate_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
-    p.next_jump_time  = t + randexp(p.rng) / p.sum_rate
-    
+    dt_reaction  = randexp(p.rng) / p.sum_rate
+    dt_delay_generation!(p, integrator)
+    compare_delay!(p, integrator.de_chan, p.dt_delay, dt_reaction, t)
     if p.next_jump_time < p.end_time
-        p.next_jump = DiffEqJump.sample(p.rt, p.cur_rates, p.rng)
+        if p.next_delay != nothing
+            p.next_jump = 0
+        else
+            p.next_jump = DiffEqJump.sample(p.rt, p.cur_rates, p.rng)
+        end
     end    
     nothing
 end
@@ -130,10 +133,8 @@ end
 
 # recalculate jump rates for jumps that depend on the just executed jump
 # requires dependency graph
-function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, u, params, t)
-    @unpack cur_rates, rates, ma_jumps, rt = p
-    @inbounds dep_rxs = p.dep_gr[p.next_jump]
-
+function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
+    
     if p.next_delay == nothing  # if next reaction is not delay reaction 
         @inbounds dep_rxs = p.dep_gr[p.next_jump]
     else
@@ -150,7 +151,8 @@ function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, u, param
         end
         dep_rxs = reduce(vcat, dep_rxs_)
     end
-    @unpack cur_rates, rates, ma_jumps = p
+
+    @unpack cur_rates, rates, ma_jumps, rt = p
     num_majumps = get_num_majumps(ma_jumps)
 
     @inbounds for rx in dep_rxs
@@ -163,6 +165,6 @@ function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, u, param
         DiffEqJump.update!(rt, rx, oldrate, cur_rates[rx])
     end
 
-    p.sum_rate = groupsum(rt)
+    p.sum_rate = DiffEqJump.groupsum(rt)
     nothing
 end
