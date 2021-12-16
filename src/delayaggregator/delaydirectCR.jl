@@ -30,7 +30,7 @@ mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.Pr
     num_next_delay::Union{Nothing,Vector{Int}}
     time_to_next_jump::T
     dt_delay::T
-  end
+end
 
 function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
                                       maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool},

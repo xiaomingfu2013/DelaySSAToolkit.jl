@@ -1,12 +1,6 @@
 export DSSAIntegrator
-# mutable struct ChannelSolution{chanType}
-#     de_chan::Vector{chanType} # [(num_reaction, left_time),...]
-# end
 
-"""
-- de_chan: 记录delay_channel, Dict(), keys 记录哪一个delay_channel, values 记录在这个delay_channel中所等待的时间列表
-- prev_de_chan:  For saveat update
-"""
+
 mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,chanType, chanS} <: DiffEqBase.DEIntegrator{SSAStepper,Nothing,uType,tType}
     f::F
     u::uType
@@ -32,11 +26,7 @@ mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,chanType, chanS} <:
     save_delay_channel::Bool
 end
 
-"""
--delay_trigger: Dict 记录哪些 reactions会引发一个delay反应：keys：reaction的idx，values Dict 记录在第i个delay_channel 增加一个列向量 为delay的时间. 这里包含了两种情况，1.在delay前对状态改变(pre-delay)，这个是由reaction来完成的；2.在delay后对状体改变(post-delay)，这个是由delay_vec中完成的
--delay_interrupt: Dict reactions 能够对 delay channel中造成影响的 keys : reaction idx ->  returns a Function :  how the molecules in a channel or multiple channels  will be consumed
--delay_complete: Dict keys:第 i 个delay channel values 完成后会引起一个 (post-delay) state-update, values: stoichiometric vector 长度是反应物长度
-"""
+
 mutable struct DSSASolution{uType,uType2,DType,tType,rateType,P,A,IType,DE,chanS}
     u::uType
     u_analytic::uType2
@@ -215,8 +205,7 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
     DiffEqBase.finalize!(integrator.opts.callback, integrator.u, integrator.t, integrator)
 end
 
-"""
-"""
+
 function saveat_end_function!(integrator, prev_t)  
     # save last t
     end_time = integrator.sol.prob.tspan[2]
@@ -264,6 +253,9 @@ function saveat_function!(integrator, prev_t)
 end
 
 """
+    function saveat_function_direct_method!(integrator, prev_t)
+
+Note that this function does not change u and de_chan, but only takes the snapshots of u and de_chan accordingly
 """
 function saveat_function_direct_method!(integrator, prev_t)
     # Special to Direct method

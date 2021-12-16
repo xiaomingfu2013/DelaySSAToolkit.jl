@@ -1,6 +1,5 @@
 """
-- next_delay: the idx of delay channel 
-- num_next_delay: how many times needed for updating the states in the next_delay channel
+
 """
 mutable struct DelayMNRMJumpAggregation{T,S,F1,F2,RNG,DG,PQ} <: AbstractDSSAJumpAggregator
     next_jump::Int

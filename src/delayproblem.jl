@@ -14,9 +14,8 @@ end
 
 function DelayJumpProblem(jprob::JumpProblem, delayjumpsets::DelayJumpSet,de_chan0)
     @unpack prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump = jprob
-    if aggregator<:AbstractDSSAJumpAggregator
-    else
-    error("DelayJumpProblem has to use one of the delay aggregators")
+    if !(aggregator<:AbstractDSSAJumpAggregator)
+        error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
     end
     DelayJumpProblem(prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump, delayjumpsets, de_chan0)
 end
@@ -26,8 +25,9 @@ function DelayJumpProblem(p::P,a::A,dj::J,jc::C,vj::J2,rj::J3,mj::J4,djs::J5,de_
     DelayJumpProblem{iip,P,A,C,J,J2,J3,J4,J5,deType}(p,a,dj,jc,vj,rj,mj,djs,de_chan0)
 end
 
-
-
+"""
+TODO
+"""
 function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
                      save_positions = typeof(prob) <: DiffEqBase.AbstractDiscreteProblem ? (false,true) : (true,true),
                      rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = true, useiszero = true, spatial_system=nothing, hopping_constants=nothing, kwargs...)
@@ -77,6 +77,9 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, ju
                         jumps.regular_jump, maj, delayjumpsets, de_chan0)
 end
 
+"""
+TODO
+"""
 function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; kwargs...)
     statetoid = Dict(value(state) => i for (i,state) in enumerate(states(js)))
     eqs       = equations(js)
@@ -105,7 +108,9 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
 end
 
 
+"""
 # for remaking
+"""
 function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
 
   errmesg = """

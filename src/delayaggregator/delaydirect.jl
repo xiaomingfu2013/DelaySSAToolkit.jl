@@ -178,10 +178,7 @@ end
 """
     function create_Tstruct(de_chan::Vector{Vector{T}})
 
-calculate `Tstruct` according to the de_chan
-
-# Arguments
-- `de_chan::Vector{Vector{T}}`: where T is the tpye of `t`
+calculate `Tstruct` according to the de_chan.
 """
 function create_Tstruct(de_chan::Vector{Vector{T}}) where {T}
     N = sum(length.(de_chan))
@@ -202,9 +199,7 @@ function create_Tstruct(de_chan::Vector{Vector{T}}) where {T}
     Tstruct2 = Tstruct2[vecorder]
     Tstruct1, Tstruct2
 end
-"""
-Update state according up the next_jump;
-"""
+
 @inline function update_state_delay_Direct!(p::DelayDirectJumpAggregation, integrator, u, t)
     @unpack ma_jumps, next_jump, time_to_next_jump = p
     @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
@@ -234,11 +229,3 @@ Update state according up the next_jump;
     nothing
 end
 
-# function update_delay_complete_u!(u, next_delay_vec, num_next_delay_vec, delay_complete::Function)
-#     @inbounds for j in eachindex(next_delay_vec)
-#         next_delay = next_delay_vec[j]
-#         @inbounds for (i, ξ) in delay_complete[next_delay]
-#             u[i] += num_next_delay_vec[j]*ξ
-#         end
-#     end
-# end

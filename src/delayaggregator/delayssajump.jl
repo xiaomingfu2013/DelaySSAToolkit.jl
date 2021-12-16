@@ -1,5 +1,5 @@
 """
-An aggregator interface for SSA-like algorithms.
+An aggregator interface for Delay SSA-like algorithms.
 
 ### Required Fields
 - `next_jump`          # the next jump to execute
@@ -13,6 +13,10 @@ An aggregator interface for SSA-like algorithms.
 - `affects!`           # vector of affect functions for ConstantRateJumps
 - `save_positions`     # tuple for whether to save the jumps before and/or after event
 - `rng`                # random number generator
+- `next_delay`         # the index of the delay channel 
+- `num_next_delay`     # how many times needed for updating the states in the next_delay channel
+- `time_to_next_jump`  # the time to the next jump (time gap)
+- `dt_delay`           # the time to the next delay reaction
 
 ### Optional fields:
 - `dep_gr`             # dependency graph, dep_gr[i] = indices of reactions that should
@@ -22,7 +26,7 @@ abstract type AbstractDSSAJumpAggregator <: AbstractJumpAggregator end
 
 DiscreteCallback(c::AbstractDSSAJumpAggregator) = DiscreteCallback(c, c, initialize = c, save_positions = c.save_positions)
 
-########### The following routines are templates for all SSAs ###########
+########### The following routines are templates for all Delay SSAs ###########
 ########### Generally they should not need to be overloaded.  ###########
 
 ## Users will normally define (see direct.jl for examples):
@@ -146,12 +150,10 @@ end
     nothing
 end
 
-
-
-
-
 """
-Compare delay dt with reaction dt 
+    function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_reaction, t)
+
+Compare dt_delay and dt_reaction.
 """
 function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_reaction, t)
     if  dt_reaction < dt_delay
@@ -172,9 +174,10 @@ function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_rea
 end
 
 """
-find the minimal dt_delay in various delay channel
-"""
+    function find_next_delay_dt!(p, integrator)
 
+Find the minimal dt_delay in all delay channels.
+"""
 function find_next_delay_dt!(p, integrator)
     de_chan = integrator.de_chan
     val_vec = Vector{typeof(integrator.t)}(undef,length(de_chan))
@@ -184,18 +187,12 @@ function find_next_delay_dt!(p, integrator)
     p.dt_delay = minimum(val_vec)
 end
 
-"""
-Shift delay channel according to ttnj
-"""
 @inline function shift_delay_channel!(de_chan::Vector{Vector{T}},ttnj::T) where {T<:Real}
     for idx in eachindex(de_chan)
         de_chan[idx] .-= ttnj
     end
 end
 
-"""
-Update the delay channel 
-"""
 @inline function update_delay_channel!(de_chan::Vector{Vector{T}}) where {T<:Real}
     for idx in eachindex(de_chan)
         filter!(x->x.>zero(T), de_chan[idx])
@@ -254,30 +251,6 @@ function execute_delay_complete!(delay_complete::Function, num_next_delay::Int64
         delay_complete(integrator, rng)
     end
 end
-# """
-#     function find_next_delay(de_chan::Vector{Vector{T}})
-
-# Find the minimum
-# """
-# function find_next_delay(de_chan::Vector{Vector{T}}) where {T}
-#     min_vec = Vector{T}(undef,length(de_chan))
-#     for i in eachindex(de_chan)
-#         min_vec[i] = isempty(de_chan[i]) ? Inf : minimum(de_chan[i])
-#     end
-#     argmin(min_vec)
-# end
-
-# """
-# check number of next delay
-# """
-# function check_num_next_delay(one_de_chan,dt_delay)
-#     count(i->(i==dt_delay),one_de_chan)
-# end
-
-
-# """
-# find the minimal dt_delay in various delay channel
-# """
 
 """
     function find_num_in_vec(A::Vector{Vector{T}}, position_index::Vector{Int64}, x::T)
