@@ -58,10 +58,10 @@ using Random
 de_chan0 = [rand(Random.seed!(1234),0)]
 p = 0.
 tspan = (0.,tf)
-# aggregatoralgo = DelayRejection()
+aggregatoralgo = DelayRejection()
 # aggregatoralgo = DelayMNRM()
 # aggregatoralgo = DelayDirect()
-aggregatoralgo = DelayDirectCR()
+# aggregatoralgo = DelayDirectCR()
 dprob = DiscreteProblem(u0, tspan, p)
 # DelaySSAToolkit.aggregate
 # DiffEqJump.aggregate

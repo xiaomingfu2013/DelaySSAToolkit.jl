@@ -1,61 +1,38 @@
 using DelaySSAToolkit
+using Catalyst
 # using Plots
 ################################################################################
 # the following example illustrates how to deal with a oscillatory system
 # d: X-> 0; k1/(1+Y^2): 0-> X; [trigger X-> Y after τ time;] k2*Y/(1+Y):  Y-> 0;  
 
-rate1 = [1e-2]
-reactant_stoich = [[1=>1]]
-net_stoich = [[1=>-1]]
-mass_jump = MassActionJump(rate1, reactant_stoich, net_stoich; scale_rates =false)
-
-rate2 = (u,p,t) -> 1/(1+u[2]^2)
-affect2! = function (integrator)
-  integrator.u[1] += 1
+rn = @reaction_network begin
+    1/(1+Y^2), 0 --> X
+    1/(1+Y),   Y --> 0
 end
-cons_jump1 = ConstantRateJump(rate2,affect2!)
+jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
 
-rate3 = (u,p,t) -> u[2]/(1+u[2])
-affect3! = function (integrator)
-  integrator.u[2] -= 1
+u0 = [0,0]
+de_chan0 = [[]]
+tf = 400.
+tspan = (0,tf)
+τ = 20.
+dprob = DiscreteProblem(jumpsys, u0, tspan)
+
+delay_trigger_affect! = function (integrator, rng)
+  append!(integrator.de_chan[1], τ)
 end
-cons_jump2 = ConstantRateJump(rate3,affect3!)
+delay_trigger = Dict(1=>delay_trigger_affect!)
+delay_complete = Dict(1=>[2=>1, 1=>-1])
+delay_interrupt = Dict()
+delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 
-jumpsets = JumpSet((),(cons_jump1,cons_jump2,),nothing,[mass_jump])
+djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
+sol = solve(djprob, SSAStepper(),seed=1234)
 
-delay_trigger_affect! = function (de_chan, rng)
-   append!(de_chan[1], 10.)
-end
-
-delay_trigger =Dict(2=>delay_trigger_affect!) # 可以 trigger 多个delay_reactions 这个表示 10s 后同时增加作用 两次 1 号delay 反应 
-delay_complete = Dict(1=>[1=>-1,2=>1])
-
-
-delay_affect! = function (de_chan, rng)
-   i = rand(rng, 1:length(de_chan[1]))
-   deleteat!(de_chan[1],i)
-end
-# typeof(delay_affect!)
-delay_period = Dict(1=>delay_affect!) # reactions 能够对 delay channel中造成影响的 keys : reaction idx -> delay idx + how many molecules will be consumed 
-# delay_period[1](Dict(1=>[1,2,3]))
-
-delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_period)
-
-u0 = [1,0]
-tf = 20.
-de_chan0 = [[10.]]
-p = 0.
-tspan = (0.,tf)
-aggregatoralgo = DelayDirect()
-save_positions = (false,false)
-dprob = DiscreteProblem(u0, tspan, p)
-djprob = DelayJumpProblem(dprob, DelayRejection(), jumpsets, delaysets, de_chan0, save_positions = (false,false))
-sol = solve(djprob, SSAStepper(),seed=1234, saveat =.02)
-
-djprob2 = DelayJumpProblem(dprob, DelayRejection(), jumpsets, delaysets, de_chan0, save_positions = (true,true))
+djprob2 = DelayJumpProblem(jumpsys, dprob, DelayDirect(), delayjumpset, de_chan0, save_positions = (true,true))
 sol2 = solve(djprob2, SSAStepper(),seed=1234)
 
 plot(sol.t,[sol.u[i][1] for i in 1:length(sol.u)])
-scatter!(sol2.t,[sol2.u[i][1] for i in 1:length(sol2.u)],legend = false)
 plot!(sol.t,[sol.u[i][2] for i in 1:length(sol.u)])
-scatter!(sol2.t,[sol2.u[i][2] for i in 1:length(sol2.u)],legend = false)
+scatter(sol2.t,[sol2.u[i][1] for i in 1:length(sol2.u)],legend = false)
+scatter(sol2.t,[sol2.u[i][2] for i in 1:length(sol2.u)],legend = false)

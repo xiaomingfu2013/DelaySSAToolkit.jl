@@ -103,12 +103,11 @@ Recalculate the rate for the jump with index `rx`.
 end
 
 
-
 @inline function dt_delay_generation!(p, integrator)
     next_jump = p.next_jump
     ttnj = p.time_to_next_jump
     @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
-    if next_jump !=nothing || next_jump in delay_trigger_set || next_jump in delay_interrupt_set
+    if p.next_delay != nothing || any(set->next_jump in set, [delay_interrupt_set, delay_trigger_set])
         find_next_delay_dt!(p, integrator)
     else
         p.dt_delay -= ttnj
@@ -160,11 +159,9 @@ function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_rea
         ttnj = dt_reaction
         next_delay = nothing
         num_next_delay = nothing
-    elseif dt_reaction >= dt_delay && dt_delay < Inf
+    else
         ttnj = dt_delay
         next_delay, num_next_delay = find_next_delay_vec(de_chan, ttnj)
-    else
-        error("Infinite waiting time for next jump")
     end
     p.time_to_next_jump = ttnj
     p.next_delay = next_delay
@@ -180,22 +177,25 @@ Find the minimal dt_delay in all delay channels.
 """
 function find_next_delay_dt!(p, integrator)
     de_chan = integrator.de_chan
-    val_vec = Vector{typeof(integrator.t)}(undef,length(de_chan))
+    T = typeof(integrator.t)
+    val_vec = Vector{T}(undef,length(de_chan))
     @inbounds for i in eachindex(de_chan)
-        val_vec[i] = isempty(de_chan[i]) ? Inf : minimum(de_chan[i])
+        val_vec[i] = isempty(de_chan[i]) ? typemax(T) : minimum(de_chan[i])
     end
     p.dt_delay = minimum(val_vec)
 end
 
 @inline function shift_delay_channel!(de_chan::Vector{Vector{T}},ttnj::T) where {T<:Real}
-    for idx in eachindex(de_chan)
-        de_chan[idx] .-= ttnj
+    @inbounds for idx in eachindex(de_chan)
+        for j in eachindex(de_chan[idx])
+            de_chan[idx][j] -= ttnj
+        end
     end
 end
 
 @inline function update_delay_channel!(de_chan::Vector{Vector{T}}) where {T<:Real}
     for idx in eachindex(de_chan)
-        filter!(x->x.>zero(T), de_chan[idx])
+        filter!(x->x>zero(T), de_chan[idx])
     end
 end
 """

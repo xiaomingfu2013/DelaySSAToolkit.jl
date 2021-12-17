@@ -7,7 +7,7 @@ rn = @reaction_network begin
 end ρ r
 
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false)
-
+states(jumpsys)
 
 u0 = [999,1,0,0]
 de_chan0 = [[]]
@@ -26,7 +26,7 @@ delay_complete = Dict(1=>[2=>1, 3=>-1])
 delay_interrupt = Dict()
 # algo = DelayDirect()
 # algo = DelayDirectCR()
-# algo = DelayRejection()
+algo = DelayRejection()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(true,true))
 @time sol = solve(jprob, SSAStepper(), seed = 1234)
