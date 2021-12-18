@@ -64,7 +64,7 @@ end
 function initialize!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
     fill_rates_and_get_times!(p, u, params, t)
     
-    p.dt_delay = find_next_delay_dt!(p, integrator)
+    find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
     nothing
 end

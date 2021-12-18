@@ -1,6 +1,8 @@
 using DelaySSAToolkit
-using Test
+using Test, SafeTestsets
 
-@testset "DelaySSAToolkit.jl" begin
-    # Write your tests here.
+@time begin
+    @time @safetestset "Algorithm accuracy" begin
+        include("bursty_model.jl")
+    end 
 end
