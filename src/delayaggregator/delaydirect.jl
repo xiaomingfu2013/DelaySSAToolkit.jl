@@ -42,7 +42,6 @@ end
 
 function initialize!(p::DelayDirectJumpAggregation, integrator, u, params, t)
     p.shadow_integrator.delayjumpsets = integrator.delayjumpsets
-    p.dt_delay = find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
     nothing
 end

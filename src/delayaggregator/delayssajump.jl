@@ -183,6 +183,7 @@ function find_next_delay_dt!(p, integrator)
         val_vec[i] = isempty(de_chan[i]) ? typemax(T) : minimum(de_chan[i])
     end
     p.dt_delay = minimum(val_vec)
+    nothing
 end
 
 @inline function shift_delay_channel!(de_chan::Vector{Vector{T}},ttnj::T) where {T<:Real}
@@ -214,6 +215,7 @@ end
 """
 function update_delay_trigger!(p, integrator)
     delay_trigger = integrator.delayjumpsets.delay_trigger
+
     execute_delay_trigger!(delay_trigger[p.next_jump], p, integrator)
 end
 function execute_delay_trigger!(delay_trigger_affect!::Function, p, integrator)

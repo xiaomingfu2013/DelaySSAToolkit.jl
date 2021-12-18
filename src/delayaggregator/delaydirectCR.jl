@@ -96,7 +96,7 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
     for (pid,priority) in enumerate(p.cur_rates)
         DiffEqJump.insert!(p.rt, pid, priority)
     end
-    p.dt_delay = find_next_delay_dt!(p, integrator)
+    find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
     nothing
 end
