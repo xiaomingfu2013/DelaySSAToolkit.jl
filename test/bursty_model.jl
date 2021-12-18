@@ -31,7 +31,6 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 
 
 algos = [DelayDirect(), DelayMNRM(), DelayRejection(), DelayDirectCR()]
-dist_list = []
 timestamps = [10, 20, 50, 200]
 
 bursty_mean(t) = a*b*min(t,τ)
@@ -50,3 +49,4 @@ for alg in algos
         @test var(sol_end) ≈ bursty_var(t_) atol = reltol*bursty_var(t_)
     end
 end
+
