@@ -135,6 +135,8 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
   end
   if any(k -> k in keys(kwargs), propertynames(thing.delayjumpsets)) 
       delayjumpsets = update_delayjumpsets(thing.delayjumpsets; kwargs...)
+  else
+      delayjumpsets = thing.delayjumpsets
   end
   de_chan0 = :de_chan0 ∈ keys(kwargs) ? kwargs[:de_chan0] : thing.de_chan0
 
