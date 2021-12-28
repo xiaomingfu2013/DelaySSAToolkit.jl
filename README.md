@@ -16,6 +16,7 @@ DelaySSAToolkit.jl is a tool developed on top of [DiffEqJump.jl](https://github.
 - Priority queue and dependency graph are integrated for high computational performance;
 - Ecosystem with [Catalyst](https://github.com/SciML/Catalyst.jl), [DiffEqJump](https://github.com/SciML/DiffEqJump.jl), [DifferentialEquations](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
 
+More information is available in the [documentation](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/). Please feel free to open issues and submit pull requests!
 ## Installation
 DelaySSAToolkit can be installed through the Julia package manager:
 ```julia 
@@ -29,7 +30,7 @@ Pkg.instantiate()
 ```
 for the first time after installation.
 
-More information is available in the [documentation](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/). Please feel free to open issues and submit pull requests!
+
 
 ## Examples
 ### SEIR model
