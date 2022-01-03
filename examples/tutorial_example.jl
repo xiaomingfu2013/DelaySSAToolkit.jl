@@ -70,21 +70,3 @@ djprob = DelayJumpProblem(dprob, algo, jumpset, delayjumpset, de_chan0, save_pos
 sol = solve(djprob, SSAStepper(), seed = 1234)
 using Plots
 fig = plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:svg)
-
-
-using PkgTemplates
-tpl = Template(;
-    user = "palmtree2013",
-    authors = "Xiaoming Fu",
-    julia=v"1.6",
-    dir="~/.julia/dev",
-    plugins=[
-        Git(; manifest=true, ssh=false),
-        GitHubActions(; x86=true),
-        Codecov(),
-        Documenter{GitHubActions}(),
-        Develop(),
-    ],
-)
-
-tpl("DelaySSAdocs.jl")
