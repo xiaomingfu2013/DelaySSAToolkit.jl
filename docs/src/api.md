@@ -1,7 +1,7 @@
 # Main API
 
 ```@meta
-CurrentModule = DelaySSAdocs
+CurrentModule = DelaySSAToolkit
 ```
 
 ```@docs

@@ -1,5 +1,5 @@
 ```@meta
-CurrentModule = DelaySSAdocs
+CurrentModule = DelaySSAToolkit
 ```
 
 # [DelaySSAToolkit](@id DelaySSAToolkit_doc)

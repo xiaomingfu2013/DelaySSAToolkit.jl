@@ -1,4 +1,4 @@
-# DelaySSAdocs
+# DelaySSAToolkit
 
 <!-- [![Stable](https://img.shields.io/badge/docs-stable-blue.svg)](https://palmtree2013.github.io/DelaySSAdocs.jl/stable) -->
 [![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://palmtree2013.github.io/DelaySSAdocs.jl/dev)
