@@ -25,7 +25,15 @@ function DelayJumpProblem(p::P,a::A,dj::J,jc::C,vj::J2,rj::J3,mj::J4,djs::J5,de_
     DelayJumpProblem{iip,P,A,C,J,J2,J3,J4,J5,deType}(p,a,dj,jc,vj,rj,mj,djs,de_chan0)
 end
 
+
 """
+    function DelayJumpProblem(prob::DiscreteProblem, aggregator::AbstractDelayAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0)
+# Fields
+- `prob::DiscreteProblem`
+- `aggregator::AbstractDelayAggregatorAlgorithm`
+- `jumps::JumpSet`
+- `delayjumpsets::DelayJumpSet`
+- `de_chan0::Vector{Vector{T}}` 
 TODO
 """
 function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
@@ -78,6 +86,13 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, ju
 end
 
 """
+    function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; kwargs...)
+# Fields
+- `js::JumpSystem`: ...
+- `prob::DiscreteProblem`: ...
+- `aggregator::AbstractDelayAggregatorAlgorithm`
+- `delayjumpsets::DelayJumpSet`
+- `de_chan0::Vector{Vector{T}}` 
 TODO
 """
 function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; kwargs...)
@@ -109,7 +124,7 @@ end
 
 
 """
-TODO for remaking
+for remaking
 """
 function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
 
