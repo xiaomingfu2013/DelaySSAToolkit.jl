@@ -5,9 +5,10 @@ The number of discarded $\Delta$ will be approximately equal to the number of de
 The principle of Direct Method is the same as that of the original Gillespie Algorithm and the Rejection Method above: use one random variable to calculate when the next reaction initiates and use another random variable to calculate which reaction occurs at that future time. However, Direct Method updates the state of the system and propensity functions due to stored delayed reactions during the search for the next initiation time. In this way he ensures that no random variables are discarded as in the Rejection Method. 
 
 ## Algorithm
+
 Suppose that at time $t$ there are ongoing delayed reactions set to complete at times $t+T_1, t+T_2, \ldots, t+T_d$. Define $T_0=0$ and $T_{d+1}=\infty$.
 
-Define *Tstruct*, whose *i*-th $(i=1,\dots,d)$ row stores $T_i$ and the index, $\mu_i$, of the reaction that $T_i$ is associated with.
+Define *Tstruct*, whose $i$th $(i=1,\dots,d)$ row stores $T_i$ and the index, $\mu_i$, of the reaction that $T_i$ is associated with.
 1. Initialize. Set the initial number of molecules of each species and set  $t=0$. Clear *Tstruct*.
 2. Calculate the propensity of function $a_k$, for each reaction $k \in 1,\ldots, M$.
 3. Set $a_0=\sum_{k=1}^M{a_k}$.
@@ -19,14 +20,10 @@ Define *Tstruct*, whose *i*-th $(i=1,\dots,d)$ row stores $T_i$ and the index, $
    - Else
      - Set $i=1$, $a_t = a_0T_1$ and  $F=1-e^{-a_t}$.
      -  While $F < r_1$
-       - Update the state vector $x_1$ due to the finish of the delayed reaction $t+T_i$.
-       - If $i<d$
+         - Update the state vector $\mathbf{x}$ due to the finish of the delayed reaction $t+T_i$.
          - Calculate propensity $a_k(t+T_{i+1})$ due to the finish of the delayed reaction at $t+T_{i+1}$ and calculate $a_0(t+T_{i+1})$.
          - Update $a_t=a_t+a_0(t+T_{i+1})(T_{i+1}-T_i)$.
-         - Update $F=1-e^{-a_t} $, $i=i+1$.
-       - Else
-         - Set $F=1$
-       - EndIf
+         - Update $F=1-e^{-a_t},i=i+1$.
      - EndWhile
      - Calculate Calculate propensity $a_k(t+T_i)$ due to the finish of the delayed reaction at $t+T_i$ and calculate $a_0(t+T_i)$.
      - Set $\Delta=T_i-(\ln(1-r_1)+a_t-a_0(t+T_i)(T_{i+1}-T_i))/a_0(t+T_i)$.
@@ -38,15 +35,15 @@ Define *Tstruct*, whose *i*-th $(i=1,\dots,d)$ row stores $T_i$ and the index, $
    \sum_{k=1}^{\mu-1} a_k < r_2 \leq \sum_{k=1}^{\mu}a_k
    ```
    where the $a_k$ and $a_0$ are generated in step 4.
-8. If $\mu\in \text{ND}$ , update the number of each molecular species according to the reaction $\mu$
+8. If $\mu\in \text{ND}$ , update the number of each molecular species according to the reaction $\mu$.
 9. If $\mu\in \text{CD}$, update *Tstruct* by adding the row $[\tau_\mu,\mu]$ so that $Tstruct(i,1)<Tstruct(i+1,1)$ still holds for all **i**.
 10. If $\mu\in \text{ICD}$, update the system according to the initiation of $\mu$ and update *Tstruct* by adding the row $[\tau_\mu,\mu]$ so that $Tstruct(i,1)<Tstruct(i+1,1)$ still holds for all $i$.
 11. Set $t=t+\Delta$.
 12. Return to Step 2 or quit.
 
-Remark. Notice that in the above pseudo-code, we modified the Step 4. in the orignal algorithm but both are equivalent.
+Remark. Notice that in the above pseudo-code, we modified the Step 4 in the orignal algorithm for computational efficiency but both are equivalent.
 
-## Reference
+## References
 
 [1] Xiaodong Cai, "Exact stochastic simulation of coupled chemical reactions with delays", The Journal of Chemical Physics 126, 124108(2007).
-[https://doi/10.1063/1.2710253](https://aip.scitation.org/doi/10.1063/1.2710253).
+[https://doi/10.1063/1.2710253](https://aip.scitation.org/doi/10.1063/1.2710253)
