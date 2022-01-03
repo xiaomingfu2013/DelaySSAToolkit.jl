@@ -16,8 +16,6 @@ DelaySSAToolkit.jl is a tool developed on top of [DiffEqJump.jl](https://github.
 
 More information is available in the [documentation](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/). Please feel free to open issues and submit pull requests!
 
-
-More information is available in the [documentation](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/). Please feel free to open issues and submit pull requests!
 ## Installation
 DelaySSAToolkit can be installed through the Julia package manager:
 ```julia 
