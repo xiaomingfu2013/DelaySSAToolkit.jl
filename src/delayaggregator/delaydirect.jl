@@ -1,6 +1,3 @@
-"""
-#TODO
-"""
 mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,IType} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int
@@ -58,7 +55,7 @@ function generate_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t
     nothing
 end
 """
-Create delta based on the shawdow variable u_shadow
+    Create delta based on the shawdow variable u_shadow
 """
 @inline function generate_delta!(p::DelayDirectJumpAggregation, integrator, params, t)
     @unpack delay_complete = integrator.delayjumpsets

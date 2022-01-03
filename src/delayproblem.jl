@@ -124,7 +124,7 @@ end
 
 
 """
-for remaking
+  for remaking
 """
 function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
 

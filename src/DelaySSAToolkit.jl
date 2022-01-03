@@ -29,7 +29,8 @@ import Base.Threads
 else
   seed_multiplier() = 1
 end
-include("delaysystem.jl")
+
+include("utils.jl")
 include("delayaggregator/aggregators.jl")
 include("delayaggregator/delayssajump.jl")
 include("delayaggregator/delayrejection.jl")

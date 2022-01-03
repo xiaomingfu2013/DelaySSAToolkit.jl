@@ -1,6 +1,3 @@
-"""
-
-"""
 mutable struct DelayRejectionJumpAggregation{T,S,F1,F2,RNG} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int

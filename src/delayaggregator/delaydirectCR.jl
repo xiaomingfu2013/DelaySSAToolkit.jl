@@ -1,12 +1,3 @@
-"""
-A modifed Composition-Rejection Direct Method with delays (DelayDirectCR), implementation combining features from the original article and from the code in  `DiffEqJump` package: DirectCR :
-*A constant-time kinetic Monte Carlo algorithm for simulation of large biochemical reaction networks*,
-by A. Slepoy, A.P. Thompson and S.J. Plimpton, J. Chem. Phys, 128, 205101 (2008).
-and
-*Efficient Formulations for Exact Stochastic Simulation of Chemical Systems*,
-by S. Mauch and M. Stalzer, ACM Trans. Comp. Biol. and Bioinf., 8, No. 1, 27-35 (2010).
-"""
-
 const MINJUMPRATE = 2.0^exponent(1e-12)
 
 mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.PriorityTable,W<:Function} <: AbstractDSSAJumpAggregator
