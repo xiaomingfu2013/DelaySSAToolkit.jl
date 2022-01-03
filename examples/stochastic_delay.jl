@@ -32,7 +32,7 @@ ensprob = EnsembleProblem(djprob)
 using DifferentialEquations.EnsembleAnalysis, Plots; theme(:vibrant)
 last_slice = componentwise_vectors_timepoint(ens, tf)
 histogram(last_slice[3],bins=0:1:60,normalize=:pdf, label = "LogNormal(1,sqrt(2))",fillalpha = 0.6, linecolor = :orange,fmt=:svg,xlabel = "# of products", ylabel = "Probability")
-savefig("docs/src/assets/stochastic_delay1.svg")
+# savefig("docs/src/assets/stochastic_delay1.svg")
 
 delay_trigger_affect2! = function (integrator, rng)
     τ=rand(LogNormal(0,2))+120
@@ -47,4 +47,4 @@ djprob2 = DelayJumpProblem(dprob, DelayRejection(), jumpset, delayjumpset2, de_c
 
 last_slice2 = componentwise_vectors_timepoint(ens2, tf)
 histogram(last_slice2[3],bins=0:1:60,normalize=:pdf, label = "LogNormal(0,2)",fillalpha = 0.6, linecolor = :orange,fmt=:svg,xlabel = "# of products", ylabel = "Probability")
-savefig("docs/src/assets/stochastic_delay2.svg")
+# savefig("docs/src/assets/stochastic_delay2.svg")

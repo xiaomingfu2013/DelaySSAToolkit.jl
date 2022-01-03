@@ -57,15 +57,5 @@ prob2 = EnsembleProblem(djprob, prob_func = prob_func2)
 
 last_slice = componentwise_vectors_timepoint(ens2, tf)
 histogram(last_slice[1], bins=0:20:1000, normalize=:pdf, xlabel = "# of X individuals", ylabel = "Probability",fillalpha = 0.6, linecolor = :orange, legend = false)
-savefig("docs/src/assets/heterogeneous_delay2.svg")
+# savefig("docs/src/assets/heterogeneous_delay2.svg")
 
-
-new_djprob = remake(djprob, delay_trigger = Dict(2=>[1=>2]), p = [1,2.], de_chan0 = [[1.]], u0 = [1,0], delay_complete = Dict(2=>[2=>-1]), delay_interrupt_set = [2])
-
-new_djprob.prob.p
-new_djprob.massaction_jump
-new_djprob.de_chan0
-new_djprob.prob.u0
-new_djprob.delayjumpsets
-
-djprob.delayjumpsets

@@ -1,6 +1,3 @@
-"""
-
-"""
 mutable struct DelayMNRMJumpAggregation{T,S,F1,F2,RNG,DG,PQ} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int

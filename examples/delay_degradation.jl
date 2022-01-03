@@ -14,8 +14,6 @@
 using DiffEqJump, Catalyst
 using DelaySSAToolkit 
 
-
-
 rn = @reaction_network begin
    C, 0 --> Xₐ
    γ, Xₐ --> 0
@@ -24,8 +22,6 @@ rn = @reaction_network begin
 end C γ β
 
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
-
-
 
 u0 = [0, 0]
 tf = 30.
@@ -63,7 +59,7 @@ ens_prob = EnsembleProblem(djprob)
 Sample_size = Int(10^4)
 @time ens = solve(ens_prob, SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
 plot(ens[1], label = ["X_A" "X_I"], fmt =:svg)
-savefig("docs/src/assets/delay_degradation1.svg")
+# savefig("docs/src/assets/delay_degradation1.svg")
 
 
 a = β + γ 
@@ -80,7 +76,7 @@ plot(timestamps,x_A.(timestamps),linewidth=3, label = "X_A Exact", xlabel = "Tim
 plot!(timestamps,mean_A.(timestamps),linewidth=3,line=:dash, label =  "X_A SSA")
 plot!(timestamps,x_I.(timestamps),linewidth=3, label = "X_I Exact")
 plot!(timestamps,mean_I.(timestamps),linewidth=3,line=:dash, legend = :topleft, label = "X_I SSA")
-savefig("docs/src/assets/delay_degradation2.svg")
+# savefig("docs/src/assets/delay_degradation2.svg")
 
 
 x_A.(timestamps)

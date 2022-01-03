@@ -32,7 +32,7 @@ delay_trigger_affect! = function (de_chan, rng)
    append!(de_chan[2], τ)
 end
 delay_trigger = Dict(3=>delay_trigger_affect!)
-delay_complete = Dict(1=>[2=>-1],2=>[3=>-1]) # 1 代表 delay channel idx , value 代表 对 第 2 个 species -1 
+delay_complete = Dict(1=>[2=>-1],2=>[3=>-1])
 
 delay_affect1! = function (de_chan, rng)
     i = rand(rng, 1:length(de_chan[1]))
@@ -44,11 +44,6 @@ delay_affect2! = function (de_chan, rng)
 end
 delay_interrupt = Dict(4=>delay_affect1!,5=>delay_affect2!) 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
-
-#  vars = [1,2]
-#  var_to_jumps = DelaySSA.var_to_jumps_map(2,mass_jump)
-#  dep_rxs = reduce(vcat,[var_to_jumps[vars[i]] for i in eachindex(vars)])
-
 
 u0 = [0,0,0]
 tf = 30.
@@ -62,15 +57,9 @@ aggregatoralgo = DelayRejection()
 # aggregatoralgo = DelayDirect()
 save_positions = (false,false)
 dprob = DiscreteProblem(u0, tspan, p)
-# jprob = JumpProblem( )
 djprob = DelayJumpProblem(dprob, aggregatoralgo, jumpsets,delaysets,de_chan0,save_positions = (false,false))
 
 #Fine tunning
-# aggregator = djprob.jump_callback.discrete_callbacks[1].initialize
-
-# integrator = DiffEqBase.__init(djprob,SSAStepper())
-# integrator.cb.affect!
-
 sol =@time solve(djprob, SSAStepper(),seed=10, saveat =.1, save_delay_channel = false)
 
 
