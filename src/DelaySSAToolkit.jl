@@ -20,7 +20,7 @@ import ModelingToolkit: JumpSysMajParamMapper, assemble_maj, assemble_vrj, assem
 using DataStructures
 import DataStructures: update!
 
-using UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays
+using UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays, DocStringExtensions
 using FunctionWrappers, ArrayInterface, RandomNumbers
 using StaticArrays, Base.Threads
 import Base.Threads
