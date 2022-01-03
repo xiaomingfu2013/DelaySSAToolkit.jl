@@ -1,17 +1,19 @@
 using DiffEqJump, DelaySSAToolkit
 using Random, Distributions
 
-rate1 = [0.0282, 0.609, 2.11]
-reactant_stoich = [[2=>1],[1=>1],[1=>1]]
-net_stoich = [[1=>1,2=>-1],[1=>-1,2=>1],[3=>1]]
-mass_jump = MassActionJump(rate1, reactant_stoich, net_stoich; scale_rates =false)
-jumpset = JumpSet((),(),nothing,mass_jump)
+rn = @reaction_network begin
+    kon, Goff --> Gon
+    koff, Gon --> Goff
+    ρ, Gon --> Gon + N
+end kon koff ρ
+jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
 
 u0 = [1,0,0]
 de_chan0 = [[]]
 tf = 2000.
 tspan = (0,tf)
-dprob = DiscreteProblem(u0, tspan)
+p = [0.0282,0.609,2.11]
+dprob = DiscreteProblem(u0, tspan, p)
 
 delay_trigger_affect! = function (integrator, rng)
     τ=rand(LogNormal(1,sqrt(2)))+120
@@ -22,7 +24,7 @@ delay_complete = Dict(1=>[3=>-1])
 delay_interrupt = Dict() 
 delayjumpset = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 
-djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delayjumpset, de_chan0, save_positions=(false,false))
+djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false,false))
 
 ensprob = EnsembleProblem(djprob)
 @time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
