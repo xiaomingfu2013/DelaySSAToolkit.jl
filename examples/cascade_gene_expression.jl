@@ -14,7 +14,7 @@ net_stoich = [[1=>-1,2=>1,5=>-1],[1=>1,2=>-1,5=>1],[],[5=>1],[3=>-1],[4=>-1],[5=
 mass_jump = MassActionJump(rate, reactant_stoich, net_stoich; scale_rates =false)
 jumpset = JumpSet((),(),nothing,mass_jump)
 
-
+rn = 
 
 
 # reaction_idx =>  Dict( delay_react_idx => delay_time )
