@@ -77,7 +77,6 @@ end
         de_chan_ = deepcopy(p.shadow_integrator.de_chan)
         aₜ_ = zero(aₜ)
         while F < r1
-            # 用 不改变内在函数的方法这边只是想修改
             p.next_delay = [T2[i]]
             update_delay_complete!(p, p.shadow_integrator)
 

@@ -3,7 +3,7 @@ mutable struct DelayMNRMJumpAggregation{T,S,F1,F2,RNG,DG,PQ} <: AbstractDSSAJump
     prev_jump::Int
     next_jump_time::T
     end_time::T
-    cur_rates::Vector{T} # cur_rates here is the cumsum of rates
+    cur_rates::Vector{T}
     sum_rate::T
     ma_jumps::S
     rates::F1
