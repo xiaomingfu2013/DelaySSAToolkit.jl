@@ -22,6 +22,7 @@ delay_trigger_affect! = function (integrator, rng)
     append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1=>delay_trigger_affect!)
+# delay_trigger = Dict(1=>[1=>τ])
 delay_complete = Dict(1=>[2=>1, 3=>-1])
 delay_interrupt = Dict()
 # algo = DelayDirect()
