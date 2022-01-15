@@ -12,7 +12,7 @@ DelaySSAToolkit.jl is a tool developed on top of [DiffEqJump.jl](https://github.
 - Various exact delay stochastic simulation algorithms are integrated;
 - Stochastic delay type is supported;
 - Multiple delay channels and simultaneous delay reactions are supported;
-- A cascade of delay reactions is supported (a delay reaction that incurs other delay reactions);
+- A cascade of delay reactions is supported (a delay reaction that causes other delay reactions);
 - Priority queue and dependency graph are integrated for high computational performance;
 - Ecosystem with [Catalyst](https://github.com/SciML/Catalyst.jl), [DiffEqJump](https://github.com/SciML/DiffEqJump.jl), [DifferentialEquations](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
 

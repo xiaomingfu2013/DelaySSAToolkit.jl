@@ -5,13 +5,13 @@
 The model is defined as follows:
 ```math
 \begin{aligned}
-&\emptyset \xrightarrow{C} X_A \\
-&X_A \xrightarrow{\gamma} \emptyset\\
-&X_A \xrightarrow{\beta}  X_I, \text{ which triggers  } X_I\Rightarrow \emptyset \text{ after delay } \tau\\
-&X_I \xrightarrow{\gamma} \emptyset  
+&\emptyset \xrightarrow{C} X_A, \\
+&X_A \xrightarrow{\gamma} \emptyset,\\
+&X_A \xrightarrow{\beta}  X_I, \text{ which triggers  } X_I\Rightarrow \emptyset \text{ after delay } \tau,\\
+&X_I \xrightarrow{\gamma} \emptyset.  
 \end{aligned}
 ```
-Notice that the last reaction $X_I \xrightarrow{\gamma} \emptyset$ causes the delay channel to change its state during a schduled delay reaction.
+Notice that the last reaction $X_I \xrightarrow{\gamma} \emptyset$ causes the delay channel to change its state during a scheduled delay reaction.
 
 This example is studied by Lafuerza and Toral in [1], where one can solve the solution analytically. If we denote $\langle X_A\rangle(t)$ to be the mean value of $X_A$ at time $t$, and $\langle X_I\rangle(t)$ the mean value of $X_I$ at time $t$, then
 ```math
@@ -33,7 +33,7 @@ rn = @reaction_network begin
 end C γ β
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
 ```
-We refer to [this example](tutorials.md) for more details about the constuction of a reaction network. Then we initialise the problem by setting
+We refer to [this example](tutorials.md) for more details about the construction of a reaction network. Then we initialise the problem by setting
 ```julia
 u0 = [0, 0]
 tf = 30.
@@ -65,7 +65,7 @@ delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
   - Keys: Indices of reactions defined in Markovian part that can trigger the delay reaction. Here we have the 3rd reaction $\beta: X_A \rightarrow X_I$ that will trigger the degradation of $X_I$ after time $\tau$.
   - Values: A update function that determines how to update the delay channel. In this example, once the delay reaction is triggered, the first delay channel (which is the channel for $X_I$) will be added to a delay time $\tau$.			
 - `delay_interrupt`
-  - Keys: Indices of reactions defined in Markovian part that can cause the change in the delay channels. In this example, the 4th reaction $\gamma : X_I \rightarrow \emptyset$ will change the schduled delay reaction channel immediately.
+  - Keys: Indices of reactions defined in Markovian part that can cause the change in the delay channels. In this example, the 4th reaction $\gamma : X_I \rightarrow \emptyset$ will change the scheduled delay reaction channel immediately.
   - Values: A update function that determines how to update the delay channel. In this example, once a `delay_interrupt` reaction happens, one randomly picked reactant $X_I$ (supposed to leave the system after time $\tau$) is degraded immediately.  
 - `delay_complete` 
   - Keys: Indices of delay channels. Here the first delay channel corresponds to $X_I$.
@@ -76,7 +76,7 @@ Next, we choose a delay SSA algorithm and define the problem
 de_chan0 = [[]]
 djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions=(false,false))
 ```
-where `de_chan0` is the initial condition for the delay channel, which is a vector of arrays whose *k*th entry stores the schduled delay time for *k*th delay channel. Here we assume $X_I(0) = 0$, thus only an empty array. 
+where `de_chan0` is the initial condition for the delay channel, which is a vector of arrays whose *k*th entry stores the scheduled delay time for *k*th delay channel. Here we assume $X_I(0) = 0$, thus only an empty array. 
 
 ## Visualisation
 Now we can solve the problem and plot a trajectory
@@ -103,19 +103,19 @@ mean_x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β
 ![degradation2](../assets/delay_degradation2.svg)
 
 
-# A multiple delay reactions example
+# A multiple delay reaction example
 
-We can also extend the model to multiple delay reactions, i.e. mutiple delay channels having simultaneous delay reactions
+We can also extend the model to include multiple delay reactions, i.e. multiple delay channels having simultaneous delay reactions
 ```math
 \begin{aligned}
-&\emptyset \xrightarrow{C} X_A\\
-&X_A \xrightarrow{\gamma} \emptyset\\
-&X_A \xrightarrow{\beta}  X_{I_1}+X_{I_2}, \text{ which triggers  } X_{I_1}, X_{I_2}\Rightarrow \emptyset \text{ after delay } \tau\\
-&X_{I_1} \xrightarrow{\gamma} \emptyset\\
-&X_{I_2} \xrightarrow{\gamma} \emptyset
+&\emptyset \xrightarrow{C} X_A,\\
+&X_A \xrightarrow{\gamma} \emptyset,\\
+&X_A \xrightarrow{\beta}  X_{I_1}+X_{I_2}, \text{ which triggers  } X_{I_1}, X_{I_2}\Rightarrow \emptyset \text{ after delay } \tau,\\
+&X_{I_1} \xrightarrow{\gamma} \emptyset,\\
+&X_{I_2} \xrightarrow{\gamma} \emptyset.
 \end{aligned}
 ```
-The 4th and 5th reactions will cause the delay channel to change its state during a schduled delay reaction.
+The 4th and 5th reactions will cause the delay channel to change its state during a scheduled delay reaction.
 
 Similarly, we define the problem as follows:
 ## Markovian part

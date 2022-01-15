@@ -1,17 +1,16 @@
 # A telegraph model of stochastic delay 
 
 ## Model
-According to [1], a telegraph gene expression model with stochastic delay assumes that the gene can switch between active $G$ and inactive $G^*$ states, transcribes nascent mRNA (denoted by  $N$) while in the active state which subsequently is removed a time $\tau$ later. Here the delay $\tau$ can be a random variable. We can define the model
+According to [1], a telegraph gene expression model with stochastic delay assumes that the gene can switch between active $G$ and inactive $G^*$ states, transcribes nascent mRNA (denoted by  $N$) while in the active state which subsequently is removed a time $\tau$ later. Here the delay $\tau$ can be a random variable. The reaction scheme is given by
 ```math
-G^*\xrightarrow{k_{\text{on}}} G\\
-G\xrightarrow{k_{\text{off}}}G^*\\
-G\xrightarrow{\rho}G+N
+G^*\xrightarrow{k_{\text{on}}} G,\\
+G\xrightarrow{k_{\text{off}}}G^*,\\
+G\xrightarrow{\rho}G+N.
 ```
-and $G\xrightarrow{\rho}G+N$ will trigger $N\Rightarrow \emptyset$ after $\tau$ time.
-We set $k_{\text{on}}=0.0282$, $k_{\text{off}}=0.609$ and $\rho=2.11$.
+Note that $G\xrightarrow{\rho}G+N$ will trigger $N\Rightarrow \emptyset$ after a delay time $\tau$. We set $k_{\text{on}}=0.0282$, $k_{\text{off}}=0.609$ and $\rho=2.11$.
 
 ### Markovian part
-We first define the model using Catalyst (see [this example](tutorials.md) for more details about the constuction of a reaction network).
+We first define the model using Catalyst (see [this example](tutorials.md) for more details about the construction of a reaction network).
 ```julia
 using DiffEqJump, Catalyst, DelaySSAToolkit
 using Random, Distributions
