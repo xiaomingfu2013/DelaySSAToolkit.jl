@@ -5,7 +5,7 @@ This tutorial aims to explain how to use DelaySSAToolkit to define chemical reac
 S+I\xrightarrow{\rho}E+I,\\
 I\stackrel{r}{\rightarrow}R.
 ```
-and $S+I\xrightarrow{\rho} E+I$ will trigger $E\Rightarrow I$ after $\tau$ time, where $S$, $E$, $I$ and $R$ are the susceptible, exposed, infected and removed populations.  This means, with rate $\rho$, a susceptible contacted by an infected will immediately become an individual that is exposed to the disease and then it takes a  certain amount of time delay $\tau$ to become an infected individual.
+Notice that $S+I\xrightarrow{\rho} E+I$ will trigger $E\Rightarrow I$ after $\tau$ time, where $S$, $E$, $I$ and $R$ are the susceptible, exposed, infected and recoverd populations.  This means, with rate $\rho$, a susceptible contacted by an infected will immediately become an individual that is exposed to the disease and then it takes a certain amount of time delay $\tau$ to become an infected individual.
 
 # Model
 For the non-Markovian model, what differs from the Markovian model is the introduction of **delay reactions**. To show how we incorporate the delay reactions into the Markovian system, we first need to define the Markovian part and then its non-Markovian part. These two parts mainly form a `DelayJumpProblem`. Here we show two routes to define our delay system, one way is based on `JumpSystem`, `DiscreteProblem` and `DelayJumpSet`, and the other is based on `JumpSet`, `DiscreteProblem` and `DelayJumpSet`.
@@ -53,7 +53,7 @@ delay_complete = Dict(1=>[2=>1, 3=>-1])
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 ```
 - `delay_trigger::Dict`  A dictionary that contains
-  - Keys: Indices of reactions defined in the [Markovian part](@ref Markovian_part) that can trigger the delay reaction (see [Remark](@ref Remark) on the reaction indices). Here we have the first reaction $S+I\Rightarrow E+ I$ that will trigger the transfer from $E$ to $I$ after time $\tau$, hence the key is `1`.
+  - Keys: Indices of reactions defined in the [Markovian part](@ref Markovian_part) that can trigger delay reactions (see [Remark](@ref Remark) on the reaction indices). Here we have the first reaction $S+I\Rightarrow E+ I$ (represented by `delay_trigger = Dict(1=>...)`) that will trigger the transfer from $E$ to $I$ after time $\tau$.
   
   - Values: An update function that determines how to update the delay channel. In this example, once the delay reaction is triggered, the first delay channel will be added a delay time $\tau$. The update function has two inputs: 1. `integrator`: which stores the current state of the reactants (`integrator.u`) and the delay channels (`integrator.de_chan`); 2. `rng`: the random seed for a given stochastic simulation.
   

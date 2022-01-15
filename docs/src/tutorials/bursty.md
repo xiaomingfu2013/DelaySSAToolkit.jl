@@ -45,7 +45,7 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 ```
 - `delay_trigger  `
   - Keys: Indices of reactions defined in `jumpset` that can trigger the delay reaction.  For each $n= 1,\ldots,30,$ the reaction $ab^n/(1+b)^{n+1}:\emptyset \rightarrow nP$, that will trigger $nP$ to degrade after time $\tau$.
-  - Values: An update function that determines how to update the delay channel. In this example, once the delay reaction is trigged to the delay channel (which is the channel for $P$) will be added an array of delay time $\tau$ depending on the bursting number $n$.
+  - Values: An update function that determines how to update the delay channel. In this example, once the delay reaction is trigged to the delay channel (which is the channel for $P$), the latter will be added an array of delay time $\tau$ depending on the bursting number $n$.
 - `delay_interrupt` 
   - There are no delay interrupt reactions in this example so we set `delay_interrupt = Dict()`.
 - `delay_complete` 
