@@ -2,14 +2,14 @@
 ## Model
 Let us study the following auto-regulatory network with delay. The model is defined as follows:
 ```math
-\emptyset \xrightarrow{J_1(Y)} X\\
- Y\xrightarrow{J_2(Y)} \emptyset
+\emptyset \xrightarrow{J_1(Y)} X,\\
+ Y\xrightarrow{J_2(Y)} \emptyset.
 ```
-and $\emptyset \xrightarrow{J_1(Y)} X$ will trigger $X\Rightarrow Y$ after $\tau$ time.
+Note that $\emptyset \xrightarrow{J_1(Y)} X$ will trigger $X\Rightarrow Y$ after a delay time $\tau$. 
 
-According to [1], it's an illustration of an auto-regulatory network whereby a protein $X$ is transcribed by a gene, then it is transformed after a delay time $\tau$ into a mature protein $Y$, which binds the promoter and represses the transcription of $X$. The function $J_1(Y)$ and $J_2(Y)$ is defined as follows:
+According to [1], it's a simplified auto-regulatory network whereby a protein $X$ is transcribed by a gene, then it is transformed after a delay time $\tau$ into a mature protein $Y$, which binds the promoter and represses the transcription of $X$. The function $J_1(Y)$ and $J_2(Y)$ is defined as follows:
 ```math
-J_1(Y)=k_1S\frac{K^p_d}{K^p_d+Y^p}\\J_2(Y)=k_2E_T\frac{Y}{K_m+Y}
+J_1(Y)=k_1S\frac{K^p_d}{K^p_d+Y^p},\\J_2(Y)=k_2E_T\frac{Y}{K_m+Y}.
 ```
 In this example, we assume $k_1=k_2=S=E_T=K_d=K_m=1, p =2$ for simplicity.
 

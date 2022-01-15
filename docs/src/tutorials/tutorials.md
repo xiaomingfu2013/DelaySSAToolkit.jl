@@ -1,14 +1,14 @@
 # [Tutorials](@id seir_model)
 
-This tutorial aims to explain how to use DelaySSAToolkit to define chemical reaction models, solve the problems and visualize the results. To demonstrate these functionalities, we will consider a specific case from epideimc modelling as follows
+This tutorial aims to explain how to use DelaySSAToolkit to define chemical reaction models, solve the problems and visualize the results. To demonstrate these functionalities, we will consider a specific case from epidemic modelling as follows
 ```math
-S+I\xrightarrow{\rho}E+I\\
-I\stackrel{r}{\rightarrow}R
+S+I\xrightarrow{\rho}E+I,\\
+I\stackrel{r}{\rightarrow}R.
 ```
-and $S+I\xrightarrow{\rho} E+I$ will trigger $E\Rightarrow I$ after $\tau$ time, where $S$, $E$, $I$ and $R$ are the susceptible, exposed, infected and removed populations.  This means, wtih rate $\rho$, a susceptible contacted by an infected will immediately become an individual that is exposed to the disease and then it takes certain amount of time delay $\tau$ to become an infected inidividual.
+and $S+I\xrightarrow{\rho} E+I$ will trigger $E\Rightarrow I$ after $\tau$ time, where $S$, $E$, $I$ and $R$ are the susceptible, exposed, infected and removed populations.  This means, with rate $\rho$, a susceptible contacted by an infected will immediately become an individual that is exposed to the disease and then it takes a  certain amount of time delay $\tau$ to become an infected individual.
 
 # Model
-For non-Markovian model, what differs from the Markovian model is the introduction of **delay reactions**. To show how we incorporate the delay reactions into the Markovian system, we first need to define the Markovian part and then its non-Markovian part. These two parts mainly form a `DelayJumpProblem`. Here we show two routes to define our delay system, one way is based on `JumpSystem`, `DiscreteProblem` and `DelayJumpSet`, the other is based on `JumpSet`, `DiscreteProblem` and `DelayJumpSet`.
+For the non-Markovian model, what differs from the Markovian model is the introduction of **delay reactions**. To show how we incorporate the delay reactions into the Markovian system, we first need to define the Markovian part and then its non-Markovian part. These two parts mainly form a `DelayJumpProblem`. Here we show two routes to define our delay system, one way is based on `JumpSystem`, `DiscreteProblem` and `DelayJumpSet`, and the other is based on `JumpSet`, `DiscreteProblem` and `DelayJumpSet`.
 
 ## First route: `JumpSystem + DiscreteProblem + DelayJumpSet`
 ### [Markovian part](@id Markovian_part)
@@ -71,7 +71,7 @@ de_chan0 = [[]]
 djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
 ```
 where `DelayJumpProblem` inputs `jumpsys`,`DiscreteProblem`, `DelayJumpSet`, the algorithm and the initial condition of the delay channel `de_chan0`. 
-Here `de_chan0` is the initial condition for the delay channel, which is a vector of arrays whose *k*th entry stores the schduled delay time for *k*th delay channel. Here the only delay channel is for exposed population and we assume $E(0) = 0$. 
+Here `de_chan0` is the initial condition for the delay channel, which is a vector of arrays whose *k*th entry stores the scheduled delay time for *k*th delay channel. Here the only delay channel is for exposed population and we assume $E(0) = 0$. 
 The optional keyword argument `save_positions` is a Boolean tuple for whether to save before and after the event.
 Then one can use 
 ```julia
@@ -81,7 +81,7 @@ to solve the problem.
 
 ## [Second route: `JumpSet + DiscreteProblem + DelayJumpSet`](@id second_route)
 
-Now we explain how to define the `DelayJumpProblem` in another way. To that aim, we should first define the parameters and the mass-action jump (see [Defining a Mass Action Jump](https://diffeq.sciml.ai/stable/types/jump_types/#Defining-a-Mass-Action-Jump) for details) and construct a `Jumpset`.
+Now we explain how to define the `DelayJumpProblem` in another way. To that aim, we first define the parameters and the mass-action jump (see [Defining a Mass Action Jump](https://diffeq.sciml.ai/stable/types/jump_types/#Defining-a-Mass-Action-Jump) for details) and construct a `Jumpset`.
 ### Markovian part
 ```julia 
 ρ, r = [1e-4, 1e-2]
@@ -97,7 +97,7 @@ We briefly explain the notations here:
 - `net_stoich`  is assumed to have the same type as `reactant_stoich`; a vector whose `k`th entry is the net stoichiometry of the `k`th reaction. The net stoichiometry for an individual reaction is again represented as a vector of `Pair`s, mapping species id to the net change in the species when the reaction occurs.
 - `scale_rates` is an optional parameter that specifies whether the rate constants correspond to stochastic rate constants in the sense used by Gillespie. This has the same functionality as `combinatoric_ratelaws` in the conversion to a `JumpSystem` (see [Markovian part](@ref Markovian_part)).
   
-The `JumpSet` consists of four inputs, namely variable jumps, constant rate jumps, regular jumps and mass-action jumps. As far as discrete stochastic simulation is concerned, we only focus on constant rate jumps and mass-action jumps which are the second and fourth slots of `JumpSet` (see [different jump types](https://diffeq.sciml.ai/stable/types/jump_types/)).
+The `JumpSet` consists of four inputs, namely variable jumps, constant rate jumps, regular jumps and mass-action jumps. As far as discrete stochastic simulation is concerned, we only focus on constant rate jumps and mass-action jumps which are the second and fourth entries of `JumpSet` (see [different jump types](https://diffeq.sciml.ai/stable/types/jump_types/)).
 Here we only have two mass-action jumps that are wrapped in `mass_jump`.
 Then we initialise the problem by setting
 ```julia

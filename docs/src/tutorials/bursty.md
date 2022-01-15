@@ -2,12 +2,12 @@
 
 ## Model
 We study the following gene expression model which does not have an explicit gene state description
-and that the product (RNA or protein denoted as P) is actively transcribed in bursts whose size are distributed according to a geometric distribution. This means the propensity functions is given by $f(n) = ab^n/(1+b)^{n+1}$ for any positive integer $n$. The bursty model writes: 
+and that the product (mRNA or protein denoted as P) is actively transcribed in bursts whose size are distributed according to a geometric distribution. This means the propensity function is given by $f(n) = ab^n/(1+b)^{n+1}$ for any positive integer $n$. The bursty model can be summarised by the reactions: 
 ```math
 \frac{ab^n}{(1+b)^{n+1}}: \emptyset \rightarrow nP \text{ triggers }nP\Rightarrow\emptyset \text{ after $\tau$ time.}
 ```
 ## Markovian part
-The system has an explict solution which is obtained in [1, Supplementary Note Section 2]. We first construct reaction network
+The system has an explict solution which is obtained in [1, Supplementary Note Section 2]. We first construct the reaction network
 ```julia
 @parameters a b t
 @variables X(t)
@@ -16,7 +16,7 @@ rxs = [Reaction(ab^n/(1+b)^{n+1},nothing,[X],nothing,[n]) for n in 1:burst_sup]
 rxs = vcat(rxs)
 @named rs = ReactionSystem(rxs,t,[X],[a,b])
 ```
-In the example, we set $a=0.0282$ and $b=3.46$ and set the upper bound of bursting as `burst_sup = 30`. This means we ignore all the reactions $ab^n/(1+b)^{n+1}:\emptyset \rightarrow nP$ for any $n > 30$ where the reaction rate $ab^n/(1+b)^{n+1} \sim 10^{-6}$. 
+In the example, we set $a=0.0282$ and $b=3.46$ and set the upper bound of the burst size as `burst_sup = 30`. This means we ignore all the reactions $ab^n/(1+b)^{n+1}:\emptyset \rightarrow nP$ for any $n > 30$ where the reaction rate $ab^n/(1+b)^{n+1} \sim 10^{-6}$. 
 We first convert the `ReactionSystem` to a `JumpSystem` and initialise the discrete problem by
 ```julia
 jumpsys = convert(JumpSystem, rs, combinatoric_ratelaws=false)
@@ -45,7 +45,7 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 ```
 - `delay_trigger  `
   - Keys: Indices of reactions defined in `jumpset` that can trigger the delay reaction.  For each $n= 1,\ldots,30,$ the reaction $ab^n/(1+b)^{n+1}:\emptyset \rightarrow nP$, that will trigger $nP$ to degrade after time $\tau$.
-  - Values: An update function that determines how to update the delay channel. In this example, once the delay reaction is trigged, the delay channel (which is the channel for $P$) will be added an array of delay time $\tau$ depending on the bursting number $n$.
+  - Values: An update function that determines how to update the delay channel. In this example, once the delay reaction is trigged to the delay channel (which is the channel for $P$) will be added an array of delay time $\tau$ depending on the bursting number $n$.
 - `delay_interrupt` 
   - There are no delay interrupt reactions in this example so we set `delay_interrupt = Dict()`.
 - `delay_complete` 
@@ -64,7 +64,7 @@ using DiffEqJump
 ensprob = EnsembleProblem(jprob)
 @time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
 ```
-Then check with the exact probability distribution
+We compare the distribution computed using the delay SSA and the exact solution, finding excellent agreement. 
 ![bursty](../assets/bursty.svg)
 
 ## References
