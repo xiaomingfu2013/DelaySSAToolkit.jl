@@ -4,12 +4,12 @@
 
 Consider a system consisting of $N \geq 1$ chemical species, $\{X_1,\ldots, X_N\}$, undergoing $M \geq 1$ chemical reactions through reaction channels $\{R_1,\ldots,R_M\}$, each of which is equipped with a propensity function (or intensity function in the mathematics literature), $a_k(X)$. The dynamic state of this chemical system can be described by the state vector $X(t) =[X_1(t),\ldots,X_N(t)]^T$, where $X_n(t),n = 1,\ldots,N,$ is the number of $X_n$ molecules at time $t$, and $[·]^T$ denotes the transpose of the vector in the bracket.
 
-Following Gillespie [1], the dynamics of reaction $R_k$ defined by a state-change vector $\nu_k = [\nu_{1k} ,\ldots,\nu_{Nk}]^T$, where $\nu_{nk}$ gives the changes in the $X_n$ molecular population produced by one $R_k$ reaction, and a propensity function $a_k(t)$ together with the fundamental premise of stochastic chemical kinetics:
+Following Gillespie [1], the dynamics of reaction $R_k$ are defined by a state-change vector $\nu_k = [\nu_{1k} ,\ldots,\nu_{Nk}]^T$, where $\nu_{nk}$ gives the changes in the $X_n$ molecular population produced by one $R_k$ reaction, and a propensity function $a_k(X)$, together with the fundamental premise of stochastic chemical kinetics:
 
 ```math
 \begin{equation}
 \begin{aligned}
-a_k(t)\Delta t = &\text{ the probability, given } X(t)=\mathbf{x}, \\
+a_k(X)\Delta t = &\text{ the probability, given } X(t)=\mathbf{x}, \\
 &\text{ that one reaction }R_k \text{ will occur in the}\\
 &\text{ next infinitesimal time interval }[t,t+\Delta t].
 \end{aligned}
@@ -30,7 +30,7 @@ For a chemical system in a given state $X(t)=\mathbf{x}$ at time $t$, assuming t
 \end{equation}
 ```
 
-Based upon the fundamental premise Eq. ([1](#mjx-eqn-1)), Gillespie showed that that $\Delta$ and $\mu$ are two independent random variables and have the following probability density functions (PDFs), respectively:
+Based upon the fundamental premise Eq. ([1](#mjx-eqn-1)), Gillespie devised an exact stochastic simulation algorithm (SSA) that involves drawing two random numbers $\Delta$ and $\mu$ which are distributed according to ([3](#mjx-eqn-3)) and ([4](#mjx-eqn-4)). $\Delta$ tells us how long we have to wait until the next reaction and $\mu$ tells us which is the next reaction. It is showed that $\Delta$ and $\mu$ are two independent random variables and have the following probability density functions (PDFs), respectively:
 
 ```math
 \begin{equation}
@@ -70,9 +70,9 @@ P_0(\Delta)=P(E_0,\ldots,E_i)=P(E_0) \prod_{k=1}^i P(E_k丨E_0,\ldots,E_{k-1}).
 \end{equation}
 ```
 
-From the derivation of Gillespie’s exact SSA,we know that  
+From the derivation of Gillespie’s exact SSA, we know that  
 ```math
-P(E_0) = \exp (−a_0(t)T_1)\\
+P(E_0) = \exp (−a_0(t)T_1),\\
 P_0(E_k丨E_0,\ldots,E_{k-1}) = \exp(-a_0(t+T_k)) × (T_{k+1}−T_k),k=0,\ldots,i−1,\\
 P(E_i丨E_0,\ldots,E_{i-1}) = \exp(-a_0(t+T_i)(\Delta-T_i)).
 ```
@@ -101,10 +101,10 @@ where we assume that the first term of the exponent is equal to zero when $i = 0
 and
 
 ```math
-f_\mu(\mu)={ {a_\mu(t+T_i)} \over {a_0(t+T_i)} },\ \ \  \mu = 1,\ldots,M,\ \ \  \Delta \in [T_i,T_{i+1}),
+f_\mu(\mu)={ {a_\mu(t+T_i)} \over {a_0(t+T_i)} },\ \ \  \mu = 1,\ldots,M,\ \ \  \Delta \in [T_i,T_{i+1}).
 ```
 
-It is not difficult to verify that $\int_{0}^{\infty} f_\Delta(\Delta)\, \text{d}\Delta = 1$. In simulation, $\mu$ can be generated, from a standard uniform random variable $u_1$, by taking $\mu$ to be the integer for which 
+It is not difficult to verify that $\int_{0}^{\infty} f_\Delta(\Delta)\, \text{d}\Delta = 1$. In simulation, $\mu$ can be generated, from a standard uniform random variable $u_1$, by taking $\mu$ to be the integer for which
 ```math
 \sum_{k=1}^{\mu-1} a_k(t+T_i)  < u_1 a_0(t+T_i) ≤  \sum_{k=1}^\mu a_k(t+T_i),
 ```
@@ -115,7 +115,7 @@ The cumulative distribution function of $\Delta$ can be found from Eq. ([8](#mjx
 ```math
 \begin{aligned}
 & F_\Delta(\Delta)=1 - \exp  \bigg (-\sum_{k=0}^{i-1} a_0(t+T_k)(T_{k+1}-T_k)-a_0(t+T_i)(\Delta-T_i) \bigg ), \\
-& \Delta \in [T_i,T_{i+1}), i = 0,\ldots,d,
+& \Delta \in [T_i,T_{i+1}), i = 0,\ldots,d.
 \end{aligned}
 ```
 
@@ -134,17 +134,17 @@ Since we need $T_1,\ldots,T_d$ to generate $\Delta$ and $\mu$, we define an arra
 
 
 ### [Delay rejection method](@id delay_rejection_method)
-Bratsun et al. [3] and Barrio et al. [4] used an algorithm for computing the initiation times that is exactly like the original Gillespie Algorithm except that if there is a stored delayed reaction set to finish within a computed timestep, then the computed timestep is discarded, and the system is updated to incorporate the stored delayed reaction. The algorithm then attempts another step starting at its new state. This algorithm is called Rejection Method. We briefly summerised this algorithm in [delay rejection method](algorithms/delayrejection.md).
+Bratsun et al. [3] and Barrio et al. [4] used an algorithm for computing the initiation times that is exactly like the original Gillespie Algorithm except that if there is a stored delayed reaction set to finish within a computed timestep, then the computed timestep is discarded, and the system is updated to incorporate the stored delayed reaction. The algorithm then attempts another step starting at its new state. This algorithm is called the Rejection Method. We briefly summarised this algorithm in [delay rejection method](algorithms/delayrejection.md).
 
 The rejection algorithm essentially generates $\Delta$ in the event ([2](#mjx-eqn-2)) using a rejection method in an iterative fashion: in the *i*-th iteration, it generates a $\Delta_i$ according to an exponential PDF with parameter $a_0(t+T_{i−1})$, where we have denoted the time to next event generated in the *i*-th iteration as $\Delta_i$. If $\Delta_i < T_i - T_{i−1}$, then we have $\Delta = T_{i-1} + \Delta_i$ and the algorithm continues simulation to generate $\mu$; otherwise, it rejects $\Delta_i$, updates the state vector $X(t+T_i)$, calculates $a_k(t+T_i),k=1,\ldots,M$, and goes to the next iteration. If $\Delta$ is determined in the *(i+1)*-th iteration, where *i*
-is a non-negative integer, then we have $\Delta \in [T_i,T_{i+1})$ and *i* delayed reactions finished in the time interval $[t,t+\Delta)$. 
+is a non-negative integer, then we have $\Delta \in [T_i,T_{i+1})$ and *i* delayed reactions finished in the time interval $[t,t+\Delta)$.
 
-We point out the following equivalence: 
+We point out the following equivalence:
 !!! note
     For a given integer $i$, the event $\Delta \in [T_i,T_{i+1})$ in the delay direct method is equivalent to the event $\Delta_1,\Delta_2,\ldots,\Delta_i$ are rejected and the time to the next event $\Delta_{i+1}$ is accepted, i.e. $\Delta_{i+1}+T_i=\Delta$ in the delay rejection method.
 
 From the iterative procedure of generating $\Delta$ described
-above, we can find $P_0(\Delta)$ that the rejection method algorithm produces. Specifically, if $\Delta \in [T_i,T_{i+1})$, we have 
+above, we can find $P_0(\Delta)$ that the rejection method algorithm produces. Specifically, if $\Delta \in [T_i,T_{i+1})$, we have
 ```math
 P(E_0)=P(\Delta_1 > T_1),\\
 P(E_k丨E_0,\ldots,E_{k-1}) = P(\Delta_{k+1} > T_{k+1} - T_k), k=1,\ldots,i−1,
@@ -170,10 +170,10 @@ and
 P(\Delta_{i+1} > \Delta −T_i) = \exp(-a_0(t+T_i)(\Delta-T_i)).
 \end{equation}
 ```
-Substituting Eqs. ([10](#mjx-eqn-10)) and ([11](#mjx-eqn-11)) into Eq. ([9](#mjx-eqn-9)), we find that $P_0(\Delta)$ in Eq. ([9](#mjx-eqn-9)) is exactly the same as $P_0(\Delta)$ in Eq. ([7](#mjx-eqn-7)) that is derived directly from the event ([2](#mjx-eqn-2)) and the fundamental premise ([1](#mjx-eqn-1)). Since the delay direct algorithm generates $\Delta$ and $\mu$ according to PDFs of $\Delta$ and $\mu$ derived from $P_0(\Delta)$ in Eq. ([7](#mjx-eqn-7)), the rejection method is equivalent to the direct method and also is an exact SSA for chemical reaction systems with delays. 
+Substituting Eqs. ([10](#mjx-eqn-10)) and ([11](#mjx-eqn-11)) into Eq. ([9](#mjx-eqn-9)), we find that $P_0(\Delta)$ in Eq. ([9](#mjx-eqn-9)) is exactly the same as $P_0(\Delta)$ in Eq. ([7](#mjx-eqn-7)) that is derived directly from the event ([2](#mjx-eqn-2)) and the fundamental premise ([1](#mjx-eqn-1)). Since the delay direct algorithm generates $\Delta$ and $\mu$ according to PDFs of $\Delta$ and $\mu$ derived from $P_0(\Delta)$ in Eq. ([7](#mjx-eqn-7)), the rejection method is equivalent to the direct method and also is an exact SSA for chemical reaction systems with delays.
 
 ### Other Methods
-The rigorous proof of [delay rejection method](@ref delay_rejection_method) opens a way to transfrom an exact SSA method to an exact delay SSA method. If we denote `dt_reaction` as the time to the next reaction generated by the instantaneous reactions $\{R_1,\ldots,R_M\}$ with some exact SSA method. One only needs to compare it with `dt_delay` which is time to the next delay reaction (the minimum delay time in the delay channels). If `dt_reaction` < `dt_delay`, we reject `dt_delay`, otherwise accept `dt_delay` in the same prinple as in the delay rejection method. Such a delay SSA method is always exact based on the premise of the exactness of the [delay rejection method](@ref delay_rejection_method).
+The rigorous proof of [delay rejection method](@ref delay_rejection_method) opens a way to transform an exact SSA method to an exact delay SSA method. If we denote `dt_reaction` as the time to the next reaction generated by the instantaneous reactions $\{R_1,\ldots,R_M\}$ with the partial propensity method. One only needs to compare it with `dt_delay` which is time to the next delay reaction (the minimum delay time in the delay channels). If `dt_reaction` < `dt_delay`, we reject `dt_delay`, otherwise accept `dt_delay`.
 
 ## References
 
@@ -188,4 +188,3 @@ The rigorous proof of [delay rejection method](@ref delay_rejection_method) open
 
 [4]  Manuel Barrio, Kevin Burrage, André Leier, Tianhai Tian. "Oscillatory Regulation of Hes1: Discrete Stochastic Delay Modelling and Simulation", PLoS Computational Biology, 10.1371(2006).
 [https://doi.org/10.1371/journal.pcbi.0020117](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.0020117)
-

@@ -1,8 +1,8 @@
 # Delay Direct Method Algorithm 
 
-The number of discarded $\Delta$ will be approximately equal to the number of delayed reactions that initiate. This follows because, other than the stored completions at the time the code terminates, every delayed completion will cause one computed $\Delta$ to be discarded. Thus, Cai [1] developped an algorithm, called the Direct Method for systems with delays, in which no random variables are discarded.
+The number of discarded $\Delta$ will be approximately equal to the number of delayed reactions that initiate. This follows because, other than the stored completions at the time the code terminates, every delayed completion will cause one computed $\Delta$ to be discarded. Thus, Cai [1] developed an algorithm, called the Direct Method for systems with delays, in which no random variables are discarded.
 
-The principle of Direct Method is the same as that of the original Gillespie Algorithm and the Rejection Method above: use one random variable to calculate when the next reaction initiates and use another random variable to calculate which reaction occurs at that future time. However, Direct Method updates the state of the system and propensity functions due to stored delayed reactions during the search for the next initiation time. In this way he ensures that no random variables are discarded as in the Rejection Method. 
+The principle of Direct Method is the same as that of the original Gillespie Algorithm and the Rejection Method above: use one random variable to calculate when the next reaction initiates and use another random variable to calculate which reaction occurs at that future time. However, Direct Method updates the state of the system and propensity functions due to stored delayed reactions during the search for the next initiation time. In this way it is ensures that no random variables are discarded as in the Rejection Method. 
 
 ## Algorithm
 
