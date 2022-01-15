@@ -4,7 +4,7 @@
 
 Consider a system consisting of $N \geq 1$ chemical species, $\{X_1,\ldots, X_N\}$, undergoing $M \geq 1$ chemical reactions through reaction channels $\{R_1,\ldots,R_M\}$, each of which is equipped with a propensity function (or intensity function in the mathematics literature), $a_k(X)$. The dynamic state of this chemical system can be described by the state vector $X(t) =[X_1(t),\ldots,X_N(t)]^T$, where $X_n(t),n = 1,\ldots,N,$ is the number of $X_n$ molecules at time $t$, and $[·]^T$ denotes the transpose of the vector in the bracket.
 
-Following Gillespie [1], the dynamics of reaction $R_k$ are defined by a state-change vector $\nu_k = [\nu_{1k} ,\ldots,\nu_{Nk}]^T$, where $\nu_{nk}$ gives the changes in the $X_n$ molecular population produced by one $R_k$ reaction, and a propensity function $a_k(t)$ (can also be dependent on the state, i.e. $a_k(t)=\hat{a}_k(t,X(t))$), together with the fundamental premise of stochastic chemical kinetics:
+Following Gillespie [1], the dynamics of reaction $R_k$ are defined by a state-change vector $\nu_k = [\nu_{1k} ,\ldots,\nu_{Nk}]^T$, where $\nu_{nk}$ gives the changes in the $X_n$ molecular population produced by one $R_k$ reaction, and a propensity function $a_k(t)$, which can also be dependent on the state, i.e. $a_k(t)=\hat{a}_{k}(t,X(t))$ (here for simplicity denoted as $a_k(t)$), together with the fundamental premise of stochastic chemical kinetics:
 
 ```math
 \begin{equation}
