@@ -4,7 +4,7 @@
 
 Let $v_k$, $v'_k\in Z^N_{\geq 0}$ be the vectors representing the number of each species consumed and created in the $k$th reaction, respectively. Then, if $N_k(t)$ is the number of initiations of reaction $k$ by time $t$, the state of the system at time $t$ is
 ```math
-X(t)=X(0)+\sum_{k=1}^M{N_k(t)(v^{'}_k-v_k)}
+X(t)=X(0)+\sum_{k=1}^M{N_k(t)(v^{'}_k-v_k)}.
 ```
 However, based upon the fundamental premise of stochastic chemical kinetics, $N_k(t)$ is a counting process with intensity $a_k(X(t))$ such that $\text{P}(N_k(t+\Delta t)-N_k(t)=1|X(s),s\leqslant t)=a_k(X(t))\Delta t$ for small $\Delta t$. Therefore, based upon the [counting process interpretation](https://en.wikipedia.org/wiki/Poisson_point_process), we have
 ```math
