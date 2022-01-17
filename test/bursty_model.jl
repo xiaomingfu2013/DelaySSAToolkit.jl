@@ -1,5 +1,5 @@
 using DelaySSAToolkit
-using Catalyst, DiffEqJump
+using Catalyst
 using Statistics
 using Test
 

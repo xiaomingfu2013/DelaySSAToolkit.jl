@@ -41,7 +41,7 @@ end
 delay_trigger2 = Dict(3=>delay_trigger_affect2!)
 delayjumpset2 = DelayJumpSet(delay_trigger2,delay_complete,delay_interrupt)
 
-djprob2 = DelayJumpProblem(dprob, DelayRejection(), jumpset, delayjumpset2, de_chan0, save_positions=(false,false))
+djprob2 = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset2, de_chan0, save_positions=(false,false))
 
 @time ens2 = solve(EnsembleProblem(djprob2), SSAStepper(), EnsembleThreads(), trajectories=10^5)
 

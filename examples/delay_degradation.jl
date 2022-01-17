@@ -11,7 +11,7 @@
 # where a = β + γ
 
 
-using DiffEqJump, Catalyst
+using Catalyst
 using DelaySSAToolkit 
 
 rn = @reaction_network begin
@@ -35,7 +35,7 @@ aggregatoralgo = DelayRejection()
 # aggregatoralgo = DelayDirect()
 # aggregatoralgo = DelayDirectCR()
 dprob = DiscreteProblem(u0, tspan, p)
-djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false))
+
 
 
 τ = 15.
@@ -50,7 +50,7 @@ delay_affect! = function (integrator, rng)
 end
 delay_interrupt = Dict(4=>delay_affect!) 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
-
+djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false))
 sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1, save_delay_channel = true)
 sol =@time solve(djprob, SSAStepper(), seed = 2, save_delay_channel = true)
 
@@ -68,9 +68,11 @@ x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((
 
 
 using StatsBase
-mean_A(t) = mean([ens[s](t)[1] for s in 1:Sample_size])
-mean_I(t) = mean([ens[s](t)[2] for s in 1:Sample_size])
 
+tsm(t) = timepoint_mean(ens,t)
+
+mean_A(t) = tsm(t)[1]
+mean_I(t) = tsm(t)[2]
 timestamps = 0:0.1:tf
 plot(timestamps,x_A.(timestamps),linewidth=3, label = "X_A Exact", xlabel = "Time", ylabel = "# of X_A")
 plot!(timestamps,mean_A.(timestamps),linewidth=3,line=:dash, label =  "X_A SSA")
@@ -79,7 +81,3 @@ plot!(timestamps,mean_I.(timestamps),linewidth=3,line=:dash, legend = :topleft, 
 # savefig("docs/src/assets/delay_degradation2.svg")
 
 
-x_A.(timestamps)
-mean_A.(timestamps)
-x_I.(timestamps)
-mean_I.(timestamps)

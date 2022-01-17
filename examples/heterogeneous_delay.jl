@@ -1,6 +1,5 @@
 using Catalyst
 using Distributions, Random
-using DiffEqJump
 using DelaySSAToolkit
 
 rn = @reaction_network begin
@@ -31,7 +30,7 @@ function prob_func1(prob, i, repeat)
     rng = Random.seed!(i)
     A = rand(rng, Gamma(8,1/0.23))
     B = rand(rng, Gamma(9,1/625))
-    τ  = rand(rng, Gamma(1,1/7))
+    τ  = rand(rng, Gamma(7,1))
     remake(prob, p = [A,B], delay_trigger=Dict(1=>[1=>τ]))
 end
 function prob_func2(prob, i, repeat)
@@ -46,7 +45,9 @@ end
 
 prob1 = EnsembleProblem(djprob, prob_func = prob_func1)
 @time ens1 = solve(prob1, SSAStepper(), EnsembleThreads(), trajectories = 40, saveat= 1.)
-Y_evolution  = [ens[i][2,:] for i in 1:40]
+Y_evolution  = [ens1[i][2,:] for i in 1:40]
+
+
 using DifferentialEquations.EnsembleAnalysis
 using Plots;theme(:vibrant)
 plot(Y_evolution, linealpha=0.4, legend=false , linewidth = 2, fmt=:svg, xlabel = "Time", ylabel="# of Y individuals")
