@@ -7,5 +7,8 @@ using Test, SafeTestsets
     end 
     @time @safetestset "Index test" begin
         include("check_index_reactions.jl")
+    end
+    @time @safetestset "dep_gr_delay test" begin
+        include("dep_gr_delay.jl")
     end 
 end
