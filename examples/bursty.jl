@@ -4,7 +4,7 @@
 # ab^n/(1+b)^(n+1): 0 -> n P, which triggers n P to degrade after delay time τ
 
 using DelaySSAToolkit
-using Catalyst, DiffEqJump
+using Catalyst
 begin # construct reaction network
     @parameters a b t
     @variables X(t)

@@ -39,6 +39,9 @@ To solve a `DelayJumpProblem`, here are few recommendations for good performance
 
 - For large numbers of jumps with sparse chain like structures and similar jump rates, for example continuous time random walks, `DelayDirectCR` and `DelayMNRM` often have the best performance.
 
+## Acknowledgments
+Special thanks to Augustinas Sukys for his suggestions and tests on this package!
+
 ## References
 
 [1] Daniel T. Gillespie, "Exact stochastic simulation of coupled chemical reactions", The Journal of Physical Chemistry 1977 81 (25), 2340-2361.

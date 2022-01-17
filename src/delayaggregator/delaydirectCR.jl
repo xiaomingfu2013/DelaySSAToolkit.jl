@@ -21,6 +21,7 @@ mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.Pr
     num_next_delay::Union{Nothing,Vector{Int}}
     time_to_next_jump::T
     dt_delay::T
+    dep_gr_delay::Union{Nothing,Dict{Int,Vector{Int}}}
 end
 
 function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
@@ -32,7 +33,7 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
     # a dependency graph is needed and must be provided if there are constant rate jumps
     if dep_graph === nothing
         if (get_num_majumps(maj) == 0) || !isempty(rs)
-            error("To use ConstantRateJumps with the DirectCR algorithm a dependency graph must be supplied.")
+            error("To use ConstantRateJumps with the DelayDirectCR algorithm a dependency graph must be supplied.")
         else
             dg = make_dependency_graph(num_specs, maj)
         end
@@ -56,9 +57,10 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
     nnd = nothing
     ttnj = zero(et)
     dt_delay = zero(et)
+    dep_gr_delay = nothing
     DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,typeof(dg),typeof(rt),typeof(ratetogroup)}(
                                             nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng,
-                                            dg, minrate, maxrate, rt, ratetogroup, nd, nnd, ttnj, dt_delay)
+                                            dg, minrate, maxrate, rt, ratetogroup, nd, nnd, ttnj, dt_delay, dep_gr_delay)
 end
 
 
@@ -81,7 +83,7 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
 
     # initialize rates
     fill_rates_and_sum!(p, u, params, t)
-
+    p.dep_gr_delay = dep_gr_delay(p, integrator)
     # setup PriorityTable
     DiffEqJump.reset!(p.rt)
     for (pid,priority) in enumerate(p.cur_rates)
@@ -130,16 +132,7 @@ function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrat
         @inbounds dep_rxs = p.dep_gr[p.next_jump]
     else
         # find the dep_rxs w.r.t next_delay vectors
-        vars_ = Vector{Vector{Int}}(undef,length(p.next_delay))
-        var_to_jumps = var_to_jumps_map(length(u),p.ma_jumps)
-        @inbounds for i in eachindex(p.next_delay)
-            vars_[i] = first.(integrator.delayjumpsets.delay_complete[p.next_delay[i]])
-        end
-        vars = reduce(vcat, vars_)
-        dep_rxs_ = Vector{Vector{Int}}(undef,length(vars))
-        @inbounds for i in eachindex(dep_rxs_)
-            dep_rxs_[i] = var_to_jumps[vars[i]]
-        end
+        dep_rxs_ = [p.dep_gr_delay[p.next_delay[i]] for i in eachindex(p.next_delay)]
         dep_rxs = reduce(vcat, dep_rxs_)
     end
 

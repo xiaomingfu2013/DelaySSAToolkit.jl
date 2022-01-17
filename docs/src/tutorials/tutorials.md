@@ -1,6 +1,7 @@
 # [Tutorials](@id seir_model)
 
-This tutorial aims to explain how to use DelaySSAToolkit to define chemical reaction models, solve the problems and visualize the results. To demonstrate these functionalities, we will consider a specific case from epidemic modelling as follows
+This tutorial aims to explain how to use DelaySSAToolkit to define chemical reaction models, solve the problems and visualize the results. The source code of all the examples and figures is available in the github examples folder.
+To demonstrate these functionalities, we will consider a specific case from epidemic modelling as follows
 ```math
 S+I\xrightarrow{\rho}E+I,\\
 I\stackrel{r}{\rightarrow}R.

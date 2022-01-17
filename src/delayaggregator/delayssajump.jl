@@ -255,6 +255,37 @@ function execute_delay_complete!(delay_complete::Function, num_next_delay::Int64
 end
 
 """
+    function dep_gr_delay(p, integrator)
+
+Generate delay dependency graph
+input::Int next_delay idx
+output::Dict next_delay idx => reactions need to be updated
+"""
+function dep_gr_delay(p::AbstractDSSAJumpAggregator, integrator)
+    # num_delay_chan = length(integrator.de_chan)
+    dict_ = Dict{Int,Vector{Int}}()
+    dict_complete = integrator.delayjumpsets.delay_complete
+    # var_to_jumps = var_to_jumps_map(length(integrator.u),p.ma_jumps)
+    @inbounds for key in keys(dict_complete)
+        vars = first.(dict_complete[key])
+        jumps = unique(vars_to_jumps_delay(p, vars))
+        push!(dict_, key=>jumps)
+    end
+    dict_
+end
+function vars_to_jumps_delay(p, vars)
+    jumps = []
+    for i in eachindex(p.dep_gr)
+        for var in vars
+            if var in p.dep_gr[i]
+                push!(jumps, i)
+            end
+        end
+    end
+    return jumps
+end
+
+"""
     function find_num_in_vec(A::Vector{Vector{T}}, position_index::Vector{Int64}, x::T)
 
 Find the number of values which in each vector elements equal to `x` according to the corresponding index position specified by the element in the `position_index` vector in the given vetcer `A`.

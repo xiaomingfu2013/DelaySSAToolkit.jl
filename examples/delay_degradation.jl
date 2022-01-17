@@ -17,7 +17,7 @@ using DelaySSAToolkit
 rn = @reaction_network begin
    C, 0 --> Xₐ
    γ, Xₐ --> 0
-   β, Xₐ --> Xᵢ
+   β, Xₐ --> Xᵢ 
    γ, Xᵢ --> 0
 end C γ β
 

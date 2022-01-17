@@ -16,6 +16,7 @@ mutable struct DelayMNRMJumpAggregation{T,S,F1,F2,RNG,DG,PQ} <: AbstractDSSAJump
     num_next_delay::Union{Nothing,Vector{Int}}
     time_to_next_jump::T
     dt_delay::T
+    dep_gr_delay::Union{Nothing,Dict{Int,Vector{Int}}}
 end
 
 function DelayMNRMJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; num_specs, dep_graph=nothing, kwargs...) where {T,S,F1,F2,RNG}
@@ -24,7 +25,7 @@ function DelayMNRMJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
     # a dependency graph is needed and must be provided if there are constant rate jumps
     if dep_graph === nothing
         if (get_num_majumps(maj) == 0) || !isempty(rs)
-            error("To use ConstantRateJumps with the Next Reaction Method (NRM) algorithm a dependency graph must be supplied.")
+            error("To use ConstantRateJumps with the Delay Modified Next Reaction Method (Delay MNRM) algorithm a dependency graph must be supplied.")
         else
             dg = make_dependency_graph(num_specs, maj)
         end
@@ -34,13 +35,15 @@ function DelayMNRMJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
         add_self_dependencies!(dg)
     end
 
+    
     pq = MutableBinaryMinHeap{T}()
-
+    
     nd = nothing
     nnd = nothing
     ttnj = zero(et)
     dt_delay = zero(et)
-    DelayMNRMJumpAggregation{T,S,F1,F2,RNG,typeof(dg),typeof(pq)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, dg, pq, nd, nnd, ttnj, dt_delay)
+    dg_delay = nothing
+    DelayMNRMJumpAggregation{T,S,F1,F2,RNG,typeof(dg),typeof(pq)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, dg, pq, nd, nnd, ttnj, dt_delay, dg_delay)
 end
 
 ############################# Required Functions ##############################
@@ -50,7 +53,6 @@ function aggregate(aggregator::DelayMNRM, u, p, t, end_time, constant_jumps,
 
 # handle constant jumps using function wrappers
 rates, affects! = get_jump_info_fwrappers(u, p, t, constant_jumps)
-
 build_jump_aggregation(DelayMNRMJumpAggregation, u, p, t, end_time, ma_jumps,
             rates, affects!, save_positions, rng; num_specs=length(u), kwargs...)
 end
@@ -60,7 +62,7 @@ end
 # set up a new simulation and calculate the first jump / jump time
 function initialize!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
     fill_rates_and_get_times!(p, u, params, t)
-    
+    p.dep_gr_delay = dep_gr_delay(p, integrator)
     find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
     nothing
@@ -97,16 +99,7 @@ function update_dependent_rates_delay!(p::DelayMNRMJumpAggregation, integrator, 
         @inbounds dep_rxs = p.dep_gr[p.next_jump]
     else
         # find the dep_rxs w.r.t next_delay vectors
-        vars_ = Vector{Vector{Int}}(undef,length(p.next_delay))
-        var_to_jumps = var_to_jumps_map(length(u),p.ma_jumps)
-        @inbounds for i in eachindex(p.next_delay)
-            vars_[i] = first.(integrator.delayjumpsets.delay_complete[p.next_delay[i]])
-        end
-        vars = reduce(vcat, vars_)
-        dep_rxs_ = Vector{Vector{Int}}(undef,length(vars))
-        @inbounds for i in eachindex(dep_rxs_)
-            dep_rxs_[i] = var_to_jumps[vars[i]]
-        end
+        dep_rxs_ = [p.dep_gr_delay[p.next_delay[i]] for i in eachindex(p.next_delay)]
         dep_rxs = reduce(vcat, dep_rxs_)
     end
     @unpack cur_rates, rates, ma_jumps = p

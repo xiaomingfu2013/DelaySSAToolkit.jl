@@ -40,7 +40,7 @@ include("delayaggregator/delaydirectCR.jl")
 include("delaySSA_stepper.jl")
 include("utils.jl")
 
-export DelayJumpProblem, DelayJumpSet
+export DelayJumpProblem, DelayJumpSet, SSAStepper
 export DelayRejection, DelayMNRM, DelayDirect, DelayDirectCR
 export solve, remake
 
