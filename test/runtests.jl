@@ -11,4 +11,7 @@ using Test, SafeTestsets
     @time @safetestset "dep_gr_delay test" begin
         include("dep_gr_delay.jl")
     end 
+    @time @safetestset "save delay channel test" begin
+        include("save_delay_channel.jl")
+    end 
 end
