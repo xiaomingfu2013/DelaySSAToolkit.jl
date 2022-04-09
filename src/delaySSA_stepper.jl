@@ -237,14 +237,15 @@ function saveat_function!(integrator, prev_t)
     if integrator.saveat !== nothing && !isempty(integrator.saveat)
         # Split to help prediction
         last_saved_t = prev_t
-        prev_de_chan = deepcopy(integrator.de_chan)
+        prev_de_chan = integrator.de_chan
         while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
             push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
             push!(integrator.sol.u,copy(integrator.u))
             if integrator.save_delay_channel
+                prev_de_chan = deepcopy(prev_de_chan)
                 shift_delay_channel!(prev_de_chan, tgap) 
-                push!(integrator.chan_sol,deepcopy(prev_de_chan)) 
+                push!(integrator.chan_sol, prev_de_chan) 
             end
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
@@ -263,7 +264,7 @@ function saveat_function_direct_method!(integrator, prev_t)
         T1, T2 = create_Tstruct(integrator.de_chan)
         # Split to help prediction
         last_saved_t = prev_t
-        prev_de_chan = deepcopy(integrator.de_chan)
+        prev_de_chan = integrator.de_chan
         while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
 
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
@@ -273,10 +274,11 @@ function saveat_function_direct_method!(integrator, prev_t)
             update_state_final_jump!(integrator.cb.affect!, integrator, tgap, T1, T2)
             push!(integrator.sol.u,copy(integrator.u))
             if integrator.save_delay_channel
+                prev_de_chan = deepcopy(prev_de_chan)
                 shift_delay_channel!(prev_de_chan, tgap) 
                 # Special for Direct method
                 update_delay_channel!(prev_de_chan) #
-                push!(integrator.chan_sol,deepcopy(prev_de_chan))
+                push!(integrator.chan_sol,prev_de_chan)
             end
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
