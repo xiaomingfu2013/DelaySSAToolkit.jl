@@ -3,3 +3,5 @@
 *.jl.mem
 /docs/build/
 .vscode/settings.json
+Manifest.toml
+test/Manifest.toml
