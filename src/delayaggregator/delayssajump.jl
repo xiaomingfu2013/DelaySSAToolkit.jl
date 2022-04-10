@@ -246,7 +246,7 @@ function execute_delay_complete!(delay_complete::Vector{Pair{Int64,Int64}}, num_
     u = integrator.u
     @inbounds for (i, ξ) in delay_complete
         if u isa SVector
-            integrator.u = setindex(u, u[i] + num_next_delay*ξ, i)
+            integrator.u = u = setindex(u, u[i] + num_next_delay*ξ, i)
         else     
             u[i] += num_next_delay*ξ
         end
