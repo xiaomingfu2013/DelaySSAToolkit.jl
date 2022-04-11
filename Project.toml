@@ -5,6 +5,7 @@ version = "0.1.0"
 
 [deps]
 ArrayInterface = "4fba245c-0d91-5ea0-9b3e-6abc04ee57a9"
+BangBang = "198e06fe-97b7-11e9-32a5-e1d131e6ad66"
 Catalyst = "479239e8-5488-4da2-87a7-35f2df7eef83"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
 DiffEqBase = "2b5f629d-d688-5b77-993f-72d75c75574e"

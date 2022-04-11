@@ -21,7 +21,7 @@ using DataStructures
 import DataStructures: update!
 
 using UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays, DocStringExtensions
-using FunctionWrappers, ArrayInterface, RandomNumbers
+using FunctionWrappers, ArrayInterface, RandomNumbers, BangBang
 using StaticArrays, Base.Threads
 import Base.Threads
 @static if VERSION < v"1.3"
