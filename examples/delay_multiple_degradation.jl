@@ -41,7 +41,7 @@ delay_interrupt = Dict(4=>delay_affect1!,5=>delay_affect2!)
 delayjumpset = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 
 djprob = DelayJumpProblem(jumpsys,dprob, DelayRejection(),  delayjumpset, de_chan0, save_positions=(false,false))
-sol =@time solve(djprob, SSAStepper(),seed=10, saveat =.1, save_delay_channel = false)
+sol =@time solve(djprob, SSAStepper(),seed=10, saveat =.1)
 plot(sol, label = [L"X_A" L"X_{I1}" L"X_{I2}"],legend =:topleft,xlabel="time",ylabel="Molecular Number")
 
 timestamps = 0:0.1:tf

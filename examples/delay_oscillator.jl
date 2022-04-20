@@ -9,6 +9,7 @@ rn = @reaction_network begin
     1/(1+Y^2), 0 --> X
     1/(1+Y),   Y --> 0
 end
+
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
 
 u0 = [0,0]

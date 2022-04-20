@@ -50,9 +50,9 @@ delay_affect! = function (integrator, rng)
 end
 delay_interrupt = Dict(4=>delay_affect!) 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
-djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false))
-sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1, save_delay_channel = true)
-sol =@time solve(djprob, SSAStepper(), seed = 2, save_delay_channel = true)
+djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel = true)
+sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1)
+sol =@time solve(djprob, SSAStepper(), seed = 2)
 
 using Plots, DiffEqBase; theme(:vibrant)
 ens_prob = EnsembleProblem(djprob)

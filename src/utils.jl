@@ -6,13 +6,14 @@ Get the rearranged order for a reaction system, returns a matrix `m` with first 
 If you know the old idx for a certain reaction in `ReactionSystem`, you can use 
 `m[:,2][idx]` to get the new idx. 
 """
+
 function get_reaction_idx(rn::Catalyst.ReactionSystem)
     massactionjump_order = Int64[]
     constantjump_order = Int64[]
     rxvars = []
-    for (i,rx) in enumerate(ModelingToolkit.get_eqs(rn))
+    for (i, rx) in enumerate(ModelingToolkit.get_eqs(rn))
         empty!(rxvars)
-        (rx.rate isa ModelingToolkit.Symbolic) && ModelingToolkit.get_variables!(rxvars, rx.rate)
+        (Catalyst.reactionrates(rn) isa ModelingToolkit.Symbolic) && ModelingToolkit.get_variables!(rxvars, Catalyst.reactionrates(rn))
         @inbounds for j = 1:length(rxvars)
             if isequal(rxvars[j], ModelingToolkit.get_iv(rn))
                 error("Does not support VariableRateJump")

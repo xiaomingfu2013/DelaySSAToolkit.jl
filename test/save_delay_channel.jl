@@ -25,9 +25,9 @@ u0 =@SVector [0,1,0]
 de_chan0 = [[]]
 tspan = (0.,tf)
 dprob = DiscreteProblem(u0, tspan)
-djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delayjumpset, de_chan0, save_positions = (true,true))
+djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delayjumpset, de_chan0, save_positions = (true,true),save_delay_channel = true)
 
-sol = solve(djprob, SSAStepper(),save_delay_channel = true)
+sol = solve(djprob, SSAStepper())
 
 for i in eachindex(sol.u)
     @test sol.u[i][3] == length(sol.channel[i][1])

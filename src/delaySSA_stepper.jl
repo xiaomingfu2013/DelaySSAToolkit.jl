@@ -106,8 +106,7 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
                          saveat = nothing,
                          callback = nothing,
                          tstops = eltype(djump_prob.prob.tspan)[],
-                         numsteps_hint=100,
-                         save_delay_channel=false)
+                         numsteps_hint=100,)
     if !(djump_prob.prob isa DiscreteProblem)
         error("SSAStepper only supports DiscreteProblems.")
     end
@@ -168,7 +167,7 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
      sizehint!(t,save_start+save_end)
    end
 
-    integrator = DSSAIntegrator(prob.f,copy(prob.u0),prob.tspan[1],prob.tspan[1],prob.p, sol,1,prob.tspan[1],cb,_saveat,save_everystep,save_end,cur_saveat,opts,tstops,1,false,true,deepcopy(de_chan0),chan_sol,djump_prob.delayjumpsets, save_delay_channel)
+    integrator = DSSAIntegrator(prob.f,copy(prob.u0),prob.tspan[1],prob.tspan[1],prob.p, sol,1,prob.tspan[1],cb,_saveat,save_everystep,save_end,cur_saveat,opts,tstops,1,false,true,deepcopy(de_chan0),chan_sol,djump_prob.delayjumpsets, djump_prob.save_delay_channel)
 
     cb.initialize(cb,integrator.u,prob.tspan[1],integrator) 
     DiffEqBase.initialize!(opts.callback,integrator.u,prob.tspan[1],integrator)

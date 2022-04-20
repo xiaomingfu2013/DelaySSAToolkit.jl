@@ -40,10 +40,10 @@ alg = DelayRejection()
 # alg = DelayDirect()
 # alg = DelayDirectCR()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false))
+jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false),  save_delay_channel = true)
 seed = 2
-sol = solve(jprob, SSAStepper(), seed = seed, saveat = 100,  save_delay_channel = true)
-sol = solve(jprob, SSAStepper(), seed = seed, save_delay_channel = true)
+sol = solve(jprob, SSAStepper(), seed = seed, saveat = 100)
+sol = solve(jprob, SSAStepper(), seed = seed)
 
 
 using Plots, DiffEqBase
