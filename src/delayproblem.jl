@@ -216,7 +216,7 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
     # handling parameter substition and empty param vecs
     p = (prob.p isa DiffEqBase.NullParameters || prob.p === nothing) ? Num[] : prob.p
 
-    majpmapper = JumpSysMajParamMapper(js, p; jseqs=eqs, rateconsttype=invttype)
+    majpmapper = ModelingToolkit.JumpSysMajParamMapper(js, p; jseqs=eqs, rateconsttype=invttype)
     majs = isempty(eqs.x[1]) ? nothing : assemble_maj(eqs.x[1], statetoid, majpmapper)
     crjs = ConstantRateJump[assemble_crj(js, j, statetoid) for j in eqs.x[2]]
     vrjs = VariableRateJump[assemble_vrj(js, j, statetoid) for j in eqs.x[3]]
