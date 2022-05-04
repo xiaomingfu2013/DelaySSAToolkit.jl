@@ -28,7 +28,7 @@ djprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0)
 p = djprob.discrete_jump_aggregation;
 integrator = DelaySSAToolkit.init(djprob, SSAStepper())
 integrator.de_chan
-
+delay_complete[1]
 @test p.dep_gr == [[1],[1,2]]
 @test DelaySSAToolkit.dep_gr_delay(p, integrator) == Dict(2=>[2],1=>[1,2])
 

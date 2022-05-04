@@ -272,7 +272,7 @@ function dep_gr_delay(p::AbstractDSSAJumpAggregator, integrator)
     # var_to_jumps = var_to_jumps_map(length(integrator.u),p.ma_jumps)
     @inbounds for key in keys(dict_complete)
         delay_complete_action = dict_complete[key]
-        if typeof(delay_complete_action)<:Pair
+        if typeof(delay_complete_action)<:Vector{Pair}
             vars = first.(delay_complete_action)
         else
             vars = vec(1:length(integrator.u))
