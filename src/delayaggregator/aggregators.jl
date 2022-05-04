@@ -6,7 +6,7 @@ An abstract type that contains delay stochastic simulation algorithms:
 - DelayMNRM
 - DelayDirectCR
 """
-abstract type AbstractDelayAggregatorAlgorithm  end
+abstract type AbstractDelayAggregatorAlgorithm end
 """
 $(TYPEDEF)
 Delay Rejection Method from Barrio, Manuel, Kevin Burrage, André Leier, and Tianhai Tian. "Oscillatory regulation of Hes1: discrete stochastic delay modelling and simulation." PLoS computational biology 2, no. 9 (2006): e117..

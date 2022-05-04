@@ -20,7 +20,7 @@ mutable struct DelayMNRMJumpAggregation{T,S,F1,F2,RNG,DG,PQ} <: AbstractDSSAJump
 end
 
 function DelayMNRMJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; num_specs, dep_graph=nothing, kwargs...) where {T,S,F1,F2,RNG}
-    
+
 
     # a dependency graph is needed and must be provided if there are constant rate jumps
     if dep_graph === nothing
@@ -35,9 +35,9 @@ function DelayMNRMJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
         add_self_dependencies!(dg)
     end
 
-    
+
     pq = MutableBinaryMinHeap{T}()
-    
+
     nd = nothing
     nnd = nothing
     ttnj = zero(et)
@@ -51,10 +51,10 @@ end
 function aggregate(aggregator::DelayMNRM, u, p, t, end_time, constant_jumps,
     ma_jumps, save_positions, rng; kwargs...)
 
-# handle constant jumps using function wrappers
-rates, affects! = get_jump_info_fwrappers(u, p, t, constant_jumps)
-build_jump_aggregation(DelayMNRMJumpAggregation, u, p, t, end_time, ma_jumps,
-            rates, affects!, save_positions, rng; num_specs=length(u), kwargs...)
+    # handle constant jumps using function wrappers
+    rates, affects! = get_jump_info_fwrappers(u, p, t, constant_jumps)
+    build_jump_aggregation(DelayMNRMJumpAggregation, u, p, t, end_time, ma_jumps,
+        rates, affects!, save_positions, rng; num_specs=length(u), kwargs...)
 end
 
 
@@ -85,7 +85,7 @@ function generate_jumps!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
     dt_delay_generation!(p, integrator)
     compare_delay!(p, integrator.de_chan, p.dt_delay, dt_reaction, t)
     if p.next_delay != nothing
-        p.next_jump =0
+        p.next_jump = 0
     else
         p.next_jump = next_jump
     end
@@ -132,10 +132,10 @@ end
 function fill_rates_and_get_times!(p::DelayMNRMJumpAggregation, u, params, t)
 
     # mass action jumps
-    majumps   = p.ma_jumps
+    majumps = p.ma_jumps
     cur_rates = p.cur_rates
     # num_de_chan = length(integrator.de_chan) # num_de_chan
-    pqdata = Vector{typeof(t)}(undef,length(cur_rates))
+    pqdata = Vector{typeof(t)}(undef, length(cur_rates))
     @inbounds for i in 1:get_num_majumps(majumps)
         cur_rates[i] = evalrxrate(u, i, majumps)
         pqdata[i] = t + randexp(p.rng) / cur_rates[i]
@@ -143,7 +143,7 @@ function fill_rates_and_get_times!(p::DelayMNRMJumpAggregation, u, params, t)
 
     # constant rates
     rates = p.rates
-    idx   = get_num_majumps(majumps) + 1
+    idx = get_num_majumps(majumps) + 1
     @inbounds for rate in rates
         cur_rates[idx] = rate(u, params, t)
         pqdata[idx] = t + randexp(p.rng) / cur_rates[idx]

@@ -27,11 +27,11 @@ end
 #1 
 function aggregate(aggregator::DelayRejection, u, p, t, end_time, constant_jumps,
     ma_jumps, save_positions, rng; kwargs...)
-    
-    
+
+
     # handle constant jumps using function wrappers
     rates, affects! = get_jump_info_fwrappers(u, p, t, constant_jumps)
-    build_jump_aggregation(DelayRejectionJumpAggregation, u, p, t, end_time, ma_jumps,rates, affects!, save_positions, rng; kwargs...)
+    build_jump_aggregation(DelayRejectionJumpAggregation, u, p, t, end_time, ma_jumps, rates, affects!, save_positions, rng; kwargs...)
 end
 
 
@@ -60,24 +60,24 @@ end
 
 @fastmath function time_to_next_jump!(p::DelayRejectionJumpAggregation, integrator, u, params, t)
     prev_rate = zero(t)
-    new_rate  = zero(t)
+    new_rate = zero(t)
     cur_rates = p.cur_rates
     # mass action rates
-    majumps   = p.ma_jumps
-    idx       = get_num_majumps(majumps)
+    majumps = p.ma_jumps
+    idx = get_num_majumps(majumps)
     @inbounds for i in 1:idx
-        new_rate     = evalrxrate(u, i, majumps)
+        new_rate = evalrxrate(u, i, majumps)
         cur_rates[i] = new_rate + prev_rate
-        prev_rate    = cur_rates[i]
+        prev_rate = cur_rates[i]
     end
     # constant jump rates
-    idx  += 1
+    idx += 1
     rates = p.rates
     @inbounds for i in 1:length(p.rates)
-      new_rate       = rates[i](u, params, t)
-      cur_rates[idx] = new_rate + prev_rate
-      prev_rate      = cur_rates[idx]
-      idx           += 1
+        new_rate = rates[i](u, params, t)
+        cur_rates[idx] = new_rate + prev_rate
+        prev_rate = cur_rates[idx]
+        idx += 1
     end
 
     @inbounds sum_rate = cur_rates[end]

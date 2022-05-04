@@ -5,3 +5,4 @@
 .vscode/settings.json
 Manifest.toml
 test/Manifest.toml
+examples/benchmark
