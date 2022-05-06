@@ -62,18 +62,7 @@ end
     p.shadow_integrator.u = copy(integrator.u) #TODO
     p.shadow_integrator.de_chan = deepcopy(integrator.de_chan) #TODO
 
-
-    ttnj_last, ttnj = direct_algo!(p, integrator, t)
-    T1_last, T2_last = create_Tstruct(p.shadow_integrator.de_chan)
-
-    shift_delay_channel!(p.shadow_integrator.de_chan, ttnj_last)
-    update_delay_channel!(p.shadow_integrator.de_chan)
-
-    # in case the last ttnj also change the state
-    update_state_final_jump!(p, p.shadow_integrator, ttnj_last, T1_last, T2_last)
-
-    fill_cum_rates_and_sum!(p, p.shadow_integrator.u, params, t + ttnj)
-    p.time_to_next_jump = ttnj
+    direct_algo!(p, integrator, t)
 end
 
 function direct_algo!(p, integrator, t)
@@ -89,18 +78,12 @@ function direct_algo!(p, integrator, t)
         i = 1
         aₜ = p.sum_rate * T1[2]
         F = one(t) - exp(-aₜ)
-        # u_ = copy(p.shadow_integrator.u)
-        # de_chan_ = deepcopy(p.shadow_integrator.de_chan)
         aₜ_ = zero(aₜ)
         sum_rate_ = calculate_sum_rate(p, p.shadow_integrator.u, params, t)
         while F < r1
             p.next_delay = [T2[i]]
 
-            # backup the u and de_chan before the next update delay complete
-            # u_ = copy(p.shadow_integrator.u)
-            # de_chan_ = deepcopy(p.shadow_integrator.de_chan)
-
-            # TODO change
+            # TODO change the de_chan step by step
             shift_delay_channel!(p.shadow_integrator.de_chan, T1[i+1] - T1[i])
             update_delay_channel!(p.shadow_integrator.de_chan)
             update_delay_complete!(p, p.shadow_integrator)
@@ -108,24 +91,25 @@ function direct_algo!(p, integrator, t)
             sum_rate_ = calculate_sum_rate(p, p.shadow_integrator.u, params, t + T1[i+1])
 
             aₜ_ = copy(aₜ) # backup aₜ
-
-            # sum_rate_ = calculate_sum_rate(p, u_, params, t + T1[i+1])
             aₜ += sum_rate_ * (T1[i+2] - T1[i+1])
             F = one(t) - exp(-aₜ)
             i += 1
         end
-        # p.sum_rate = calculate_sum_rate(p, u_, params, t + T1[i])
-        # p.sum_rate = calculate_sum_rate(p, p.shadow_integrator.u, params, t + T1[i])
         p.sum_rate = sum_rate_
         ttnj_last = (-log(one(t) - r1) - aₜ_) / p.sum_rate
         # TODO change
         ttnj = T1[i] + ttnj_last
-        # if i > 1
-        #     p.shadow_integrator.u = copy(u_)
-        #     p.shadow_integrator.de_chan = deepcopy(de_chan_)
-        # end
     end
-    return ttnj_last, ttnj
+    T1_last, T2_last = create_Tstruct(p.shadow_integrator.de_chan)
+
+    shift_delay_channel!(p.shadow_integrator.de_chan, ttnj_last)
+    update_delay_channel!(p.shadow_integrator.de_chan)
+
+    # in case the last ttnj also change the state
+    update_state_final_jump!(p, p.shadow_integrator, ttnj_last, T1_last, T2_last)
+
+    fill_cum_rates_and_sum!(p, p.shadow_integrator.u, params, t + ttnj)
+    p.time_to_next_jump = ttnj
 end
 
 @inbounds function update_state_final_jump!(p, integrator, tgap, T1, T2)
@@ -135,24 +119,31 @@ end
             p.next_delay = [T2[i]]
             update_delay_complete!(p, integrator)
         end
-        # deleteat!(T1, 1:idx)
-        # deleteat!(T2, 1:idx)
     end
     nothing
 end
 
 function update_delay_chan_state_at_tstop!(p, integrator, tgap, T1, T2)
-    prepend!(T1, zero(tgap))
     idx = count(x -> x <= tgap, T1)
-    ttnj_last = idx != 0 ? tgap - T1[idx] : tgap
-    if idx != 0
-        for i in 1:idx-1
+    # T1copy = copy(T1)
+    # prepend!(T1copy, zero(tgap))
+    # diff_T1 = diff(T1copy)
+    if idx > 0
+        ttnj_last = tgap - T1[idx]
+        prev_T1 = 0
+        for i in 1:idx
             p.next_delay = [T2[i]]
-            shift_delay_channel!(integrator.de_chan, T1[i+1] - T1[i])
+            shift_delay_channel!(integrator.de_chan, T1[i]- prev_T1)
             update_delay_channel!(integrator.de_chan)
             update_delay_complete!(p, integrator)
+            prev_T1 = T1[i]
         end
+    else
+        ttnj_last = tgap
     end
+    deleteat!(T1,1:idx)
+    deleteat!(T2,1:idx)
+    
     shift_delay_channel!(integrator.de_chan, ttnj_last)
     update_delay_channel!(integrator.de_chan)
     nothing
@@ -242,7 +233,7 @@ end
     @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
 
     integrator.u = copy(p.shadow_integrator.u)
-    integrator.de_chan = deepcopy(p.shadow_integrator.de_chan) #TODO is possible to remove copy and deepcopy here, and to delete copy in generate_delta!
+    integrator.de_chan = deepcopy(p.shadow_integrator.de_chan) #TODO 
 
     num_ma_rates = get_num_majumps(ma_jumps)
     if next_jump <= num_ma_rates # if the next jump is a mass action jump

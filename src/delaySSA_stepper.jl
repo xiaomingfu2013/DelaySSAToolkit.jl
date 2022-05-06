@@ -221,8 +221,10 @@ function saveat_end_function!(integrator, prev_t)
     # save last de_chan
     if integrator.save_delay_channel
         last_chan = deepcopy(integrator.de_chan)
-        # shift_delay_channel!(last_chan, t_final_gap)
-        # update_delay_channel!(last_chan)
+        if !(typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation)
+            shift_delay_channel!(last_chan, t_final_gap)
+            update_delay_channel!(last_chan)
+        end
         push!(integrator.chan_sol,last_chan)
     end
 end
@@ -275,9 +277,6 @@ function saveat_function_direct_method!(integrator, prev_t)
             
             if integrator.save_delay_channel
                 prev_de_chan = deepcopy(integrator.de_chan)
-                # shift_delay_channel!(prev_de_chan, ttnj_last) 
-                # # Special for Direct method
-                # update_delay_channel!(prev_de_chan) #
                 push!(integrator.chan_sol,prev_de_chan)
             end
             

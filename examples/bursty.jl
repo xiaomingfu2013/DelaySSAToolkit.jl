@@ -42,13 +42,14 @@ alg = DelayDirect()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false),  save_delay_channel = false)
 seed = 2
-sol = solve(jprob, SSAStepper(), seed = seed, saveat = 100)
-# sol = solve(jprob, SSAStepper(), seed = seed)
+saveat = 0:.1:100
+sol = solve(jprob, SSAStepper(), seed = seed)
+sol = solve(jprob, SSAStepper(), seed = seed, saveat = saveat)
 
 
-using Plots, DiffEqBase
+using DiffEqBase
 ensprob = EnsembleProblem(jprob)
-@time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=10^5)
+@time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=5e4)
 
 # Check with the exact probability distribution
 using TaylorSeries
@@ -67,7 +68,7 @@ function delay_bursty(params,NT::Int)
 end
 
 using Catalyst.EnsembleAnalysis
-theme(:vibrant)
+using Plots; theme(:vibrant)
 sol_end = componentwise_vectors_timepoint(ens, tf)
 histogram(sol_end,bins=0:1:60,normalize=:pdf, label = "Delay SSA",fillalpha = 0.6, linecolor = :orange)
 

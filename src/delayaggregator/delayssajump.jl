@@ -186,7 +186,7 @@ function find_next_delay_dt!(p, integrator)
     nothing
 end
 
-@inline function shift_delay_channel!(de_chan::Vector{Vector{T}},ttnj::T) where {T<:Real}
+@inline function shift_delay_channel!(de_chan::Vector{Vector{T1}},ttnj::T2) where {T1<:Real,T2<:Real}
     @inbounds for idx in eachindex(de_chan)
         for j in eachindex(de_chan[idx])
             de_chan[idx][j] -= ttnj
