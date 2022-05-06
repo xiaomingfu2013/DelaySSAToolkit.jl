@@ -35,15 +35,15 @@ delay_trigger_affect!
 delay_trigger = Dict([Pair(i, delay_trigger_affect![i]) for i in 1:burst_sup])
 delay_complete = Dict(1=>[1=>-1])
 delay_interrupt = Dict()
-alg = DelayRejection()
+# alg = DelayRejection()
 # alg = DelayMNRM()
-# alg = DelayDirect()
+alg = DelayDirect()
 # alg = DelayDirectCR()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false),  save_delay_channel = true)
+jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false),  save_delay_channel = false)
 seed = 2
 sol = solve(jprob, SSAStepper(), seed = seed, saveat = 100)
-sol = solve(jprob, SSAStepper(), seed = seed)
+# sol = solve(jprob, SSAStepper(), seed = seed)
 
 
 using Plots, DiffEqBase
@@ -66,10 +66,11 @@ function delay_bursty(params,NT::Int)
     taylor_coefficients(NT,-1,gen1)
 end
 
-using DifferentialEquations.EnsembleAnalysis
+using Catalyst.EnsembleAnalysis
 theme(:vibrant)
 sol_end = componentwise_vectors_timepoint(ens, tf)
 histogram(sol_end,bins=0:1:60,normalize=:pdf, label = "Delay SSA",fillalpha = 0.6, linecolor = :orange)
+
 sol_exact = delay_bursty([ps;130;200], 61)
 fig = plot!(0:60,sol_exact, linewidth = 3, label = "Exact solution", fmt=:svg, xlabel = "# of products", ylabel = "Probability")
 # savefig(fig, "docs/src/assets/bursty.svg")

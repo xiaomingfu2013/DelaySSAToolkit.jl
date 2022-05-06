@@ -27,7 +27,7 @@ function get_reaction_idx(rn::Catalyst.ReactionSystem)
     end
     order = vcat(massactionjump_order, constantjump_order)
     # println("The rearranged order :")
-    vcat([[rn.eqs[order[i]] order[i]] for i in eachindex(order)]...) 
+    vcat([[ModelingToolkit.get_eqs(rn)[order[i]] order[i]] for i in eachindex(order)]...) 
 end
 
 export get_reaction_idx
