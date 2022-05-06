@@ -15,21 +15,23 @@ mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,IType} <: AbstractDSSAJu
     time_to_next_jump::T
     shadow_integrator::IType
 end
-mutable struct Shadow_Integrator{uType,chanType}
+mutable struct ShadowIntegrator{uType,chanType,T,S,F1}
     u::uType
     de_chan::chanType
     delayjumpsets::DelayJumpSet
+    cur_rates::Vector{T}
+    ma_jumps::S
+    rates::F1
 end
 function DelayDirectJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; u0, kwargs...) where {T,S,F1,F2,RNG}
     ttnj = zero(et)
-    shadow_integrator = Shadow_Integrator{typeof(u0),Vector{Vector{T}}}(copy(u0), [Vector{T}()], DelayJumpSet(Dict(), Dict(), Dict()))
+    shadow_integrator = ShadowIntegrator{typeof(u0),Vector{Vector{T}},T,S,F1}(copy(u0), [Vector{T}()], DelayJumpSet(Dict(), Dict(), Dict()), copy(crs), maj, rs)
     nd = nothing
     nnd = [1] # in the Direct Method the number of next delay equals always 1
     DelayDirectJumpAggregation{T,S,F1,F2,RNG,typeof(shadow_integrator)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, nd, nnd, ttnj, shadow_integrator)
 end
 
-function aggregate(aggregator::DelayDirect, u, p, t, end_time, constant_jumps,
-    ma_jumps, save_positions, rng; kwargs...)
+function aggregate(aggregator::DelayDirect, u, p, t, end_time, constant_jumps, ma_jumps, save_positions, rng; kwargs...)
 
     # handle constant jumps using function wrappers
     rates, affects! = get_jump_info_fwrappers(u, p, t, constant_jumps)
@@ -44,12 +46,12 @@ function initialize!(p::DelayDirectJumpAggregation, integrator, u, params, t)
 end
 
 @inline function execute_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t)
-    update_state_delay_Direct!(p, integrator, integrator.u, t)
+    update_state_delay_direct!(p, integrator, integrator.u, t)
     nothing
 end
 
 function generate_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t)
-    generate_delta!(p, integrator, params, t)
+    generate_time_to_next_jump!(p, integrator, params, t)
     @fastmath p.next_jump_time = t + p.time_to_next_jump
     @inbounds p.next_jump = searchsortedfirst(p.cur_rates, rand(p.rng) * p.sum_rate) # 
     nothing
@@ -57,10 +59,10 @@ end
 """
     Create delta based on the shawdow variable u_shadow
 """
-@inline function generate_delta!(p::DelayDirectJumpAggregation, integrator, params, t)
-    @unpack delay_complete = integrator.delayjumpsets
-    p.shadow_integrator.u = copy(integrator.u) #TODO
+@inline function generate_time_to_next_jump!(p::DelayDirectJumpAggregation, integrator, params, t)
+    # the reason to use a shadow_integrator is because generating ttnj and changing the state happen simultaneously in DelayDirect method, so has to cache it before execute_jumps!
     p.shadow_integrator.de_chan = deepcopy(integrator.de_chan) #TODO
+    p.shadow_integrator.u = copy(integrator.u) #TODO
 
     direct_algo!(p, integrator, t)
 end
@@ -68,36 +70,34 @@ end
 function direct_algo!(p, integrator, t)
     fill_cum_rates_and_sum!(p, p.shadow_integrator.u, params, t)
     r1 = rand(p.rng)
-    if isempty(reduce(vcat, integrator.de_chan))
+    if isempty(reduce(vcat, p.shadow_integrator.de_chan))
         ttnj = -log(r1) / p.sum_rate
         ttnj_last = ttnj
     else
-        T1, T2 = create_Tstruct(integrator.de_chan) # TODO change the order, maybe create T1[2] first check if F < r1, then create Tstruct1
+        T1, T2 = create_Tstruct(p.shadow_integrator.de_chan) # TODO change the order, maybe create T1[2] first check if F < r1, then create Tstruct1
         prepend!(T1, zero(t))
-        append!(T1, Inf)
+        append!(T1, typemax(t))
         i = 1
         aₜ = p.sum_rate * T1[2]
         F = one(t) - exp(-aₜ)
         aₜ_ = zero(aₜ)
-        sum_rate_ = calculate_sum_rate(p, p.shadow_integrator.u, params, t)
+        calculate_sum_rate!(p.shadow_integrator, p.shadow_integrator.u, params, t)
         while F < r1
             p.next_delay = [T2[i]]
 
-            # TODO change the de_chan step by step
             shift_delay_channel!(p.shadow_integrator.de_chan, T1[i+1] - T1[i])
             update_delay_channel!(p.shadow_integrator.de_chan)
             update_delay_complete!(p, p.shadow_integrator)
 
-            sum_rate_ = calculate_sum_rate(p, p.shadow_integrator.u, params, t + T1[i+1])
+            calculate_sum_rate!(p.shadow_integrator, p.shadow_integrator.u, params, t + T1[i+1])
 
             aₜ_ = copy(aₜ) # backup aₜ
-            aₜ += sum_rate_ * (T1[i+2] - T1[i+1])
+            aₜ += p.shadow_integrator.cur_rates[end] * (T1[i+2] - T1[i+1])
             F = one(t) - exp(-aₜ)
             i += 1
         end
-        p.sum_rate = sum_rate_
+        p.sum_rate = p.shadow_integrator.cur_rates[end]
         ttnj_last = (-log(one(t) - r1) - aₜ_) / p.sum_rate
-        # TODO change
         ttnj = T1[i] + ttnj_last
     end
     T1_last, T2_last = create_Tstruct(p.shadow_integrator.de_chan)
@@ -114,26 +114,21 @@ end
 
 @inbounds function update_state_final_jump!(p, integrator, tgap, T1, T2)
     idx = count(x -> x <= tgap, T1)
-    if !isempty(idx)
-        for i in 1:idx
-            p.next_delay = [T2[i]]
-            update_delay_complete!(p, integrator)
-        end
+    for i in 1:idx
+        p.next_delay = [T2[i]]
+        update_delay_complete!(p, integrator)
     end
     nothing
 end
 
 function update_delay_chan_state_at_tstop!(p, integrator, tgap, T1, T2)
     idx = count(x -> x <= tgap, T1)
-    # T1copy = copy(T1)
-    # prepend!(T1copy, zero(tgap))
-    # diff_T1 = diff(T1copy)
     if idx > 0
         ttnj_last = tgap - T1[idx]
         prev_T1 = 0
         for i in 1:idx
             p.next_delay = [T2[i]]
-            shift_delay_channel!(integrator.de_chan, T1[i]- prev_T1)
+            shift_delay_channel!(integrator.de_chan, T1[i] - prev_T1)
             update_delay_channel!(integrator.de_chan)
             update_delay_complete!(p, integrator)
             prev_T1 = T1[i]
@@ -141,9 +136,9 @@ function update_delay_chan_state_at_tstop!(p, integrator, tgap, T1, T2)
     else
         ttnj_last = tgap
     end
-    deleteat!(T1,1:idx)
-    deleteat!(T2,1:idx)
-    
+    deleteat!(T1, 1:idx)
+    deleteat!(T2, 1:idx)
+
     shift_delay_channel!(integrator.de_chan, ttnj_last)
     update_delay_channel!(integrator.de_chan)
     nothing
@@ -181,11 +176,11 @@ function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
     nothing
 end
 
-function calculate_sum_rate(p::DelayDirectJumpAggregation, u, params, t)
+function calculate_sum_rate!(s::ShadowIntegrator, u, params, t)
     prev_rate = zero(t)
     new_rate = zero(t)
-    cur_rates = zeros(length(p.cur_rates))
-    majumps = p.ma_jumps
+    cur_rates = s.cur_rates
+    majumps = s.ma_jumps
     idx = get_num_majumps(majumps)
     @inbounds for i in 1:idx
         new_rate = evalrxrate(u, i, majumps)
@@ -194,19 +189,19 @@ function calculate_sum_rate(p::DelayDirectJumpAggregation, u, params, t)
     end
     # constant jump rates
     idx += 1
-    rates = p.rates
-    @inbounds for i in 1:length(p.rates)
+    rates = s.rates
+    @inbounds for i in 1:length(s.rates)
         new_rate = rates[i](u, params, t)
         cur_rates[idx] = new_rate + prev_rate
         prev_rate = cur_rates[idx]
         idx += 1
     end
-    cur_rates[end]
 end
+# TODO below is not ideal, but since update_complete is for delay channel, so seems unable to update Tstruct at the same time 
 """
     function create_Tstruct(de_chan::Vector{Vector{T}})
 
-calculate `Tstruct` according to the de_chan.
+calculate `Tstruct` according to the de_chan. 
 """
 function create_Tstruct(de_chan::Vector{Vector{T}}) where {T}
     N = sum(length.(de_chan))
@@ -228,7 +223,7 @@ function create_Tstruct(de_chan::Vector{Vector{T}}) where {T}
     Tstruct1, Tstruct2
 end
 
-@inline function update_state_delay_Direct!(p::DelayDirectJumpAggregation, integrator, u, t)
+@inline function update_state_delay_direct!(p::DelayDirectJumpAggregation, integrator, u, t)
     @unpack ma_jumps, next_jump, time_to_next_jump = p
     @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
 
