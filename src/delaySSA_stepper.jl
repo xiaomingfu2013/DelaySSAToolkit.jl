@@ -216,7 +216,7 @@ function saveat_end_function!(integrator, prev_t)
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation 
         # T1, T2 = create_Tstruct(integrator.de_chan)
         # update_delay_chan_state_at_tstop!(integrator.cb.affect!, integrator, t_final_gap)
-        update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, integrator.t, t_final_gap)
+        update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, prev_t, t_final_gap)
     end
     push!(integrator.sol.u,copy(integrator.u))
 
@@ -300,7 +300,7 @@ function saveat_function_direct_method_test!(integrator, prev_t)
             push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
             
             # Special to Direct method
-            update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, integrator.t, tgap)
+            update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, last_saved_t, tgap)
             push!(integrator.sol.u,copy(integrator.u))
             
             if integrator.save_delay_channel
