@@ -186,6 +186,14 @@ function find_next_delay_dt!(p, integrator)
     nothing
 end
 
+function find_next_delay_num(de_chan::Vector{Vector{T}}) where {T}
+    val_vec = Vector{T}(undef,length(de_chan))
+    @inbounds for i in eachindex(de_chan)
+        val_vec[i] = isempty(de_chan[i]) ? typemax(T) : minimum(de_chan[i])
+    end
+    findmin(val_vec)
+end
+
 @inline function shift_delay_channel!(de_chan::Vector{Vector{T1}},ttnj::T2) where {T1<:Real,T2<:Real}
     @inbounds for idx in eachindex(de_chan)
         for j in eachindex(de_chan[idx])
