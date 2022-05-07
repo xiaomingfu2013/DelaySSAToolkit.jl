@@ -49,7 +49,7 @@ vcat(sol.u...)|>minimum
 # sol.channel
 
 ensprob = EnsembleProblem(jprob)
-@time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=5e4)
+@time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=1e4)
 
 # Check with the exact probability distribution
 using TaylorSeries

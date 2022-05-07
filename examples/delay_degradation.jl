@@ -30,9 +30,9 @@ de_chan0 = [[]]
 C, γ, β = [2., 0.1, 0.5]
 p = [C, γ, β]
 tspan = (0.,tf)
-aggregatoralgo = DelayRejection()
+# aggregatoralgo = DelayRejection()
 # aggregatoralgo = DelayMNRM()
-# aggregatoralgo = DelayDirect()
+aggregatoralgo = DelayDirect()
 # aggregatoralgo = DelayDirectCR()
 dprob = DiscreteProblem(u0, tspan, p)
 
@@ -50,7 +50,7 @@ delay_affect! = function (integrator, rng)
 end
 delay_interrupt = Dict(4=>delay_affect!) 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
-djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel = true)
+djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel = false)
 sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1)
 sol =@time solve(djprob, SSAStepper(), seed = 2)
 
@@ -68,8 +68,8 @@ x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((
 
 
 using StatsBase
-
-tsm(t) = timepoint_mean(ens,t)
+using Catalyst.EnsembleAnalysis
+tsm(t) = Catalyst.EnsembleAnalysis.timepoint_mean(ens,t)
 
 mean_A(t) = tsm(t)[1]
 mean_I(t) = tsm(t)[2]
