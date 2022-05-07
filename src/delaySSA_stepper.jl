@@ -193,7 +193,8 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
     integrator.t = end_time
 
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation
-        saveat_function_direct_method!(integrator, last_t)
+        # saveat_function_direct_method!(integrator, last_t)
+        saveat_function_direct_method_test!(integrator, last_t)
     else
         saveat_function!(integrator, last_t)
     end
@@ -213,8 +214,9 @@ function saveat_end_function!(integrator, prev_t)
     # save last u 
     t_final_gap = end_time - prev_t
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation 
-        T1, T2 = create_Tstruct(integrator.de_chan)
-        update_delay_chan_state_at_tstop!(integrator.cb.affect!, integrator, t_final_gap, T1, T2)
+        # T1, T2 = create_Tstruct(integrator.de_chan)
+        # update_delay_chan_state_at_tstop!(integrator.cb.affect!, integrator, t_final_gap)
+        update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, integrator.t, t_final_gap)
     end
     push!(integrator.sol.u,copy(integrator.u))
 
@@ -285,6 +287,32 @@ function saveat_function_direct_method!(integrator, prev_t)
         end
     end 
 end
+#TODO 
+function saveat_function_direct_method_test!(integrator, prev_t)
+    # Special to Direct method
+    if integrator.saveat !== nothing && !isempty(integrator.saveat)
+        # Split to help prediction
+        last_saved_t = prev_t
+        # prev_de_chan = integrator.de_chan
+        while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
+
+            tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
+            push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
+            
+            # Special to Direct method
+            update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, integrator.t, tgap)
+            push!(integrator.sol.u,copy(integrator.u))
+            
+            if integrator.save_delay_channel
+                prev_de_chan = deepcopy(integrator.de_chan)
+                push!(integrator.chan_sol,prev_de_chan)
+            end
+            
+            last_saved_t = integrator.saveat[integrator.cur_saveat]
+            integrator.cur_saveat += 1
+        end
+    end 
+end
 
 # The Jump aggregators should not register the next jump through add_tstop! for SSAIntegrator
 # such that we can achieve maximum performance
@@ -312,7 +340,7 @@ function DiffEqBase.step!(integrator::DSSAIntegrator)
     end
 
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation
-        saveat_function_direct_method!(integrator, copy(integrator.tprev))
+        saveat_function_direct_method_test!(integrator, copy(integrator.tprev))
     else
         saveat_function!(integrator, copy(integrator.tprev))
     end

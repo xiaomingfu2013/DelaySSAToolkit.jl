@@ -89,6 +89,7 @@ function direct_algo!(p, integrator, params, t)
             calculate_sum_rate!(p, p.shadow_integrator, p.shadow_integrator.u, params, t + T1[i+1])
 
             aₜ_ = copy(aₜ) # backup aₜ
+            # aₜ_ = aₜ # backup aₜ
             aₜ += p.shadow_integrator.cur_rates[end] * (T1[i+2] - T1[i+1])
             F = one(t) - exp(-aₜ)
             i += 1
