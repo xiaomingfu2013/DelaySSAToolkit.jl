@@ -73,6 +73,7 @@ function direct_algo!(p, shadow_integrator, params, t)
         ttnj_last = ttnj
     else
         cur_T1 = zero(t)
+        prev_T1 = zero(t)
         find_next_delay_num!(p, shadow_integrator.de_chan)
         cur_T1 += p.time_to_next_jump
         i = 1
@@ -91,7 +92,8 @@ function direct_algo!(p, shadow_integrator, params, t)
 
             # prev_T1 = p.time_to_next_jump
 
-            find_next_delay_num!(p, shadow_integrator.de_chan) 
+            find_next_delay_num!(p, shadow_integrator.de_chan)
+            prev_T1 = cur_T1 # to avoid cur_T1 = Inf 
             cur_T1 += p.time_to_next_jump
 
             # aₜ_ = copy(aₜ) # backup aₜ
@@ -101,7 +103,7 @@ function direct_algo!(p, shadow_integrator, params, t)
             i += 1
         end
         ttnj_last = (-log(one(t) - r1) - aₜ_) / shadow_integrator.cur_rates[end]
-        ttnj = cur_T1 - p.time_to_next_jump + ttnj_last
+        ttnj = prev_T1 + ttnj_last
     end
     
     # T1_last, T2_last = create_Tstruct(integrator.de_chan)
@@ -116,16 +118,13 @@ function direct_algo!(p, shadow_integrator, params, t)
     p.time_to_next_jump = ttnj
     nothing
 end
-# function update_delay_channel_direct!(p, de_chan::Vector{Vector{T}}) where {T}
-#     p.next_delay, p.num_next_delay
-#     _, pos = findmin(de_chan[next_delay])
-#     deleteat!(de_chan[next_delay], pos)
-# end
 
 
-function update_delay_chan_state_at_tstop_test!(p, integrator, params, t, tgap)
+
+function update_delay_at_tstop_test!(p, integrator, params, t, tgap)
     # direct_algo!(p, integrator, params, t; tgap = tgap)
     cur_T1 = zero(t)
+    prev_T1 = zero(t)
     find_next_delay_num!(p, integrator.de_chan)
     cur_T1 += p.time_to_next_jump
     while cur_T1 <= tgap
@@ -133,9 +132,10 @@ function update_delay_chan_state_at_tstop_test!(p, integrator, params, t, tgap)
         update_delay_channel!(integrator.de_chan)
         update_delay_complete!(p, integrator)
         find_next_delay_num!(p, integrator.de_chan) 
+        prev_T1 = cur_T1 # to avoid cur_T1 = Inf 
         cur_T1 += p.time_to_next_jump    
     end
-    ttnj_last = tgap - (cur_T1 - p.time_to_next_jump)
+    ttnj_last = tgap - prev_T1
     shift_delay_channel!(integrator.de_chan, ttnj_last)
     update_delay_channel!(integrator.de_chan)
     nothing

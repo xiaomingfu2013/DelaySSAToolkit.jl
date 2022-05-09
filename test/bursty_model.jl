@@ -4,7 +4,7 @@ using Statistics
 using Test
 
 
-reltol = 0.1
+reltol = 5e-2
 @parameters t
 @variables X(t)
 burst_sup = 30
@@ -38,7 +38,7 @@ bursty_var(t) = 2*a*b^2*min(t,τ) + a*b*min(t,τ)
 
 # Check mean and variance
 samplesize = Int64(5e4)
-for alg in algos
+@testset for alg in algos
     jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false))
     ensprob = EnsembleProblem(jprob)
     @time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=samplesize, saveat = timestamps)
