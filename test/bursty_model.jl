@@ -44,9 +44,9 @@ for alg in algos
     @time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=samplesize, saveat = timestamps)
     for idx in eachindex(timestamps)
     sol_end = reduce(vcat, [ens[i].u[idx+1] for i in 1:samplesize])
-        t_ = timestamps[idx]
-        @test mean(sol_end) ≈ bursty_mean(t_) atol = reltol*bursty_mean(t_) 
-        @test var(sol_end) ≈ bursty_var(t_) atol = reltol*bursty_var(t_)
+    t_ = timestamps[idx]
+    @test mean(sol_end) ≈ bursty_mean(t_) atol = reltol*bursty_mean(t_) 
+    @test var(sol_end) ≈ bursty_var(t_) atol = reltol*bursty_var(t_)
     end
 end
 
