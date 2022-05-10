@@ -4,7 +4,7 @@ using Statistics
 using Test
 
 
-reltol = 5e-2
+reltol = 1e-1
 @parameters t
 @variables X(t)
 burst_sup = 30

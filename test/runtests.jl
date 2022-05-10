@@ -14,4 +14,7 @@ using Test, SafeTestsets
     @time @safetestset "save delay channel test" begin
         include("save_delay_channel.jl")
     end 
+    @time @safetestset "cascade of delay reaction test" begin
+        include("cascade_of_delay_reaction.jl")
+    end 
 end
