@@ -29,7 +29,7 @@ DiscreteCallback(c::AbstractDSSAJumpAggregator) = DiscreteCallback(c, c, initial
 ########### The following routines are templates for all Delay SSAs ###########
 ########### Generally they should not need to be overloaded.  ###########
 
-## Users will normally define (see direct.jl for examples):
+## Users will normally define:
 # aggregate
 # initialize!
 # execute_jumps!
@@ -48,7 +48,7 @@ function (p::AbstractDSSAJumpAggregator)(integrator)
     nothing
 end
 
-# setting up a new simulation
+# setting up a new simulation for initialize
 function (p::AbstractDSSAJumpAggregator)(dj, u, t, integrator) # initialize
     initialize!(p, integrator, u, integrator.p, t)
     register_next_jump_time!(integrator, p, integrator.t)
