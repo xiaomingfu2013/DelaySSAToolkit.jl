@@ -186,12 +186,22 @@ function find_next_delay_dt!(p, integrator)
     nothing
 end
 
-function find_next_delay_num(de_chan::Vector{Vector{T}}) where {T}
+function find_next_delay_num!(p, de_chan::Vector{Vector{T}}) where {T}
+    @label restart
     val_vec = Vector{T}(undef,length(de_chan))
     @inbounds for i in eachindex(de_chan)
         val_vec[i] = isempty(de_chan[i]) ? typemax(T) : minimum(de_chan[i])
     end
-    findmin(val_vec)
+    val = minimum(val_vec)
+    if val < eps(T)
+        shift_delay_channel!(de_chan, eps(T))
+        update_delay_channel!(de_chan)
+        @goto restart
+    end
+    p.next_delay, p.num_next_delay = find_next_delay_vec(de_chan, val)
+    p.time_to_next_jump = val
+    nothing
+    # return val
 end
 
 @inline function shift_delay_channel!(de_chan::Vector{Vector{T1}},ttnj::T2) where {T1<:Real,T2<:Real}
@@ -358,8 +368,8 @@ julia> find_next_delay_vec(A, x)
 ([1, 2, 3], [2, 1, 1])
 ```
 """
-function find_next_delay_vec(A::Vector{Vector{T}}, x::T) where {T}
-    position_index = findall(A->x in A, A)
-    num_in_vec = find_num_in_vec(A, position_index, x)
+function find_next_delay_vec(de_chan::Vector{Vector{T}}, ttnj::T) where {T}
+    position_index = findall(de_chan->ttnj in de_chan, de_chan)
+    num_in_vec = find_num_in_vec(de_chan, position_index, ttnj)
     return position_index, num_in_vec
 end

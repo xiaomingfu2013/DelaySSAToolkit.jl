@@ -30,4 +30,43 @@ function get_reaction_idx(rn::Catalyst.ReactionSystem)
     vcat([[ModelingToolkit.get_eqs(rn)[order[i]] order[i]] for i in eachindex(order)]...) 
 end
 
+
+Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int) = [A.u[i], A.channel[i]]
+Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int, ::Colon) = [A.u[j][i] for j in 1:length(A.t)]
+
+function (A::DSSASolution)(s::Symbol,i::Int)
+    if s == :channel
+        @assert i <= length(A.channel[1])
+        return [A.channel[j][i] for j in 1:length(A.t)]
+    elseif s ==:u
+        @assert i <= length(A.u[1])
+        return [A.u[j][i] for j in 1:length(A.t)]
+    end
+end 
+
+function (A::DSSASolution)(tval)
+    @unpack odesol = A
+    odesol(tval)
+end 
+
+
+(integrator::DSSAIntegrator)(t) = copy(integrator.u)
+(integrator::DSSAIntegrator)(out,t) = (out .= integrator.u)
+
+
+function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)
+    println(io,string("retcode: ",A.odesol.retcode))
+    println(io,string("Interpolation: "),DiffEqBase.interp_summary(A.odesol.interp))
+    print(io,"t: ")
+    show(io,m,A.t)
+    println(io)
+    print(io,"u: ")
+    show(io,m,A.u)
+    println(io)
+    print(io,"channel: ")
+    show(io,m,A.channel)
+    println(io,"\n===\nUse sol.u to check the state variable and sol.channel to check the delay channel solution.\n===")
+end
+
+
 export get_reaction_idx

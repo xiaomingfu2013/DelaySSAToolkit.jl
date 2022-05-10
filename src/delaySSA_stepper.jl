@@ -27,57 +27,19 @@ mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,chanType, chanS} <:
 end
 
 
-mutable struct DSSASolution{uType,uType2,DType,tType,rateType,P,A,IType,DE,chanS}
+mutable struct DSSASolution{uType,tType,chanS}
     u::uType
-    u_analytic::uType2
-    errors::DType
     t::tType
-    k::rateType
-    prob::P
-    alg::A
-    interp::IType
-    dense::Bool
-    tslocation::Int
-    destats::DE
-    retcode::Symbol
     channel::chanS
+    odesol::DiffEqBase.ODESolution
 end
 function DSSASolution(ode_sol::DiffEqBase.ODESolution, channel)
-    @unpack u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode = ode_sol
-    DSSASolution{typeof(u), typeof(u_analytic), typeof(errors), typeof(t), typeof(k), typeof(prob), typeof(alg), typeof(interp), typeof(destats), typeof(channel)}(u, u_analytic, errors, t, k, prob, alg, interp, dense, tslocation, destats, retcode, channel)
-end
-
-function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)
-    println(io,string("retcode: ",A.retcode))
-    println(io,string("Interpolation: "),DiffEqBase.interp_summary(A.interp))
-    print(io,"t: ")
-    show(io,m,A.t)
-    println(io)
-    print(io,"u: ")
-    show(io,m,A.u)
-    println(io)
-    print(io,"channel: ")
-    show(io,m,A.channel)
-    println(io,"\n===\nUse sol.u to check the state variable and sol.channel to check the delay channel solution.\n===")
+    @unpack u, t = ode_sol
+    DSSASolution{typeof(u),typeof(t), typeof(channel)}(u, t, channel, ode_sol)
 end
 
 
-Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int) = [A.u[i], A.channel[i]]
-Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int, ::Colon) = [A.u[j][i] for j in 1:length(A.t)]
 
-function (A::DSSASolution)(s::Symbol,i::Int)
-    if s == :channel
-        @assert i <= length(A.channel[1])
-        return [A.channel[j][i] for j in 1:length(A.t)]
-    elseif s ==:u
-        @assert i <= length(A.u[1])
-        return [A.u[j][i] for j in 1:length(A.t)]
-    end
-end 
-
-
-(integrator::DSSAIntegrator)(t) = copy(integrator.u)
-(integrator::DSSAIntegrator)(out,t) = (out .= integrator.u)
 
 function DiffEqBase.u_modified!(integrator::DSSAIntegrator,bool::Bool)
     integrator.u_modified = bool
@@ -139,9 +101,7 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
         chan_sol = typeof(de_chan0)[] # DelaySSA: build chan_sol
     end
 
-    sol = DiffEqBase.build_solution(prob,alg,t,u, dense=false, 
-    calculate_error = false,  destats = DiffEqBase.DEStats(0),
-                         interp = DiffEqBase.ConstantInterpolation(t,u))
+    sol = DiffEqBase.build_solution(prob,alg,t,u, dense=false, calculate_error = false,  destats = DiffEqBase.DEStats(0), interp = DiffEqBase.ConstantInterpolation(t,u))
     save_everystep = any(cb.save_positions)
 
     if typeof(saveat) <: Number
@@ -189,11 +149,11 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
     while should_continue_solve(integrator) # It stops before adding a tstop over
         step!(integrator)
     end
-    last_t = copy(integrator.t)
+    last_t = integrator.t
     integrator.t = end_time
 
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation
-        saveat_function_direct_method!(integrator, last_t)
+        saveat_function_direct_method_test!(integrator, last_t)
     else
         saveat_function!(integrator, last_t)
     end
@@ -208,13 +168,12 @@ end
 function saveat_end_function!(integrator, prev_t)  
     # save last t
     end_time = integrator.sol.prob.tspan[2]
-    push!(integrator.sol.t,end_time)
+    push!(integrator.sol.t, end_time)
+    t_final_gap = end_time - prev_t
     
     # save last u 
-    t_final_gap = end_time - prev_t
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation 
-        T1, T2 = create_Tstruct(integrator.de_chan)
-        update_delay_chan_state_at_tstop!(integrator.cb.affect!, integrator, t_final_gap, T1, T2)
+        update_delay_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, prev_t, t_final_gap)
     end
     push!(integrator.sol.u,copy(integrator.u))
 
@@ -258,24 +217,33 @@ end
     function saveat_function_direct_method!(integrator, prev_t)
 
 Note that this function does not change u and de_chan, but only takes the snapshots of u and de_chan accordingly
-"""
-function saveat_function_direct_method!(integrator, prev_t)
+""" 
+function saveat_function_direct_method_test!(integrator, prev_t)
     # Special to Direct method
     if integrator.saveat !== nothing && !isempty(integrator.saveat)
-        T1, T2 = create_Tstruct(integrator.de_chan)
         # Split to help prediction
         last_saved_t = prev_t
         # prev_de_chan = integrator.de_chan
+        # Special to Direct method
+        # save for last step
+        if integrator.t == integrator.sol.prob.tspan[2]
+            save_integrator = deepcopy(integrator.cb.affect!.shadow_integrator)
+            save_integrator.u = copy(integrator.u)
+            save_integrator.de_chan = deepcopy(integrator.de_chan)
+        end
         while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
 
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
             push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
             
-            # Special to Direct method
-            update_delay_chan_state_at_tstop!(integrator.cb.affect!, integrator, tgap, T1, T2)
+            # update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, save_integrator, params, last_saved_t, tgap)
+            # push!(integrator.sol.u,copy(save_integrator.u))
+            
+            update_delay_at_tstop_test!(integrator.cb.affect!, integrator, params, last_saved_t, tgap)
             push!(integrator.sol.u,copy(integrator.u))
             
             if integrator.save_delay_channel
+                # prev_de_chan = deepcopy(save_integrator.de_chan)
                 prev_de_chan = deepcopy(integrator.de_chan)
                 push!(integrator.chan_sol,prev_de_chan)
             end
@@ -283,6 +251,14 @@ function saveat_function_direct_method!(integrator, prev_t)
             last_saved_t = integrator.saveat[integrator.cur_saveat]
             integrator.cur_saveat += 1
         end
+        # recover the last step
+        if integrator.t == integrator.sol.prob.tspan[2]
+            integrator.u = copy(save_integrator.u)
+            integrator.de_chan = deepcopy(save_integrator.de_chan)
+        end
+        # integrator.tprev = last_saved_t
+        # needed ?
+        # update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, integrator, params, last_saved_t, integrator.t - last_saved_t)
     end 
 end
 
@@ -312,9 +288,9 @@ function DiffEqBase.step!(integrator::DSSAIntegrator)
     end
 
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation
-        saveat_function_direct_method!(integrator, copy(integrator.tprev))
+        saveat_function_direct_method_test!(integrator, integrator.tprev)
     else
-        saveat_function!(integrator, copy(integrator.tprev))
+        saveat_function!(integrator, integrator.tprev)
     end
     
 

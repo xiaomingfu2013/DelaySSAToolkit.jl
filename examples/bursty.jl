@@ -40,16 +40,32 @@ delay_interrupt = Dict()
 alg = DelayDirect()
 # alg = DelayDirectCR()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false),  save_delay_channel = false)
-seed = 3
-saveat = 0:1:tf
-sol = solve(jprob, SSAStepper(), seed = seed)
-sol = solve(jprob, SSAStepper(), seed = seed, saveat = saveat)
-vcat(sol.u...)|>minimum
-# sol.channel
+jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(true, true),  save_delay_channel = true)
+# saveat = 0:1:tf
+seed = 4
+@time sol = solve(jprob, SSAStepper(), seed = seed)
+
+
+sol.channel[end]
+sol.u[end]
+
+@time sol = solve(jprob, SSAStepper(), seed = seed, saveat = 0:1:tf)
+
+sol.channel
+sol.u
+sol.u[end]
+# for seed in 200:300
+#     println(seed)
+#     saveat = 0:1:tf
+#     # @time sol = solve(jprob, SSAStepper(), seed = seed)
+#     @time sol = solve(jprob, SSAStepper(), seed = seed, saveat = saveat)
+# end
+
+using Plots
+plot(sol[1,:])
 
 ensprob = EnsembleProblem(jprob)
-@time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=1e4)
+@time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=1e5)
 
 # Check with the exact probability distribution
 using TaylorSeries
@@ -66,6 +82,7 @@ function delay_bursty(params,NT::Int)
     gen1(u) = exp(a*b*min(τ,t)*u/(1-b*u))
     taylor_coefficients(NT,-1,gen1)
 end
+
 
 using Catalyst.EnsembleAnalysis
 using Plots; theme(:vibrant)
