@@ -1,5 +1,5 @@
 using Catalyst, DelaySSAToolkit
-# 0 -->A1, => A2, ..., => A5 => 0 with delay 1 for each cascade delay
+# 0 -->A1, => A2, ..., => AN => 0 with delay 1 for each cascade delay, N being the length of the delay reaction chain.
 
 rn = @reaction_network begin
     5, 0 --> A1
@@ -42,7 +42,7 @@ dprob = DiscreteProblem(jumpsys, u0, tspan)
 
 
 using Test
-algos = [DelayDirect(), DelayMNRM(), DelayRejection(), DelayDirectCR()]
+algos = [DelayDirect(), DelayRejection(), DelayMNRM(),  DelayDirectCR()]
 @testset for algo in algos
     djprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(false,false), save_delay_channel= true)
     sol = solve(djprob, SSAStepper(), saveat = 1.)
