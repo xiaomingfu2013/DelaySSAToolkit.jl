@@ -30,7 +30,7 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 
 
 
-algos = [DelayDirect(), DelayMNRM(), DelayRejection(), DelayDirectCR()]
+algos = [DelayMNRM(), DelayDirect(), DelayRejection(), DelayDirectCR()]
 timestamps = [10, 20, 50, 200]
 
 bursty_mean(t) = a*b*min(t,τ)
