@@ -115,8 +115,8 @@ dprob = DiscreteProblem(u0, tspan)
 ### Non-Markovian part
 In the same way, we can define the  `DelayJumpSet` by
 ```julia
-delay_trigger_affect! = function (de_chan, rng)
-    append!(de_chan[1], τ)
+delay_trigger_affect! = function (integrator, rng)
+    append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1=>delay_trigger_affect!)
 delay_complete = Dict(1=>[2=>1, 3=>-1])

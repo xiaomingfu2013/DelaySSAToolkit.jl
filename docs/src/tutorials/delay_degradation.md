@@ -164,20 +164,20 @@ dprob = DiscreteProblem(u0, tspan, p)
 
 ```julia
 τ = 15.
-delay_trigger_affect! = function (de_chan, rng)
-   append!(de_chan[1], τ)
-   append!(de_chan[2], τ)
+delay_trigger_affect! = function (integrator, rng)
+   append!(integrator.de_chan[1], τ)
+   append!(integrator.de_chan[2], τ)
 end
 delay_trigger = Dict(3=>delay_trigger_affect!)
 delay_complete = Dict(1=>[2=>-1],2=>[3=>-1]) 
 
-delay_affect1! = function (de_chan, rng)
-    i = rand(rng, 1:length(de_chan[1]))
-    deleteat!(de_chan[1],i)
+delay_affect1! = function (integrator, rng)
+    i = rand(rng, 1:length(integrator.de_chan[1]))
+    deleteat!(integrator.de_chan[1],i)
 end
-delay_affect2! = function (de_chan, rng)
-    i = rand(rng, 1:length(de_chan[2]))
-    deleteat!(de_chan[2],i)
+delay_affect2! = function (integrator, rng)
+    i = rand(rng, 1:length(integrator.de_chan[2]))
+    deleteat!(integrator.de_chan[2],i)
 end
 delay_interrupt = Dict(4=>delay_affect1!,5=>delay_affect2!) 
 delayjumpset = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
