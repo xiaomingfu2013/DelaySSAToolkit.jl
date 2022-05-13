@@ -5,9 +5,6 @@ using Test, SafeTestsets
     @time @safetestset "Algorithm accuracy" begin
         include("bursty_model.jl")
     end 
-    @time @safetestset "Index test" begin
-        include("check_index_reactions.jl")
-    end
     @time @safetestset "dep_gr_delay test" begin
         include("dep_gr_delay.jl")
     end 
@@ -17,4 +14,7 @@ using Test, SafeTestsets
     @time @safetestset "cascade of delay reaction test" begin
         include("cascade_of_delay_reaction.jl")
     end 
+    # @time @safetestset "Index test" begin
+    #     include("check_index_reactions.jl")
+    # end
 end

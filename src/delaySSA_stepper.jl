@@ -236,10 +236,7 @@ function saveat_function_direct_method_test!(integrator, prev_t)
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
             push!(integrator.sol.t,integrator.saveat[integrator.cur_saveat])
             
-            # update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, save_integrator, params, last_saved_t, tgap)
-            # push!(integrator.sol.u,copy(save_integrator.u))
-            
-            update_delay_at_tstop_test!(integrator.cb.affect!, integrator, params, last_saved_t, tgap)
+            update_delay_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, last_saved_t, tgap)
             push!(integrator.sol.u,copy(integrator.u))
             
             if integrator.save_delay_channel
