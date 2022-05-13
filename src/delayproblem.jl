@@ -139,7 +139,7 @@ end
 """
 function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
                      save_positions = typeof(prob) <: DiffEqBase.AbstractDiscreteProblem ? (false,true) : (true,true),
-                     rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = false, useiszero = true, save_delay_channel = false, kwargs...)
+                     rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = false, useiszero = true, spatial_system = nothing, hopping_constants = nothing, save_delay_channel = false, kwargs...)
 
   # initialize the MassActionJump rate constants with the user parameters
   if using_params(jumps.massaction_jump) 
@@ -205,7 +205,7 @@ end
 
     The initial condition of the delay channel.
 """
-function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; save_delay_channel = false, kwargs...)
+function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; scale_rates = false, save_delay_channel = false, kwargs...)
     statetoid = Dict(value(state) => i for (i,state) in enumerate(states(js)))
     eqs       = equations(js)
     invttype  = prob.tspan[1] === nothing ? Float64 : typeof(1 / prob.tspan[2])
@@ -229,7 +229,7 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
     else
         vtoj = nothing; jtov = nothing; jtoj = nothing
     end
-    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; save_delay_channel=save_delay_channel, dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=false, nocopy=true, kwargs...)
+    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; save_delay_channel=save_delay_channel, dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=scale_rates, nocopy=true, kwargs...)
 end
 
 
