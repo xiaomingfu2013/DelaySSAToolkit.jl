@@ -81,22 +81,18 @@ function direct_algo!(p, shadow_integrator, params, t)
         F = one(t) - exp(-aₜ)
         aₜ_ = zero(aₜ)
         while F < r1
-            # p.next_delay = [cur_T2]
-            # update_delay_channel_direct!(p, shadow_integrator.de_chan)
+
             shift_delay_channel!(shadow_integrator.de_chan, p.time_to_next_jump)
             update_delay_channel!(shadow_integrator.de_chan)
             update_delay_complete!(p, shadow_integrator)
 
-            # add support to handle T that is changing
             calculate_sum_rate!(p, shadow_integrator, shadow_integrator.u, params, t + cur_T1)
 
-            # prev_T1 = p.time_to_next_jump
 
             find_next_delay_num!(p, shadow_integrator.de_chan)
             prev_T1 = cur_T1 # to avoid cur_T1 = Inf 
             cur_T1 += p.time_to_next_jump
 
-            # aₜ_ = copy(aₜ) # backup aₜ
             aₜ_ = aₜ # backup aₜ
             aₜ += shadow_integrator.cur_rates[end] * (p.time_to_next_jump)
             F = one(t) - exp(-aₜ)
@@ -106,14 +102,11 @@ function direct_algo!(p, shadow_integrator, params, t)
         ttnj = prev_T1 + ttnj_last
     end
     
-    # T1_last, T2_last = create_Tstruct(integrator.de_chan)
 
     # ttnj_last will not change the state anymore
     shift_delay_channel!(shadow_integrator.de_chan, ttnj_last)
     update_delay_channel!(shadow_integrator.de_chan)
 
-    # in case the last ttnj also change the state
-    # update_state_final_jump!(p, integrator, ttnj_last, T1_last, T2_last)
     fill_cum_rates_and_sum!(p, shadow_integrator.u, params, t + ttnj)
     p.time_to_next_jump = ttnj
     nothing
@@ -122,7 +115,6 @@ end
 
 
 function update_delay_at_tstop_test!(p, integrator, params, t, tgap)
-    # direct_algo!(p, integrator, params, t; tgap = tgap)
     cur_T1 = zero(t)
     prev_T1 = zero(t)
     find_next_delay_num!(p, integrator.de_chan)

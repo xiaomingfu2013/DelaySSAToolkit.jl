@@ -3,7 +3,7 @@ module DelaySSAToolkit
 using Reexport
 @reexport using DiffEqBase
 
-import DiffEqBase: DiscreteCallback, init, solve, solve!, plot_indices, initialize!
+import DiffEqBase: DiscreteCallback, init, solve, solve!, initialize!
 # Types and Structs
 using DiffEqJump
 import DiffEqJump: AbstractJumpAggregator, AbstractJump, JumpProblem, ConstantRateJump, VariableRateJump, RegularJump, MassActionJump, JumpSet, SSAStepper
@@ -40,7 +40,7 @@ include("delayaggregator/delaydirectCR.jl")
 include("delaySSA_stepper.jl")
 include("utils.jl")
 
-export DelayJumpProblem, DelayJumpSet, SSAStepper, MassActionJump, ConstantRateJump, JumpProblem
+export DelayJumpProblem, DelayJumpSet, SSAStepper, MassActionJump, ConstantRateJump, JumpProblem, JumpSystem
 export DelayRejection, DelayMNRM, DelayDirect, DelayDirectCR
 export solve, remake
 

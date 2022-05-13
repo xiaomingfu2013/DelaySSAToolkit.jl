@@ -139,7 +139,7 @@ end
 """
 function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
                      save_positions = typeof(prob) <: DiffEqBase.AbstractDiscreteProblem ? (false,true) : (true,true),
-                     rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = true, useiszero = true, spatial_system=nothing, hopping_constants=nothing, save_delay_channel = false, kwargs...)
+                     rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = false, useiszero = true, save_delay_channel = false, kwargs...)
 
   # initialize the MassActionJump rate constants with the user parameters
   if using_params(jumps.massaction_jump) 
@@ -151,10 +151,7 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, ju
     maj = jumps.massaction_jump
   end
 
-  ## Spatial jumps handling
-  if spatial_system !== nothing && hopping_constants !== nothing && !is_spatial(aggregator) # check if need to flatten
-    prob, maj = flatten(maj, prob, spatial_system, hopping_constants; kwargs...)
-  end
+
   ## Constant Rate Handling
   t,end_time,u = prob.tspan[1],prob.tspan[2],prob.u0
   if (typeof(jumps.constant_jumps) <: Tuple{}) && (maj === nothing) && !is_spatial(aggregator) # check if there are no jumps
