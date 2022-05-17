@@ -226,14 +226,16 @@ function saveat_function_direct_method_test!(integrator, prev_t)
         # prev_de_chan = integrator.de_chan
         # Special to Direct method
         # save for last step
-        if !integrator.cb.affect!.copied||integrator.t == integrator.sol.prob.tspan[2] 
-            # save_integrator = deepcopy(integrator.cb.affect!.shadow_integrator)
+        #TODO consider optimise
+        recover = false
+        if (!integrator.cb.affect!.copied||integrator.t == integrator.sol.prob.tspan[2])&&(integrator.cur_saveat < length(integrator.saveat)) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
             temp_u = copy(integrator.u)
             temp_de_chan = deepcopy(integrator.de_chan)
-            temp_next_jump = copy(integrator.cb.affect!.next_jump)
-            temp_next_delay = copy(integrator.cb.affect!.next_delay)
-            temp_num_next_delay = copy(integrator.cb.affect!.num_next_delay)
-            temp_ttnj = integrator.cb.affect!.time_to_next_jump  
+            # temp_next_jump = copy(integrator.cb.affect!.next_jump)
+            # temp_next_delay = copy(integrator.cb.affect!.next_delay)
+            # temp_num_next_delay = copy(integrator.cb.affect!.num_next_delay)
+            temp_ttnj = integrator.cb.affect!.time_to_next_jump
+            recover = true
         end
         while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
 
@@ -253,17 +255,14 @@ function saveat_function_direct_method_test!(integrator, prev_t)
             integrator.cur_saveat += 1
         end
         # recover the last step
-        if !integrator.cb.affect!.copied||integrator.t == integrator.sol.prob.tspan[2] 
+        if (!integrator.cb.affect!.copied||integrator.t == integrator.sol.prob.tspan[2])&&recover 
             integrator.u = copy(temp_u)
             integrator.de_chan = deepcopy(temp_de_chan)
-            integrator.cb.affect!.next_jump = copy(temp_next_jump)
-            integrator.cb.affect!.next_delay = copy(temp_next_delay)
-            integrator.cb.affect!.num_next_delay = copy(temp_num_next_delay)
+            # integrator.cb.affect!.next_jump = copy(temp_next_jump)
+            # integrator.cb.affect!.next_delay = copy(temp_next_delay)
+            # integrator.cb.affect!.num_next_delay = copy(temp_num_next_delay)
             integrator.cb.affect!.time_to_next_jump = temp_ttnj
         end
-        # integrator.tprev = last_saved_t
-        # needed ?
-        # update_delay_chan_state_at_tstop_test!(integrator.cb.affect!, integrator, params, last_saved_t, integrator.t - last_saved_t)
     end 
 end
 

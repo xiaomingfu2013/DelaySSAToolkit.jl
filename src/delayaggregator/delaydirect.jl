@@ -215,8 +215,9 @@ end
         integrator.u = copy(p.shadow_integrator.u)
         integrator.de_chan = deepcopy(p.shadow_integrator.de_chan) #TODO
     else
-        shift_delay_channel!(integrator.de_chan, time_to_next_jump)
-        update_delay_channel!(integrator.de_chan)
+        update_delay_at_tstop_test!(p, integrator, p, t, time_to_next_jump)
+        # shift_delay_channel!(integrator.de_chan, time_to_next_jump)
+        # update_delay_channel!(integrator.de_chan)
         # update_delay_complete!(p, integrator)
     end
 
