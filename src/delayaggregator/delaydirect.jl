@@ -26,7 +26,7 @@ end
 function DelayDirectJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; u0, kwargs...) where {T,S,F1,F2,RNG}
     ttnj = zero(et)
     shadow_integrator = ShadowIntegrator{typeof(u0),Vector{Vector{T}}, T}(copy(u0), [Vector{T}()], DelayJumpSet(Dict(), Dict(), Dict()), copy(crs))
-    nd = []
+    nd = nothing
     nnd = [] # in the Direct Method the number of next delay equals always 1
     DelayDirectJumpAggregation{T,S,F1,F2,RNG,typeof(shadow_integrator)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, nd, nnd, ttnj, shadow_integrator, false)
 end
@@ -51,7 +51,9 @@ end
 
 function generate_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t)
     generate_time_to_next_jump!(p, integrator, params, t)
-    @fastmath p.next_jump_time = t + p.time_to_next_jump
+    ttnj = p.time_to_next_jump
+    # fill_cum_rates_and_sum!(p, integrator.u, params, t + ttnj)
+    @fastmath p.next_jump_time = t + ttnj
     @inbounds p.next_jump = searchsortedfirst(p.cur_rates, rand(p.rng) * p.sum_rate) # 
     nothing
 end
@@ -69,20 +71,20 @@ end
         # shadow_integrator = integrator
     else
         # p.shadow_integrator.cur_rates = integrator.cur_rates
-        cur_T1 = zero(t)
-        prev_T1 = zero(t)
-        # find_next_delay_num!(p, shadow_integrator.de_chan)
-        cur_T1 += p.time_to_next_jump
         i = 1
         aₜ = p.cur_rates[end] * p.time_to_next_jump
         F = one(t) - exp(-aₜ)
         aₜ_ = zero(aₜ)
+        prev_T1 = zero(t)
         if F < r1
             p.shadow_integrator.u = copy(integrator.u) #TODO
             p.shadow_integrator.de_chan = deepcopy(integrator.de_chan) #TODO
             p.shadow_integrator.cur_rates = copy(p.cur_rates)
             p.copied = true
             shadow_integrator = p.shadow_integrator
+            find_next_delay_num!(p, shadow_integrator.de_chan)
+            cur_T1 = zero(t)
+            cur_T1 += p.time_to_next_jump
         else
             p.copied = false
         end
@@ -215,6 +217,7 @@ end
     else
         shift_delay_channel!(integrator.de_chan, time_to_next_jump)
         update_delay_channel!(integrator.de_chan)
+        # update_delay_complete!(p, integrator)
     end
 
     num_ma_rates = get_num_majumps(ma_jumps)
