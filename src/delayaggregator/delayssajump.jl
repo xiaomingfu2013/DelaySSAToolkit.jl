@@ -1,6 +1,5 @@
 """
 An aggregator interface for Delay SSA-like algorithms.
-
 ### Required Fields
 - `next_jump`          # the next jump to execute
 - `prev_jump`          # the previous jump that was executed
@@ -17,7 +16,6 @@ An aggregator interface for Delay SSA-like algorithms.
 - `num_next_delay`     # how many times needed for updating the states in the next_delay channel
 - `time_to_next_jump`  # the time to the next jump (time gap)
 - `dt_delay`           # the time to the next delay reaction
-
 ### Optional fields:
 - `dep_gr`             # dependency graph, dep_gr[i] = indices of reactions that should
                        # be updated when rx i occurs.    
@@ -61,7 +59,6 @@ end
 
 """
     fill_rates_and_sum!(p::AbstractDSSAJumpAggregator, u, params, t)
-
 Reevaluate all rates and their sum.
 """
 function fill_rates_and_sum!(p::AbstractDSSAJumpAggregator, u, params, t)
@@ -91,7 +88,6 @@ end
 
 """
     calculate_jump_rate(ma_jumps, rates, u, params, t, rx)
-
 Recalculate the rate for the jump with index `rx`.
 """
 @inline function calculate_jump_rate(ma_jumps, num_majumps, rates, u, params, t, rx)
@@ -151,7 +147,6 @@ end
 
 """
     function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_reaction, t)
-
 Compare dt_delay and dt_reaction.
 """
 function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_reaction, t)
@@ -172,7 +167,6 @@ end
 
 """
     function find_next_delay_dt!(p, integrator)
-
 Find the minimal dt_delay in all delay channels.
 """
 function find_next_delay_dt!(p, integrator)
@@ -247,7 +241,6 @@ end
 
 """
     function update_delay_complete!(p, integrator)
-
 This function modifies `integrator.u` and `integrator.de_chan` upon delay completion
 """
 function update_delay_complete!(p, integrator)
@@ -278,7 +271,6 @@ end
 
 """
     function dep_gr_delay(p, integrator)
-
 Generate delay dependency graph
 input::Int next_delay idx
 output::Dict next_delay idx => reactions need to be updated
@@ -314,9 +306,7 @@ end
 
 """
     function find_num_in_vec(A::Vector{Vector{T}}, position_index::Vector{Int64}, x::T)
-
 Find the number of values which in each vector elements equal to `x` according to the corresponding index position specified by the element in the `position_index` vector in the given vetcer `A`.
-
 # Examples
 ```julia-repl
 julia> A =  [[0.09,0.09,0.1],[0.3,0.09,0.1],[0.09]]
@@ -324,13 +314,11 @@ julia> A =  [[0.09,0.09,0.1],[0.3,0.09,0.1],[0.09]]
  [0.09, 0.09, 0.1]
  [0.3, 0.09, 0.1]
  [0.09]
-
 julia> position_index =  [1,2,3]
 3-element Vector{Int64}:
  1
  2
  3
-
 julia> find_num_in_vec(A::Vector, position_index::Vector{Int64}, 0.09)
 3-element Vector{Int64}:
 2
@@ -348,11 +336,8 @@ end
 
 """
     find_next_delay_vec(A::Vector{Vector{T}}, x::T)
-
 Returns two vectors. The first is the position index vector `position_index` of vector `A`, and the second is the vector `num_in_vec` composed of the number of values in the position index corresponding to `position_index` equal to `x`.
-
 find the minimal dt_delay in various delay channel.
-
 # Examples
 ```julia-repl
 julia> A =  [[0.09,0.09,0.1],[0.3,0.09,0.1],[0.09]]
@@ -360,10 +345,8 @@ julia> A =  [[0.09,0.09,0.1],[0.3,0.09,0.1],[0.09]]
  [0.09, 0.09, 0.1]
  [0.3, 0.09, 0.1]
  [0.09]
-
  julia> x=0.09
  0.09
-
 julia> find_next_delay_vec(A, x)
 ([1, 2, 3], [2, 1, 1])
 ```
