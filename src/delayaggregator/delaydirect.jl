@@ -58,7 +58,7 @@ function generate_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t
     nothing
 end
 """
-    Create time_to_next_jump based on the shawdow integrator, the goal is to use p.copied to avoid the case where no changes happened wrt integrator.u such that the allocation can be optimised
+    Create time_to_next_jump based on the shawdow integrator, the goal is to use p.copied to avoid the case when no changes happened wrt integrator.u such that the allocation can be optimised
 """
 @inline function generate_time_to_next_jump!(p::DelayDirectJumpAggregation, integrator, params, t)
 
@@ -112,12 +112,8 @@ end
     end
     p.time_to_next_jump = ttnj
     nothing
-    # direct_algo!(p, p.shadow_integrator, params, t)
 end
 
-# function direct_algo!(p, shadow_integrator, params, t)
-    
-# end
 
 
 """
@@ -208,12 +204,11 @@ end
     @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
     if p.copied
         integrator.u = copy(p.shadow_integrator.u)
-        integrator.de_chan = deepcopy(p.shadow_integrator.de_chan) #TODO
+        integrator.de_chan = deepcopy(p.shadow_integrator.de_chan)
     else
-        update_delay_at_tstop_test!(p, integrator, p, t, time_to_next_jump)
-        # shift_delay_channel!(integrator.de_chan, time_to_next_jump)
-        # update_delay_channel!(integrator.de_chan)
-        # update_delay_complete!(p, integrator)
+        # update_delay_at_tstop_test!(p, integrator, p, t, time_to_next_jump)
+        shift_delay_channel!(integrator.de_chan, time_to_next_jump)
+        update_delay_channel!(integrator.de_chan)
     end
 
     num_ma_rates = get_num_majumps(ma_jumps)

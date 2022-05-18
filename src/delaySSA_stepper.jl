@@ -223,13 +223,11 @@ function saveat_function_direct_method_test!(integrator, prev_t)
         last_saved_t = prev_t
         # save for last step and copied = false
         changed = false
-        # last_time = integrator.t == integrator.sol.prob.tspan[2]
         aggregator = integrator.cb.affect! 
         if (integrator.cur_saveat < length(integrator.saveat)) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
             shadow_integrator = aggregator.shadow_integrator
             shadow_integrator.u = copy(integrator.u)
             shadow_integrator.de_chan = deepcopy(integrator.de_chan)
-            # temp_ttnj = aggregator.time_to_next_jump
             aggregator.copied = true
             changed = true
         end
@@ -250,15 +248,10 @@ function saveat_function_direct_method_test!(integrator, prev_t)
             integrator.cur_saveat += 1
         end
         if aggregator.copied && changed
-            last_tgap = min(aggregator.next_jump_time, integrator.sol.prob.tspan[2]) - last_saved_t
+            tend = integrator.t == integrator.sol.prob.tspan[2] ? integrator.sol.prob.tspan[2] : aggregator.next_jump_time
+            last_tgap = tend - last_saved_t
             update_delay_at_tstop_test!(aggregator, shadow_integrator, integrator.p, last_saved_t, last_tgap)
         end
-        # recover the last step
-        # if (!integrator.cb.affect!.copied|| integrator.t == integrator.sol.prob.tspan[2]) && recover
-        #     integrator.u = copy(temp_u)
-        #     integrator.de_chan = deepcopy(temp_de_chan)
-        #     integrator.cb.affect!.time_to_next_jump = temp_ttnj
-        # end
     end 
 end
 

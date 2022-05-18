@@ -36,8 +36,6 @@ aggregatoralgo = DelayDirect()
 # aggregatoralgo = DelayDirectCR()
 dprob = DiscreteProblem(u0, tspan, p)
 
-
-
 τ = 15.
 delay_trigger_affect! = function (integrator, rng)
    append!(integrator.de_chan[1], τ)
@@ -50,26 +48,17 @@ delay_affect! = function (integrator, rng)
 end
 delay_interrupt = Dict(4=>delay_affect!) 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
-djprob1 = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel = true)
-sol1 =@time solve(djprob1, SSAStepper(), seed = 2, saveat =0.1)
+djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel =false)
+sol1 =@time solve(djprob, SSAStepper(), seed = 2, saveat =0.1)
 
-using Plots
-sol1.u
-sol1.channel
-plot(sol1.odesol)
-# length.(sol.channel[end])
-djprob2 = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (true, true), save_delay_channel = true)
-sol2 =@time solve(djprob2, SSAStepper(), seed = 2)
-sol2.t
-sol2.u
-sol2.channel
 
-plot!(sol2.odesol, xticks = 0:1:tf)
 
-using Plots, DiffEqBase; theme(:vibrant)
-ens_prob = EnsembleProblem(djprob1)
+ens_prob = EnsembleProblem(djprob)
 Sample_size = Int(10^4)
 @time ens = solve(ens_prob, SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
+
+
+using Plots, DiffEqBase; theme(:vibrant)
 plot(ens[1], label = ["X_A" "X_I"], fmt =:svg)
 # savefig("docs/src/assets/delay_degradation1.svg")
 
