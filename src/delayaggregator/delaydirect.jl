@@ -131,7 +131,13 @@ end
 # end
 
 
+"""
+    update_delay_at_tstop_test!
 
+this function will change 
+- p.next_delay, p.num_next_delay, p.time_to_next_jump, 
+- integrator.u, integrator.de_chan
+"""
 function update_delay_at_tstop_test!(p, integrator, params, t, tgap)
     # direct_algo!(p, integrator, params, t; tgap = tgap)
     cur_T1 = zero(t)

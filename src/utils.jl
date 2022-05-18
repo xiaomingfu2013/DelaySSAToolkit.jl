@@ -21,6 +21,7 @@ function (A::DSSASolution)(tval)
 end 
 
 
+
 (integrator::DSSAIntegrator)(t) = copy(integrator.u)
 (integrator::DSSAIntegrator)(out,t) = (out .= integrator.u)
 
@@ -38,6 +39,8 @@ function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)
     show(io,m,A.channel)
     println(io,"\n===\nUse sol.u to check the state variable and sol.channel to check the delay channel solution.\n===")
 end
+
+
 
 # """
 #     function get_reaction_idx(rn::ReactionSystem)

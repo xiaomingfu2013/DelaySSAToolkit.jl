@@ -24,7 +24,7 @@ end C γ β
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
 
 u0 = [0, 0]
-tf = 30.
+tf = 30
 saveat = .1
 de_chan0 = [[]]
 C, γ, β = [2., 0.1, 0.5]
@@ -50,9 +50,19 @@ delay_affect! = function (integrator, rng)
 end
 delay_interrupt = Dict(4=>delay_affect!) 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
-djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel = false)
-sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1)
-sol =@time solve(djprob, SSAStepper(), seed = 2)
+djprob1 = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel = true)
+sol1 =@time solve(djprob1, SSAStepper(), seed = 2, saveat =0.1)
+sol1.u
+sol1.channel
+plot(sol1.odesol)
+# length.(sol.channel[end])
+djprob2 = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (true, true), save_delay_channel = true)
+sol2 =@time solve(djprob2, SSAStepper(), seed = 2)
+sol2.t
+sol2.u
+sol2.channel
+
+plot!(sol2.odesol, xticks = 0:1:tf)
 
 using Plots, DiffEqBase; theme(:vibrant)
 ens_prob = EnsembleProblem(djprob)
