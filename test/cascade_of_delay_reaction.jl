@@ -42,10 +42,11 @@ dprob = DiscreteProblem(jumpsys, u0, tspan)
 
 
 using Test
-algos = [DelayDirect(), DelayRejection(), DelayMNRM(),  DelayDirectCR()]
+algos = [DelayRejection(),DelayDirect(), DelayMNRM(),  DelayDirectCR()]
 @testset for algo in algos
     djprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(false,false), save_delay_channel= true)
-    sol = solve(djprob, SSAStepper(), saveat = 1.)
+    @info "Testing method $(algo)"
+    @time sol = solve(djprob, SSAStepper(), saveat = 1.)
     for i in 1:length(sol.t)-1, j in 1:chain_len-1 
         err = sum(abs2, sol.channel[i][j] .- sol.channel[i+1][j+1])
         @test err < 1e-20

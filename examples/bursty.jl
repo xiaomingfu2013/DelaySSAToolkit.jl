@@ -40,29 +40,11 @@ delay_interrupt = Dict()
 alg = DelayDirect()
 # alg = DelayDirectCR()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(true, true),  save_delay_channel = true)
+jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(true, true),  save_delay_channel = false)
 # saveat = 0:1:tf
 seed = 4
 @time sol = solve(jprob, SSAStepper(), seed = seed)
 
-
-sol.channel[end]
-sol.u[end]
-
-@time sol = solve(jprob, SSAStepper(), seed = seed, saveat = 0:1:tf)
-
-sol.channel
-sol.u
-sol.u[end]
-# for seed in 200:300
-#     println(seed)
-#     saveat = 0:1:tf
-#     # @time sol = solve(jprob, SSAStepper(), seed = seed)
-#     @time sol = solve(jprob, SSAStepper(), seed = seed, saveat = saveat)
-# end
-
-using Plots
-plot(sol[1,:])
 
 ensprob = EnsembleProblem(jprob)
 @time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=1e5)
