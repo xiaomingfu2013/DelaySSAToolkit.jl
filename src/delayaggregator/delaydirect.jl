@@ -51,9 +51,7 @@ end
 
 function generate_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t)
     generate_time_to_next_jump!(p, integrator, params, t)
-    ttnj = p.time_to_next_jump
-    # fill_cum_rates_and_sum!(p, integrator.u, params, t + ttnj)
-    @fastmath p.next_jump_time = t + ttnj
+    @fastmath p.next_jump_time = t + p.time_to_next_jump
     @inbounds p.next_jump = searchsortedfirst(p.cur_rates, rand(p.rng) * p.sum_rate) # 
     nothing
 end
@@ -61,17 +59,15 @@ end
     Create delta based on the shawdow variable u_shadow
 """
 @inline function generate_time_to_next_jump!(p::DelayDirectJumpAggregation, integrator, params, t)
-    # the reason to use a shadow_integrator is because generating ttnj and changing the state happen simultaneously in DelayDirect method, so has to cache it before execute_jumps!
+    # the goal is to use p.copied to avoid the case where no changes happened on integrator.u such that the allocation can be optimised 
+
     fill_cum_rates_and_sum!(p, integrator.u, params, t)
     r1 = rand(p.rng)
     if isempty(reduce(vcat, integrator.de_chan))
         ttnj = -log(r1) / p.cur_rates[end]
         ttnj_last = ttnj
         p.copied = false
-        # shadow_integrator = integrator
     else
-        # p.shadow_integrator.cur_rates = integrator.cur_rates
-        i = 1
         aₜ = p.cur_rates[end] * p.time_to_next_jump
         F = one(t) - exp(-aₜ)
         aₜ_ = zero(aₜ)
@@ -89,26 +85,19 @@ end
             p.copied = false
         end
         while F < r1
-            # p.next_delay = [cur_T2]
-            # update_delay_channel_direct!(p, shadow_integrator.de_chan)
             shift_delay_channel!(shadow_integrator.de_chan, p.time_to_next_jump)
             update_delay_channel!(shadow_integrator.de_chan)
             update_delay_complete!(p, shadow_integrator)
 
-            # add support to handle T that is changing
             calculate_sum_rate!(p, shadow_integrator, shadow_integrator.u, params, t + cur_T1)
-
-            # prev_T1 = p.time_to_next_jump
 
             find_next_delay_num!(p, shadow_integrator.de_chan)
             prev_T1 = cur_T1 # to avoid cur_T1 = Inf 
             cur_T1 += p.time_to_next_jump
 
-            # aₜ_ = copy(aₜ) # backup aₜ
             aₜ_ = aₜ # backup aₜ
             aₜ += shadow_integrator.cur_rates[end] * (p.time_to_next_jump)
             F = one(t) - exp(-aₜ)
-            i += 1
         end
         sum_ = p.copied ? shadow_integrator.cur_rates[end] : p.sum_rate
         ttnj_last = (-log(one(t) - r1) - aₜ_) / sum_
@@ -116,7 +105,6 @@ end
     end
     
     if p.copied
-         # ttnj_last will not change the state anymore
         shift_delay_channel!(shadow_integrator.de_chan, ttnj_last)
         update_delay_channel!(shadow_integrator.de_chan)
         fill_cum_rates_and_sum!(p, shadow_integrator.u, params, t + ttnj)
