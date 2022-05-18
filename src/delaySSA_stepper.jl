@@ -227,9 +227,8 @@ function saveat_function_direct_method_test!(integrator, prev_t)
         # Special to Direct method
         # save for last step
         if integrator.t == integrator.sol.prob.tspan[2]
-            save_integrator = deepcopy(integrator.cb.affect!.shadow_integrator)
-            save_integrator.u = copy(integrator.u)
-            save_integrator.de_chan = deepcopy(integrator.de_chan)
+            temp_u = copy(integrator.u)
+            temp_de_chan = deepcopy(integrator.de_chan)
         end
         while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
 
@@ -250,8 +249,8 @@ function saveat_function_direct_method_test!(integrator, prev_t)
         end
         # recover the last step
         if integrator.t == integrator.sol.prob.tspan[2]
-            integrator.u = copy(save_integrator.u)
-            integrator.de_chan = deepcopy(save_integrator.de_chan)
+            integrator.u = copy(temp_u)
+            integrator.de_chan = deepcopy(temp_de_chan)
         end
         # integrator.tprev = last_saved_t
         # needed ?

@@ -76,7 +76,6 @@ function direct_algo!(p, shadow_integrator, params, t)
         prev_T1 = zero(t)
         find_next_delay_num!(p, shadow_integrator.de_chan)
         cur_T1 += p.time_to_next_jump
-        i = 1
         aₜ = shadow_integrator.cur_rates[end] * p.time_to_next_jump
         F = one(t) - exp(-aₜ)
         aₜ_ = zero(aₜ)
@@ -96,7 +95,6 @@ function direct_algo!(p, shadow_integrator, params, t)
             aₜ_ = aₜ # backup aₜ
             aₜ += shadow_integrator.cur_rates[end] * (p.time_to_next_jump)
             F = one(t) - exp(-aₜ)
-            i += 1
         end
         ttnj_last = (-log(one(t) - r1) - aₜ_) / shadow_integrator.cur_rates[end]
         ttnj = prev_T1 + ttnj_last
