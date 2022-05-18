@@ -21,8 +21,8 @@ delay_trigger = Dict(1=>delay_trigger_affect!)
 delay_complete = Dict(1=>[2=>1, 1=>-1], 2=>[2=>1])
 delay_interrupt = Dict()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-# alg = DelayDirectCR()
-alg = DelayMNRM()
+alg = DelayDirectCR()
+# alg = DelayMNRM()
 djprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0)
 
 p = djprob.discrete_jump_aggregation;

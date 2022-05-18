@@ -24,7 +24,7 @@ end C γ β
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
 
 u0 = [0, 0]
-tf = 30.
+tf = 30
 saveat = .1
 de_chan0 = [[]]
 C, γ, β = [2., 0.1, 0.5]
@@ -35,8 +35,6 @@ tspan = (0.,tf)
 aggregatoralgo = DelayDirect()
 # aggregatoralgo = DelayDirectCR()
 dprob = DiscreteProblem(u0, tspan, p)
-
-
 
 τ = 15.
 delay_trigger_affect! = function (integrator, rng)
@@ -50,14 +48,17 @@ delay_affect! = function (integrator, rng)
 end
 delay_interrupt = Dict(4=>delay_affect!) 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
-djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel = false)
-sol =@time solve(djprob, SSAStepper(), seed = 2, saveat =.1)
-sol =@time solve(djprob, SSAStepper(), seed = 2)
+djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel =false)
+sol1 =@time solve(djprob, SSAStepper(), seed = 2, saveat =0.1)
 
-using Plots, DiffEqBase; theme(:vibrant)
+
+
 ens_prob = EnsembleProblem(djprob)
 Sample_size = Int(10^4)
 @time ens = solve(ens_prob, SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
+
+
+using Plots, DiffEqBase; theme(:vibrant)
 plot(ens[1], label = ["X_A" "X_I"], fmt =:svg)
 # savefig("docs/src/assets/delay_degradation1.svg")
 
