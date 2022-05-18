@@ -80,7 +80,6 @@ end
             shadow_integrator = p.shadow_integrator
             shadow_integrator.u = copy(integrator.u) 
             shadow_integrator.de_chan = deepcopy(integrator.de_chan)
-            shadow_integrator.cur_rates = copy(p.cur_rates)
             p.copied = true
         else
             p.copied = false
