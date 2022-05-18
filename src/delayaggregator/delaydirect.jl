@@ -13,6 +13,7 @@ mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,IType} <: AbstractDSSAJu
     next_delay::Union{Nothing,Vector{Int}}
     num_next_delay::Union{Nothing,Vector{Int}}
     time_to_next_jump::T
+    next_delay_time::T
     shadow_integrator::IType
     copied::Bool
 end
@@ -25,10 +26,11 @@ end
 
 function DelayDirectJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; u0, kwargs...) where {T,S,F1,F2,RNG}
     ttnj = zero(et)
+    ndt = zero(et)
     shadow_integrator = ShadowIntegrator{typeof(u0),Vector{Vector{T}}, T}(copy(u0), [Vector{T}()], DelayJumpSet(Dict(), Dict(), Dict()), copy(crs))
     nd = nothing
     nnd = [] # in the Direct Method the number of next delay equals always 1
-    DelayDirectJumpAggregation{T,S,F1,F2,RNG,typeof(shadow_integrator)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, nd, nnd, ttnj, shadow_integrator, false)
+    DelayDirectJumpAggregation{T,S,F1,F2,RNG,typeof(shadow_integrator)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, nd, nnd, ttnj, ndt, shadow_integrator, false)
 end
 
 function aggregate(aggregator::DelayDirect, u, p, t, end_time, constant_jumps, ma_jumps, save_positions, rng; kwargs...)
@@ -56,10 +58,9 @@ function generate_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t
     nothing
 end
 """
-    Create delta based on the shawdow variable u_shadow
+    Create time_to_next_jump based on the shawdow integrator, the goal is to use p.copied to avoid the case where no changes happened wrt integrator.u such that the allocation can be optimised
 """
 @inline function generate_time_to_next_jump!(p::DelayDirectJumpAggregation, integrator, params, t)
-    # the goal is to use p.copied to avoid the case where no changes happened on integrator.u such that the allocation can be optimised 
 
     fill_cum_rates_and_sum!(p, integrator.u, params, t)
     r1 = rand(p.rng)
@@ -68,24 +69,24 @@ end
         ttnj_last = ttnj
         p.copied = false
     else
-        aₜ = p.cur_rates[end] * p.time_to_next_jump
+        find_next_delay_num!(p, integrator.de_chan)
+        aₜ = p.cur_rates[end] * p.next_delay_time
         F = one(t) - exp(-aₜ)
         aₜ_ = zero(aₜ)
         prev_T1 = zero(t)
-        if F < r1
-            p.shadow_integrator.u = copy(integrator.u) #TODO
-            p.shadow_integrator.de_chan = deepcopy(integrator.de_chan) #TODO
-            p.shadow_integrator.cur_rates = copy(p.cur_rates)
-            p.copied = true
+        cur_T1 = zero(t)
+        cur_T1 += p.next_delay_time
+        if F < r1 # if enter the loop
             shadow_integrator = p.shadow_integrator
-            find_next_delay_num!(p, shadow_integrator.de_chan)
-            cur_T1 = zero(t)
-            cur_T1 += p.time_to_next_jump
+            shadow_integrator.u = copy(integrator.u) 
+            shadow_integrator.de_chan = deepcopy(integrator.de_chan)
+            shadow_integrator.cur_rates = copy(p.cur_rates)
+            p.copied = true
         else
             p.copied = false
         end
         while F < r1
-            shift_delay_channel!(shadow_integrator.de_chan, p.time_to_next_jump)
+            shift_delay_channel!(shadow_integrator.de_chan, p.next_delay_time)
             update_delay_channel!(shadow_integrator.de_chan)
             update_delay_complete!(p, shadow_integrator)
 
@@ -93,10 +94,10 @@ end
 
             find_next_delay_num!(p, shadow_integrator.de_chan)
             prev_T1 = cur_T1 # to avoid cur_T1 = Inf 
-            cur_T1 += p.time_to_next_jump
+            cur_T1 += p.next_delay_time
 
             aₜ_ = aₜ # backup aₜ
-            aₜ += shadow_integrator.cur_rates[end] * (p.time_to_next_jump)
+            aₜ += shadow_integrator.cur_rates[end] * (p.next_delay_time)
             F = one(t) - exp(-aₜ)
         end
         sum_ = p.copied ? shadow_integrator.cur_rates[end] : p.sum_rate
@@ -123,7 +124,7 @@ end
     update_delay_at_tstop_test!
 
 this function will change 
-- p.next_delay, p.num_next_delay, p.time_to_next_jump, 
+- p.next_delay, p.num_next_delay, p.next_delay_time 
 - integrator.u, integrator.de_chan
 """
 function update_delay_at_tstop_test!(p, integrator, params, t, tgap)
@@ -131,14 +132,14 @@ function update_delay_at_tstop_test!(p, integrator, params, t, tgap)
     cur_T1 = zero(t)
     prev_T1 = zero(t)
     find_next_delay_num!(p, integrator.de_chan)
-    cur_T1 += p.time_to_next_jump
+    cur_T1 += p.next_delay_time
     while cur_T1 <= tgap
-        shift_delay_channel!(integrator.de_chan, p.time_to_next_jump)
+        shift_delay_channel!(integrator.de_chan, p.next_delay_time)
         update_delay_channel!(integrator.de_chan)
         update_delay_complete!(p, integrator)
         find_next_delay_num!(p, integrator.de_chan) 
         prev_T1 = cur_T1 # to avoid cur_T1 = Inf 
-        cur_T1 += p.time_to_next_jump    
+        cur_T1 += p.next_delay_time    
     end
     ttnj_last = tgap - prev_T1
     shift_delay_channel!(integrator.de_chan, ttnj_last)

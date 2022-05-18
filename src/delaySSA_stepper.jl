@@ -252,7 +252,6 @@ function saveat_function_direct_method_test!(integrator, prev_t)
         if aggregator.copied && changed
             last_tgap = min(aggregator.next_jump_time, integrator.sol.prob.tspan[2]) - last_saved_t
             update_delay_at_tstop_test!(aggregator, shadow_integrator, integrator.p, last_saved_t, last_tgap)
-            aggregator.time_to_next_jump = last_tgap
         end
         # recover the last step
         # if (!integrator.cb.affect!.copied|| integrator.t == integrator.sol.prob.tspan[2]) && recover

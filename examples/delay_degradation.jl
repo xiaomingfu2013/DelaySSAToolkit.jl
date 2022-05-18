@@ -52,6 +52,8 @@ delay_interrupt = Dict(4=>delay_affect!)
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 djprob1 = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions = (false, false), save_delay_channel = true)
 sol1 =@time solve(djprob1, SSAStepper(), seed = 2, saveat =0.1)
+
+using Plots
 sol1.u
 sol1.channel
 plot(sol1.odesol)
@@ -65,7 +67,7 @@ sol2.channel
 plot!(sol2.odesol, xticks = 0:1:tf)
 
 using Plots, DiffEqBase; theme(:vibrant)
-ens_prob = EnsembleProblem(djprob)
+ens_prob = EnsembleProblem(djprob1)
 Sample_size = Int(10^4)
 @time ens = solve(ens_prob, SSAStepper(),EnsembleThreads(),trajectories = Sample_size, saveat = .1)
 plot(ens[1], label = ["X_A" "X_I"], fmt =:svg)

@@ -193,7 +193,7 @@ function find_next_delay_num!(p, de_chan::Vector{Vector{T}}) where {T}
         @goto restart
     end
     p.next_delay, p.num_next_delay = find_next_delay_vec(de_chan, val)
-    p.time_to_next_jump = val
+    p.next_delay_time = val
     nothing
     # return val
 end
