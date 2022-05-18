@@ -30,7 +30,7 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 
 
 
-algos = [DelayMNRM(), DelayDirect(), DelayRejection(), DelayDirectCR()]
+algos = [DelayRejection(), DelayDirect(),DelayMNRM(),  DelayDirectCR()]
 timestamps = [10, 20, 50, 200]
 
 bursty_mean(t) = a*b*min(t,τ)
@@ -41,6 +41,7 @@ samplesize = Int64(5e4)
 @testset for alg in algos
     jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(false, false))
     ensprob = EnsembleProblem(jprob)
+    @info "Testing method $(alg)"
     @time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories=samplesize, saveat = timestamps)
     for idx in eachindex(timestamps)
     sol_end = reduce(vcat, [ens[i].u[idx+1] for i in 1:samplesize])
