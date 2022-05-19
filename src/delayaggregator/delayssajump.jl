@@ -170,23 +170,22 @@ end
 Find the minimal dt_delay in all delay channels.
 """
 function find_next_delay_dt!(p, integrator)
-    de_chan = integrator.de_chan
-    T = typeof(integrator.t)
+    de_chan = integrator.de_chan 
+    p.dt_delay = find_minimun_dt_delay(de_chan)
+    nothing
+end
+
+function find_minimun_dt_delay(de_chan::Vector{Vector{T}}) where {T}
     val_vec = Vector{T}(undef,length(de_chan))
     @inbounds for i in eachindex(de_chan)
         val_vec[i] = isempty(de_chan[i]) ? typemax(T) : minimum(de_chan[i])
     end
-    p.dt_delay = minimum(val_vec)
-    nothing
+    minimum(val_vec)
 end
 
 function find_next_delay_num!(p, de_chan::Vector{Vector{T}}) where {T}
     @label restart
-    val_vec = Vector{T}(undef,length(de_chan))
-    @inbounds for i in eachindex(de_chan)
-        val_vec[i] = isempty(de_chan[i]) ? typemax(T) : minimum(de_chan[i])
-    end
-    val = minimum(val_vec)
+    val = find_minimun_dt_delay(de_chan)
     if val < eps(T)
         shift_delay_channel!(de_chan, eps(T))
         update_delay_channel!(de_chan)
@@ -195,7 +194,6 @@ function find_next_delay_num!(p, de_chan::Vector{Vector{T}}) where {T}
     p.next_delay, p.num_next_delay = find_next_delay_vec(de_chan, val)
     p.next_delay_time = val
     nothing
-    # return val
 end
 
 @inline function shift_delay_channel!(de_chan::Vector{Vector{T1}},ttnj::T2) where {T1<:Real,T2<:Real}
@@ -207,7 +205,7 @@ end
 end
 
 @inline function update_delay_channel!(de_chan::Vector{Vector{T}}) where {T<:Real}
-    for idx in eachindex(de_chan)
+    @inbounds for idx in eachindex(de_chan)
         filter!(x->x>zero(T), de_chan[idx])
     end
 end
@@ -304,40 +302,11 @@ function vars_to_jumps_delay(p, vars)
     return jumps
 end
 
-"""
-    function find_num_in_vec(A::Vector{Vector{T}}, position_index::Vector{Int64}, x::T)
-Find the number of values which in each vector elements equal to `x` according to the corresponding index position specified by the element in the `position_index` vector in the given vetcer `A`.
-# Examples
-```julia-repl
-julia> A =  [[0.09,0.09,0.1],[0.3,0.09,0.1],[0.09]]
-3-element Vector{Vector{Float64}}:
- [0.09, 0.09, 0.1]
- [0.3, 0.09, 0.1]
- [0.09]
-julia> position_index =  [1,2,3]
-3-element Vector{Int64}:
- 1
- 2
- 3
-julia> find_num_in_vec(A::Vector, position_index::Vector{Int64}, 0.09)
-3-element Vector{Int64}:
-2
-1
-1
-```
-"""
-@inline function find_num_in_vec(A::Vector{Vector{T}}, position_index::Vector{Int64}, x::T) where {T}
-    number_in_vec = Vector{Int64}(undef, length(position_index))
-    @inbounds for i in eachindex(position_index)
-        number_in_vec[i] = count(==(x),A[position_index[i]])
-    end
-    return number_in_vec
-end
 
 """
     find_next_delay_vec(A::Vector{Vector{T}}, x::T)
-Returns two vectors. The first is the position index vector `position_index` of vector `A`, and the second is the vector `num_in_vec` composed of the number of values in the position index corresponding to `position_index` equal to `x`.
-find the minimal dt_delay in various delay channel.
+Returns two vectors. The first is the position indices; `position_indices` of vector `A`, and the second is the vector `num_in_vec` composed of the occurrence of value `x`.
+Used in finding the minimal dt_delay in various delay channel.
 # Examples
 ```julia-repl
 julia> A =  [[0.09,0.09,0.1],[0.3,0.09,0.1],[0.09]]
@@ -352,7 +321,50 @@ julia> find_next_delay_vec(A, x)
 ```
 """
 function find_next_delay_vec(de_chan::Vector{Vector{T}}, ttnj::T) where {T}
-    position_index = findall(de_chan->ttnj in de_chan, de_chan)
-    num_in_vec = find_num_in_vec(de_chan, position_index, ttnj)
-    return position_index, num_in_vec
+    position_indices = Vector{Int64}()
+    num_in_vec = Vector{Int64}()
+    for idx in eachindex(de_chan)
+        if ttnj in de_chan[idx]
+            append!(position_indices, idx)
+            append!(num_in_vec, count(==(ttnj), de_chan[idx]))
+        end
+    end
+    return position_indices, num_in_vec
 end
+
+
+## decrepit
+# """
+#     function find_num_in_vec(A::Vector{Vector{T}}, position_indices::Vector{Int64}, x::T)
+
+# Find the occurrence of value `x` in each vector, according to the corresponding position indices specified by the element in the `position_indices` vector in the given vector `A`.
+
+# # Examples
+# ```julia-repl
+# julia> A =  [[0.09,0.09,0.1],[0.3,0.09,0.1],[0.09]]
+# 3-element Vector{Vector{Float64}}:
+#  [0.09, 0.09, 0.1]
+#  [0.3, 0.09, 0.1]
+#  [0.09]
+# julia> position_indices =  [1,2]
+# 2-element Vector{Int64}:
+#  1
+#  2
+# julia> find_num_in_vec(A, position_indices, 0.09)
+# 2-element Vector{Int64}:
+# 2
+# 1
+# ```
+# """
+# @inline function find_num_in_vec(A::Vector{Vector{T}}, position_indices::Vector{Int64}, x::T) where {T}
+#     number_in_vec = Vector{Int64}(undef, length(position_indices))
+#     @inbounds for i in eachindex(position_indices)
+#         number_in_vec[i] = count(==(x),A[position_indices[i]])
+#     end
+#     return number_in_vec
+# end
+# function find_next_delay_vec(de_chan::Vector{Vector{T}}, ttnj::T) where {T}
+#     position_indices = findall(de_chan->ttnj in de_chan, de_chan)
+#     num_in_vec = find_num_in_vec(de_chan, position_indices, ttnj)
+#     return position_indices, num_in_vec
+# end
