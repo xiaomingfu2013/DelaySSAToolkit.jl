@@ -1,5 +1,4 @@
 using DelaySSAToolkit, Catalyst
-using DiffEqJump
 
 rn = @reaction_network begin
     ρ, S+I --> E+I
@@ -32,5 +31,5 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(true,true))
 @time sol = solve(jprob, SSAStepper(), seed = 1234)
 using Plots; theme(:vibrant)
-fig = plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:svg)
-# savefig(fig,"docs/src/assets/seir.svg")
+fig = plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:png)
+savefig(fig,"docs/src/assets/seir.png")
