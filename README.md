@@ -35,8 +35,8 @@ for the first time after installation.
 ### SEIR model
 Check [this example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/tutorials/) for more details.
 ```julia
-using DelaySSAToolkit, Catalyst
-using DiffEqJump
+using Catalyst
+using DelaySSAToolkit
 # Model: Markovian part
 rn = @reaction_network begin
     ρ, S+I --> E+I
@@ -63,14 +63,16 @@ jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false)
 dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
 sol = solve(djprob, SSAStepper())
+using Plots; theme(:vibrant)
+plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:png)
 ```
-![seir](docs/src/assets/seir.svg)
+![seir](docs/src/assets/seir.png)
 
 ### A bursty model [[7]](#7)
 Check this [example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/bursty/) for more details.
 ```julia
 using DelaySSAToolkit
-using Catalyst, DiffEqJump
+using Catalyst
 # Model: Markovian part
 @parameters a b t
 @variables X(t)
@@ -101,7 +103,7 @@ jumpsys = convert(JumpSystem, rs, combinatoric_ratelaws=false)
 dprob = DiscreteProblem(jumpsys, u0, tspan, ps)
 djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false,false))
 ensprob = EnsembleProblem(djprob)
-@time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
+ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
 ```
 ![bursty](docs/src/assets/bursty.svg)
 
