@@ -1,7 +1,16 @@
 # DelaySSAToolkit
 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/)
-[![Build Status](https://github.com/palmtree2013/DelaySSAdocs.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain)
+| **Documentation** | **Build Status** |
+|:-----------------:|:----------------:|
+| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] |
+
+[doc dev badge]: https://img.shields.io/badge/docs-dev-blue.svg
+[doc dev link]: https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/
+
+[ci badge]: https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml/badge.svg?branch=main
+[ci link]: https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain
+
+
 <!-- [![Coverage](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl) -->
 
 DelaySSAToolkit.jl is a tool developed on top of [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl) in Julia which solves the stochastic simulation [[1]](#1) coupled with delays. A portion of this library’s code is taken from the MIT licensed DiffEqJump.jl library. 
