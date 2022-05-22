@@ -22,8 +22,8 @@ end
 
 
 
-(integrator::DSSAIntegrator)(t) = copy(integrator.u)
-(integrator::DSSAIntegrator)(out,t) = (out .= integrator.u)
+# (integrator::DSSAIntegrator)(t) = copy(integrator.u)
+# (integrator::DSSAIntegrator)(out,t) = (out .= integrator.u)
 
 
 function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)

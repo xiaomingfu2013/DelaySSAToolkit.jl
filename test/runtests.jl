@@ -13,7 +13,13 @@ using Test, SafeTestsets
     end 
     @time @safetestset "cascade of delay reaction test" begin
         include("cascade_of_delay_reaction.jl")
-    end 
+    end
+    @time @safetestset "delay problem test" begin
+        include("delay_problem.jl")
+    end  
+    @time @safetestset "remake problem test" begin
+        include("remake.jl")
+    end
     # @time @safetestset "Index test" begin
     #     include("check_index_reactions.jl")
     # end

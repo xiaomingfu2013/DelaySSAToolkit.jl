@@ -2,7 +2,7 @@
 
 | **Documentation** | **Build Status** |
 |:-----------------:|:----------------:|
-| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] |
+| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] |
 
 [doc dev badge]: https://img.shields.io/badge/docs-dev-blue.svg
 [doc dev link]: https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/
@@ -10,6 +10,8 @@
 [ci badge]: https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml/badge.svg?branch=main
 [ci link]: https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain
 
+[cov badge]: https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg
+[cov link]: https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl
 
 <!-- [![Coverage](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl) -->
 
