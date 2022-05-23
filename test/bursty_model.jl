@@ -2,6 +2,7 @@ using DelaySSAToolkit
 using Catalyst
 using Statistics
 using Test
+using StaticArrays
 
 
 reltol = 1e-1
@@ -18,7 +19,7 @@ jumpsys = convert(JumpSystem, rs, combinatoric_ratelaws=false)
 
 # equations(jumpsys)|>length
 
-u0 = [0]
+u0 = @SVector [0]
 de_chan0 = [[]]
 tf = 200.
 tspan = (0,tf)

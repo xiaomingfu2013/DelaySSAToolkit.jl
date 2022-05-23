@@ -20,7 +20,7 @@ using Test, SafeTestsets
     @time @safetestset "remake problem test" begin
         include("remake.jl")
     end
-    # @time @safetestset "Index test" begin
-    #     include("check_index_reactions.jl")
-    # end
+    @time @safetestset "constant rate test" begin
+        include("constant_rate.jl")
+    end
 end
