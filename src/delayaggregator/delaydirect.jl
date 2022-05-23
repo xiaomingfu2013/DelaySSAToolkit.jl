@@ -213,7 +213,7 @@ end
     num_ma_rates = get_num_majumps(ma_jumps)
     if next_jump <= num_ma_rates # if the next jump is a mass action jump
         if u isa SVector
-            integrator.u = executerx(u, next_jump, ma_jumps)
+            integrator.u =  executerx(integrator.u, next_jump, ma_jumps)
         else
             @inbounds executerx!(integrator.u, next_jump, ma_jumps)
         end

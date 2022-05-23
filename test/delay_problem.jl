@@ -22,8 +22,19 @@ delay_complete = Dict(1=>[2=>1, 3=>-1])
 delay_interrupt = Dict()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 de_chan0 = [[]]
+
 djprob = DelayJumpProblem(dprob, DelayRejection(), jumpset, delayjumpset, de_chan0, save_positions=(false, false), save_delay_channel = true)
 sol = solve(djprob, SSAStepper(), seed = 1, saveat =10.)
+
+io = IOBuffer()
+show(io, "text/plain", djprob)
+@test read(seekstart(io), String) == "\nNumber of constant rate jumps: 0\nNumber of variable rate jumps: 0\nHave a mass action jump\nNumber of delay trigger reactions: 1\nNumber of delay interrupt reactions: 0\n"
+
+sol1 = solve(djprob, SSAStepper(), seed = 1, save_start = false)
+io1 = IOBuffer()
+show(io1, "text/plain", sol1)
+@test read(seekstart(io1), String) == "retcode: Default\nInterpolation: Piecewise constant interpolation\nt: 1-element Vector{Float64}:\n 400.0\nu: 1-element Vector{Vector{Int64}}:\n [0, 129, 0, 871]\nchannel: 1-element Vector{Vector{Vector{Float64}}}:\n [[]]\n===\nUse sol.u to check the state variable and sol.channel to check the delay channel solution.\n===\n"
+
 
 rn = @reaction_network begin
     ρ, S+I --> E+I

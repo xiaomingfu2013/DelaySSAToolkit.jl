@@ -113,15 +113,15 @@ function update_dependent_rates_delay!(p::DelayMNRMJumpAggregation, integrator, 
         # calculate new jump times for dependent jumps
         if rx != p.next_jump && oldrate > zero(oldrate)
             if cur_rates[rx] > zero(eltype(cur_rates))
-                update!(p.pq, rx, t + oldrate / cur_rates[rx] * (p.pq[rx] - t))
+                DataStructures.update!(p.pq, rx, t + oldrate / cur_rates[rx] * (p.pq[rx] - t))
             else
-                update!(p.pq, rx, typemax(t))
+                DataStructures.update!(p.pq, rx, typemax(t))
             end
         else
             if cur_rates[rx] > zero(eltype(cur_rates))
-                update!(p.pq, rx, t + randexp(p.rng) / cur_rates[rx])
+                DataStructures.update!(p.pq, rx, t + randexp(p.rng) / cur_rates[rx])
             else
-                update!(p.pq, rx, typemax(t))
+                DataStructures.update!(p.pq, rx, typemax(t))
             end
         end
     end

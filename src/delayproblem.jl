@@ -100,15 +100,10 @@ mutable struct DelayJumpProblem{iip,P,A,C,J<:Union{Nothing,AbstractJumpAggregato
     save_delay_channel::Bool
 end
 
-function DelayJumpProblem(jprob::JumpProblem, delayjumpsets::DelayJumpSet,de_chan0, save_delay_channel::Bool)
-    @unpack prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump = jprob
-    if !(aggregator<:AbstractDSSAJumpAggregator)
-        error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
-    end
-    DelayJumpProblem(prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump, delayjumpsets, de_chan0, save_delay_channel)
-end
-
 function DelayJumpProblem(p::P,a::A,dj::J,jc::C,vj::J2,rj::J3,mj::J4,djs::J5,de_chan0::deType,save_delay_channel::Bool) where {P,A,J,C,J2,J3,J4,J5,deType}
+    if !(a<:AbstractDSSAJumpAggregator)
+      error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
+    end
     iip = isinplace_jump(p,rj)
     DelayJumpProblem{iip,P,A,C,J,J2,J3,J4,J5,deType}(p,a,dj,jc,vj,rj,mj,djs,de_chan0,save_delay_channel)
 end
