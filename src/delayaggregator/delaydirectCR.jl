@@ -21,13 +21,14 @@ mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.Pr
     num_next_delay::Union{Nothing,Vector{Int}}
     time_to_next_jump::T
     dt_delay::T
+    vartojumps_map::Vector{Vector{Int64}}
     dep_gr_delay::Union{Nothing,Dict{Int,Vector{Int}}}
 end
 
 function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
     maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool},
-    rng::RNG; num_specs, dep_graph=nothing,
-    minrate=convert(T, MINJUMPRATE), maxrate=convert(T, Inf),
+    rng::RNG; num_specs, dep_graph=nothing, dep_graph_delay=nothing,
+    minrate=convert(T, MINJUMPRATE), maxrate=convert(T, Inf), vartojumps_map = nothing,
     kwargs...) where {T,S,F1,F2,RNG}
 
     # a dependency graph is needed and must be provided if there are constant rate jumps
@@ -57,10 +58,18 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
     nnd = nothing
     ttnj = zero(et)
     dt_delay = zero(et)
-    dep_gr_delay = nothing
+    if vartojumps_map === nothing
+        vartojumps_map = var_to_jumps_map(num_specs, maj) 
+    end
+    dep_gr_delay = dep_graph_delay
+    if dep_gr_delay === nothing 
+        if (get_num_majumps(maj) == 0) || !isempty(rs)
+            @warn "To use ConstantRateJumps with the DelayDirectCR algorithm: make sure a delay dependency graph is correctly supplied; otherwise, the result might be incorrect!"
+        end
+    end
     DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,typeof(dg),typeof(rt),typeof(ratetogroup)}(
         nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng,
-        dg, minrate, maxrate, rt, ratetogroup, nd, nnd, ttnj, dt_delay, dep_gr_delay)
+        dg, minrate, maxrate, rt, ratetogroup, nd, nnd, ttnj, dt_delay, vartojumps_map, dep_gr_delay)
 end
 
 
@@ -83,7 +92,9 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
 
     # initialize rates
     fill_rates_and_sum!(p, u, params, t)
-    p.dep_gr_delay = dep_gr_delay(p, integrator)
+    if p.dep_gr_delay === nothing
+        p.dep_gr_delay = dep_gr_delay(p, integrator)
+    end
     # setup PriorityTable
     DiffEqJump.reset!(p.rt)
     for (pid, priority) in enumerate(p.cur_rates)

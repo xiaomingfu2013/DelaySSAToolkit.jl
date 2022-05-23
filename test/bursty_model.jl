@@ -16,6 +16,8 @@ rxs = vcat(rxs)
 # convert the ReactionSystem to a JumpSystem
 jumpsys = convert(JumpSystem, rs, combinatoric_ratelaws=false)
 
+# equations(jumpsys)|>length
+
 u0 = [0]
 de_chan0 = [[]]
 tf = 200.

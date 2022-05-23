@@ -321,39 +321,73 @@ end
 
 """
     function dep_gr_delay(p, integrator)
-Generate delay dependency graph
-input::Int next_delay idx
-output::Dict next_delay idx => reactions need to be updated
+    Generate delay dependency graph
+    output::Dict next_delay idx => reactions need to be updated
 """
 function dep_gr_delay(p::AbstractDSSAJumpAggregator, integrator)
     # num_delay_chan = length(integrator.de_chan)
     dict_ = Dict{Int,Vector{Int}}()
     dict_complete = integrator.delayjumpsets.delay_complete
-    # var_to_jumps = var_to_jumps_map(length(integrator.u),p.ma_jumps)
     @inbounds for key in keys(dict_complete)
         delay_complete_action = dict_complete[key]
         if typeof(delay_complete_action)<:Vector{Pair{Int,Int}}
             vars = first.(delay_complete_action)
+            jumps = unique(vars_to_jumps_delay(p, integrator, vars))
         else
-            vars = vec(1:length(integrator.u))
+            jumps = vec(1:length(p.cur_rates))
         end
-        jumps = unique(vars_to_jumps_delay(p, vars))
         push!(dict_, key=>jumps)
     end
     dict_
 end
-function vars_to_jumps_delay(p, vars)
+
+
+"""
+    function vars_to_jumps_delay(p, vars)
+input::Vector{Int} species indices
+output::Vector{Int} reactions need to be updated
+"""
+function vars_to_jumps_delay(p, integrator, vars)
     jumps = []
-    for i in eachindex(p.dep_gr)
-        for var in vars
-            if var in p.dep_gr[i]
-                push!(jumps, i)
-            end
-        end
+    # var_to_jumps = var_to_jumps_map(length(integrator.u), p.ma_jumps)
+    # for i in eachindex(p.dep_gr)
+    #     for var in vars
+    #         if var in p.dep_gr[i]
+    #             push!(jumps, i)
+    #         end
+    #     end
+    # end
+    vartojumps_map = p.vartojumps_map
+    for var in vars
+        push!(jumps, vartojumps_map[var])
     end
-    return jumps
+    return reduce(vcat, jumps)
 end
 
+function vars_to_jumps_delay(vartojumps_map::Vector{Vector{Int}}, vars::Vector{Int})
+    jumps = []
+    for var in vars
+        push!(jumps, vartojumps_map[var])
+    end
+    return reduce(vcat, jumps)
+end
+
+function dep_gr_delay(delayjumpsets::DelayJumpSet, vartojumps_map, num_reactions)
+    # num_delay_chan = length(integrator.de_chan)
+    dict_ = Dict{Int,Vector{Int}}()
+    dict_complete = delayjumpsets.delay_complete
+    @inbounds for key in keys(dict_complete)
+        delay_complete_action = dict_complete[key]
+        if typeof(delay_complete_action)<:Vector{Pair{Int,Int}}
+            vars = first.(delay_complete_action)
+            jumps = unique(vars_to_jumps_delay(vartojumps_map, vars))
+        else
+            jumps = vec(1:num_reactions)
+        end
+        push!(dict_, key=>jumps)
+    end
+    dict_
+end
 
 """
     find_next_delay_vec(A::Vector{Vector{T}}, x::T)

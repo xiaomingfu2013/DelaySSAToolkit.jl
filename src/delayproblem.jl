@@ -101,7 +101,7 @@ mutable struct DelayJumpProblem{iip,P,A,C,J<:Union{Nothing,AbstractJumpAggregato
 end
 
 function DelayJumpProblem(p::P,a::A,dj::J,jc::C,vj::J2,rj::J3,mj::J4,djs::J5,de_chan0::deType,save_delay_channel::Bool) where {P,A,J,C,J2,J3,J4,J5,deType}
-    if !(a<:AbstractDSSAJumpAggregator)
+    if !(typeof(a)<:AbstractDelayAggregatorAlgorithm)
       error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
     end
     iip = isinplace_jump(p,rj)
@@ -221,10 +221,13 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
         vtoj = jdeps.badjlist
         jtov = vdeps.badjlist
         jtoj = needs_depgraph(aggregator) ? eqeq_dependencies(jdeps, vdeps).fadjlist : nothing
+        dep_graph_delay = dep_gr_delay(delayjumpset, vtoj, length(eqs))
     else
-        vtoj = nothing; jtov = nothing; jtoj = nothing
+        vtoj = nothing; jtov = nothing; jtoj = nothing; dep_graph_delay = nothing;
     end
-    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; save_delay_channel=save_delay_channel, dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=scale_rates, nocopy=true, kwargs...)
+
+
+    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; save_delay_channel=save_delay_channel, dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=scale_rates, dep_graph_delay = dep_graph_delay, nocopy=true, kwargs...)
 end
 
 
