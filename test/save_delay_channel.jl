@@ -22,7 +22,7 @@ end
 delay_interrupt = Dict(4 => delay_affect!)
 
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-u0 =@SVector [0, 1, 0]
+u0 = [0, 1, 0]
 de_chan0 = [[]]
 tspan = (0.0, tf)
 dprob = DiscreteProblem(u0, tspan)
