@@ -12,7 +12,7 @@ tf = 400.
 tspan = (0,tf)
 τ = 20.
 dprob = DiscreteProblem(jumpsys, u0, tspan)
-# jumpsys.dep_graph
+
 
 delay_trigger_affect! = function (integrator, rng)
   append!(integrator.de_chan[1], τ)
