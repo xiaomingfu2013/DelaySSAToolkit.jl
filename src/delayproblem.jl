@@ -100,15 +100,10 @@ mutable struct DelayJumpProblem{iip,P,A,C,J<:Union{Nothing,AbstractJumpAggregato
     save_delay_channel::Bool
 end
 
-function DelayJumpProblem(jprob::JumpProblem, delayjumpsets::DelayJumpSet,de_chan0, save_delay_channel::Bool)
-    @unpack prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump = jprob
-    if !(aggregator<:AbstractDSSAJumpAggregator)
-        error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
-    end
-    DelayJumpProblem(prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump, delayjumpsets, de_chan0, save_delay_channel)
-end
-
 function DelayJumpProblem(p::P,a::A,dj::J,jc::C,vj::J2,rj::J3,mj::J4,djs::J5,de_chan0::deType,save_delay_channel::Bool) where {P,A,J,C,J2,J3,J4,J5,deType}
+    if !(typeof(a)<:AbstractDelayAggregatorAlgorithm)
+      error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
+    end
     iip = isinplace_jump(p,rj)
     DelayJumpProblem{iip,P,A,C,J,J2,J3,J4,J5,deType}(p,a,dj,jc,vj,rj,mj,djs,de_chan0,save_delay_channel)
 end
@@ -139,7 +134,7 @@ end
 """
 function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
                      save_positions = typeof(prob) <: DiffEqBase.AbstractDiscreteProblem ? (false,true) : (true,true),
-                     rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = false, useiszero = true, spatial_system = nothing, hopping_constants = nothing, save_delay_channel = false, kwargs...)
+                     rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = false, useiszero = true,  save_delay_channel = false, kwargs...)
 
   # initialize the MassActionJump rate constants with the user parameters
   if using_params(jumps.massaction_jump) 
@@ -154,11 +149,11 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, ju
 
   ## Constant Rate Handling
   t,end_time,u = prob.tspan[1],prob.tspan[2],prob.u0
-  if (typeof(jumps.constant_jumps) <: Tuple{}) && (maj === nothing) && !is_spatial(aggregator) # check if there are no jumps
+  if (typeof(jumps.constant_jumps) <: Tuple{}) && (maj === nothing)  # check if there are no jumps
     disc = nothing
     constant_jump_callback = CallbackSet()
   else
-    disc = aggregate(aggregator,u,prob.p,t,end_time,jumps.constant_jumps,maj,save_positions,rng; spatial_system = spatial_system, hopping_constants = hopping_constants, kwargs...)
+    disc = aggregate(aggregator,u,prob.p,t,end_time,jumps.constant_jumps,maj,save_positions,rng; kwargs...)
     constant_jump_callback = DiscreteCallback(disc)
   end
 
@@ -226,10 +221,13 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
         vtoj = jdeps.badjlist
         jtov = vdeps.badjlist
         jtoj = needs_depgraph(aggregator) ? eqeq_dependencies(jdeps, vdeps).fadjlist : nothing
+        dep_graph_delay = dep_gr_delay(delayjumpset, vtoj, length(eqs))
     else
-        vtoj = nothing; jtov = nothing; jtoj = nothing
+        vtoj = nothing; jtov = nothing; jtoj = nothing; dep_graph_delay = nothing;
     end
-    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; save_delay_channel=save_delay_channel, dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=scale_rates, nocopy=true, kwargs...)
+
+
+    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; save_delay_channel=save_delay_channel, dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=scale_rates, dep_graph_delay = dep_graph_delay, nocopy=true, kwargs...)
 end
 
 
