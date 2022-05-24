@@ -21,7 +21,7 @@ mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.Pr
     num_next_delay::Union{Nothing,Vector{Int}}
     time_to_next_jump::T
     dt_delay::T
-    vartojumps_map::Vector{Vector{Int64}}
+    vartojumps_map::Union{Nothing,Vector{Vector{Int}}}
     dep_gr_delay::Union{Nothing,Dict{Int,Vector{Int}}}
 end
 
@@ -59,14 +59,16 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
     ttnj = zero(et)
     dt_delay = zero(et)
     if vartojumps_map === nothing
-        vartojumps_map = var_to_jumps_map(num_specs, maj) 
-    end
-    dep_gr_delay = dep_graph_delay
-    if dep_gr_delay === nothing 
         if (get_num_majumps(maj) == 0) || !isempty(rs)
-            @warn "To use ConstantRateJumps with the DelayDirectCR algorithm: make sure a delay dependency graph is correctly supplied; otherwise, the result might be incorrect!"
+            if dep_graph_delay === nothing
+                @warn "To use ConstantRateJumps with the DelayDirectCR algorithm: make sure a delay dependency graph is correctly supplied!"
+                vartojumps_map = repeat([1:length(crs)], num_specs)
+            end
+        else
+            vartojumps_map = var_to_jumps_map(num_specs, maj)
         end
     end
+    dep_gr_delay = dep_graph_delay
     DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,typeof(dg),typeof(rt),typeof(ratetogroup)}(
         nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng,
         dg, minrate, maxrate, rt, ratetogroup, nd, nnd, ttnj, dt_delay, vartojumps_map, dep_gr_delay)
@@ -93,7 +95,7 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
     # initialize rates
     fill_rates_and_sum!(p, u, params, t)
     if p.dep_gr_delay === nothing
-        p.dep_gr_delay = dep_gr_delay(p, integrator)
+        p.dep_gr_delay = dep_gr_delay(integrator.delayjumpsets, p.vartojumps_map, length(p.cur_rates))
     end
     # setup PriorityTable
     DiffEqJump.reset!(p.rt)

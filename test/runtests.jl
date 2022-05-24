@@ -15,12 +15,12 @@ using Test, SafeTestsets
         include("cascade_of_delay_reaction.jl")
     end
     @time @safetestset "delay problem test" begin
-        include("delay_problem.jl")
+        include("delay_problem_test.jl")
     end  
     @time @safetestset "remake problem test" begin
-        include("remake.jl")
+        include("remake_test.jl")
     end
-    @time @safetestset "constant rate test" begin
-        include("constant_rate.jl")
+    @time @safetestset "low level interface test" begin
+        include("low_level_interface.jl")
     end
 end
