@@ -113,7 +113,7 @@ function execute_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params, 
     update_state_delay!(p, integrator, u, t)
 
     # update current jump rates
-    update_dependent_rates_delay!(p, integrator, u, params, t)
+    update_dependent_rates_delay!(p, integrator, integrator.u, params, t)
     nothing
 end
 

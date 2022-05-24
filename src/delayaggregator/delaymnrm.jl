@@ -86,7 +86,7 @@ function execute_jumps!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
     # execute jump
     update_state_delay!(p, integrator, u, t)
     # update current jump rates and times
-    update_dependent_rates_delay!(p, integrator, u, params, t)
+    update_dependent_rates_delay!(p, integrator, integrator.u, params, t)
     nothing
 end
 

@@ -1,8 +1,8 @@
-using Test, DelaySSAToolkit, Catalyst
+using Test, DelaySSAToolkit, Catalyst, StaticArrays
 
 params = [0.1, 0.1, 10.0, 0.1, 10.0, 50.0]
 σ_off, σ_on, ρ_on, d, τ, tf = params
-u0_ = [0,1,0]
+u0_ =@SVector [0,1,0]
 tspan = (0., 50.)
 
 
@@ -26,7 +26,8 @@ net_stoich_ = [[1 => -1, 2 => 1], [1 => 1, 2 => -1], [3 => 1]]
 mass_action_jump_ = MassActionJump(rates_, react_stoich_, net_stoich_; scale_rates=false)
 
 affect! = function (integrator)
-    integrator.u[3] -= 1
+    # integrator.u[3] -= 1
+    integrator.u = setindex(integrator.u, integrator.u[3] - 1, 3)
 end
 rate2 =  (u,p,t) -> 0.1*u[3]
 constant_rate_jump = ConstantRateJump(rate2, affect!)
