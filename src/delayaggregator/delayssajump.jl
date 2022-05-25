@@ -155,7 +155,7 @@ end
     next_jump = p.next_jump
     ttnj = p.time_to_next_jump
     @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
-    if p.next_delay != nothing || any(set->next_jump in set, [delay_interrupt_set, delay_trigger_set])
+    if !isempty(p.next_delay) || any(set->next_jump in set, [delay_interrupt_set, delay_trigger_set])
         find_next_delay_dt!(p, integrator)
     else
         p.dt_delay -= ttnj
@@ -167,7 +167,7 @@ end
     @unpack delay_interrupt, delay_trigger, delay_trigger_set, delay_interrupt_set, delay_complete = integrator.delayjumpsets
 
     ttnj = time_to_next_jump
-    if next_delay == nothing
+    if isempty(next_delay)
         # update_state ! 
         num_ma_rates = get_num_majumps(ma_jumps)
         if next_jump <= num_ma_rates # is next jump a mass action jump
@@ -204,8 +204,8 @@ Compare dt_delay and dt_reaction.
 function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_reaction, t)
     if  dt_reaction < dt_delay
         ttnj = dt_reaction
-        next_delay = nothing
-        num_next_delay = nothing
+        next_delay = Int64[]
+        num_next_delay = Int64[]
     else
         ttnj = dt_delay
         next_delay, num_next_delay = find_next_delay_vec(de_chan, ttnj)

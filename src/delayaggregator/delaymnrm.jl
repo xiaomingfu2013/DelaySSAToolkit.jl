@@ -12,8 +12,8 @@ mutable struct DelayMNRMJumpAggregation{T,S,F1,F2,RNG,DG,PQ} <: AbstractDSSAJump
     rng::RNG
     dep_gr::DG
     pq::PQ
-    next_delay::Union{Nothing,Vector{Int}}
-    num_next_delay::Union{Nothing,Vector{Int}}
+    next_delay::Vector{Int}
+    num_next_delay::Vector{Int}
     time_to_next_jump::T
     dt_delay::T
     vartojumps_map::Union{Nothing,Vector{Vector{Int}}}
@@ -39,8 +39,8 @@ function DelayMNRMJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
 
     pq = MutableBinaryMinHeap{T}()
 
-    nd = nothing
-    nnd = nothing
+    nd = Int64[]
+    nnd = Int64[]
     ttnj = zero(et)
     dt_delay = zero(et)
     if vartojumps_map === nothing
@@ -97,7 +97,7 @@ function generate_jumps!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
     dt_reaction = next_jump_time_reaction - t
     dt_delay_generation!(p, integrator)
     compare_delay!(p, integrator.de_chan, p.dt_delay, dt_reaction, t)
-    if p.next_delay != nothing
+    if !isempty(p.next_delay)
         p.next_jump = 0
     else
         p.next_jump = next_jump
@@ -108,7 +108,7 @@ end
 
 # recalculate jump rates for jumps that depend on the just executed jump (p.next_jump)
 function update_dependent_rates_delay!(p::DelayMNRMJumpAggregation, integrator, u, params, t)
-    if p.next_delay == nothing  # if next reaction is not delay reaction 
+    if isempty(p.next_delay)  # if next reaction is not delay reaction 
         @inbounds dep_rxs = p.dep_gr[p.next_jump]
     else
         # find the dep_rxs w.r.t next_delay vectors

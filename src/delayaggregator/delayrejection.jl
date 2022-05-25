@@ -10,15 +10,15 @@ mutable struct DelayRejectionJumpAggregation{T,S,F1,F2,RNG} <: AbstractDSSAJumpA
     affects!::F2
     save_positions::Tuple{Bool,Bool}
     rng::RNG
-    next_delay::Union{Nothing,Vector{Int}}
-    num_next_delay::Union{Nothing,Vector{Int}}
+    next_delay::Vector{Int}
+    num_next_delay::Vector{Int}
     time_to_next_jump::T
     dt_delay::T
 end
 #3
 function DelayRejectionJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; kwargs...) where {T,S,F1,F2,RNG}
-    nd = nothing
-    nnd = nothing
+    nd = Int64[]
+    nnd = Int64[]
     ttnj = zero(et)
     dt_delay = zero(et)
     #4
@@ -50,7 +50,7 @@ end
 
 function generate_jumps!(p::DelayRejectionJumpAggregation, integrator, u, params, t)
     time_to_next_jump!(p, integrator, u, params, t)
-    if p.next_delay == nothing
+    if isempty(p.next_delay)
         @inbounds p.next_jump = searchsortedfirst(p.cur_rates, rand(p.rng) * p.sum_rate) # cur_rates is the cumsum of rates
     else
         p.next_jump = 0

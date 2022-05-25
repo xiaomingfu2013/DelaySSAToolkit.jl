@@ -33,8 +33,6 @@ delay_complete_ = Dict(1=>[2=>2, 3=>-2])
 # delay_interrupt_ = Dict()
 djprob_ = remake(djprob, p = ps_, de_chan0 = de_chan0_, u0= u0_, tspan = tspan_, delay_trigger = delay_trigger_, delay_complete = delay_complete_)
 
-
-
 @test djprob_.prob.p == ps_
 @test djprob_.prob.u0 == u0_
 @test djprob_.prob.tspan == tspan_

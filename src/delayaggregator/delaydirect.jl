@@ -10,8 +10,8 @@ mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,IType} <: AbstractDSSAJu
     affects!::F2
     save_positions::Tuple{Bool,Bool}
     rng::RNG
-    next_delay::Union{Nothing,Vector{Int}}
-    num_next_delay::Union{Nothing,Vector{Int}}
+    next_delay::Vector{Int}
+    num_next_delay::Vector{Int}
     time_to_next_jump::T
     next_delay_time::T
     shadow_integrator::IType
@@ -27,9 +27,9 @@ end
 function DelayDirectJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; u0, kwargs...) where {T,S,F1,F2,RNG}
     ttnj = zero(et)
     ndt = zero(et)
-    shadow_integrator = ShadowIntegrator{typeof(u0),Vector{Vector{T}}, T}(copy(u0), [Vector{T}()], DelayJumpSet(Dict(), Dict(), Dict()), copy(crs))
-    nd = nothing
-    nnd = [] # in the Direct Method the number of next delay equals always 1
+    shadow_integrator = ShadowIntegrator{typeof(u0),Vector{Vector{T}}, T}(copy(u0), [Vector{T}()], DelayJumpSet(Dict(),Dict(),Dict()), copy(crs))
+    nd = Int64[]
+    nnd = Int64[] # in the Direct Method the number of next delay equals always 1
     DelayDirectJumpAggregation{T,S,F1,F2,RNG,typeof(shadow_integrator)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, nd, nnd, ttnj, ndt, shadow_integrator, false)
 end
 

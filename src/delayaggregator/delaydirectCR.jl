@@ -17,8 +17,8 @@ mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.Pr
     maxrate::T   # initial maxrate only, table can increase beyond it!
     rt::U
     ratetogroup::W
-    next_delay::Union{Nothing,Vector{Int}}
-    num_next_delay::Union{Nothing,Vector{Int}}
+    next_delay::Vector{Int}
+    num_next_delay::Vector{Int}
     time_to_next_jump::T
     dt_delay::T
     vartojumps_map::Union{Nothing,Vector{Vector{Int}}}
@@ -54,8 +54,8 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
 
     # construct an empty initial priority table -- we'll reset this in init
     rt = DiffEqJump.PriorityTable(ratetogroup, zeros(T, 1), minrate, 2 * minrate)
-    nd = nothing
-    nnd = nothing
+    nd = Int64[]
+    nnd = Int64[]
     ttnj = zero(et)
     dt_delay = zero(et)
     if vartojumps_map === nothing
@@ -123,7 +123,7 @@ function generate_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params,
     dt_delay_generation!(p, integrator)
     compare_delay!(p, integrator.de_chan, p.dt_delay, dt_reaction, t)
     if p.next_jump_time < p.end_time
-        if p.next_delay != nothing
+        if !isempty(p.next_delay)
             p.next_jump = 0
         else
             p.next_jump = DiffEqJump.sample(p.rt, p.cur_rates, p.rng)
@@ -141,7 +141,7 @@ end
 # requires dependency graph
 function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
 
-    if p.next_delay == nothing  # if next reaction is not delay reaction 
+    if isempty(p.next_delay)  # if next reaction is not delay reaction 
         @inbounds dep_rxs = p.dep_gr[p.next_jump]
     else
         # find the dep_rxs w.r.t next_delay vectors
