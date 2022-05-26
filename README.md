@@ -46,7 +46,7 @@ for the first time after installation.
 ### SEIR model
 Check [this example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/tutorials/) for more details.
 ```julia
-using Catalyst
+using Catalyst # ] add Catalyst
 using DelaySSAToolkit
 # Model: Markovian part
 rn = @reaction_network begin
@@ -73,7 +73,8 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false)
 dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
-sol = solve(djprob, SSAStepper())
+sol = solve(djprob, SSAStepper(),seed=1234)
+# ] add Plots
 using Plots; theme(:vibrant)
 plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:png)
 ```
