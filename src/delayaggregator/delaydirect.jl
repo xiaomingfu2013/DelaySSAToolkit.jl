@@ -162,7 +162,7 @@ function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
     # constant jump rates
     idx += 1
     rates = p.rates
-    @inbounds for i in 1:length(p.rates)
+    @inbounds for i in eachindex(p.rates)
         new_rate = rates[i](u, params, t)
         cur_rates[idx] = new_rate + prev_rate
         prev_rate = cur_rates[idx]
@@ -190,7 +190,7 @@ function calculate_sum_rate!(p, s::ShadowIntegrator, u, params, t)
     # constant jump rates
     idx += 1
     rates = p.rates
-    @inbounds for i in 1:length(rates)
+    @inbounds for i in eachindex(rates)
         new_rate = rates[i](u, params, t)
         cur_rates[idx] = new_rate + prev_rate
         prev_rate = cur_rates[idx]

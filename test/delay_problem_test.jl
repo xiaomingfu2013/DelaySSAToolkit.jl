@@ -45,7 +45,7 @@ djprob_ = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_ch
 
 sol_ = solve(djprob_, SSAStepper(), seed =1, saveat = 10.)
 
-@testset for i in 1:length(sol.t)
+@testset for i in eachindex(sol.t)
     @test sol[i] == sol_[i]
 end
 
