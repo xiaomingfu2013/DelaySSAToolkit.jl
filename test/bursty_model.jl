@@ -2,6 +2,7 @@ using DelaySSAToolkit
 using Catalyst
 using Statistics
 using Test
+using StaticArrays
 
 
 reltol = 1e-1
@@ -16,7 +17,9 @@ rxs = vcat(rxs)
 # convert the ReactionSystem to a JumpSystem
 jumpsys = convert(JumpSystem, rs, combinatoric_ratelaws=false)
 
-u0 = [0]
+# equations(jumpsys)|>length
+
+u0 = @SVector [0]
 de_chan0 = [[]]
 tf = 200.
 tspan = (0,tf)
@@ -24,11 +27,17 @@ dprob = DiscreteProblem(jumpsys,u0,tspan)
 τ = 130.
 
 delay_trigger = Dict([Pair(i, [1=>fill(τ, i)]) for i in 1:burst_sup])
+# typeof(delay_trigger[1])
+
 delay_complete = Dict(1=>[1=>-1])
 delay_interrupt = Dict()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
+# a = Dict()
+# DelaySSAToolkit.convert_delayset(a)
+# b = convert(Dict{Int,Any},a)
+# collect(keys(b))
 
-
+# delayjumpset = DelayJumpSet(delay_trigger, delay_complete, b)
 
 algos = [DelayRejection(), DelayDirect(),DelayMNRM(),  DelayDirectCR()]
 timestamps = [10, 20, 50, 200]

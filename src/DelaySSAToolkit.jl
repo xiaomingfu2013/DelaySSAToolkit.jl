@@ -10,7 +10,7 @@ import DiffEqJump: AbstractJumpAggregator, AbstractJump, JumpProblem, ConstantRa
 # Dependency graph functions
 import DiffEqJump: make_dependency_graph, add_self_dependencies!, var_to_jumps_map
 # other functions
-import DiffEqJump: using_params, get_jump_info_fwrappers, build_jump_aggregation, isinplace_jump, extend_problem, build_variable_callback, get_num_majumps, evalrxrate, executerx!, executerx
+import DiffEqJump: using_params, get_jump_info_fwrappers, isinplace_jump, extend_problem, build_variable_callback, get_num_majumps
 
 # using Catalyst 
 using ModelingToolkit
@@ -39,7 +39,7 @@ include("delayaggregator/delaydirectCR.jl")
 include("delaySSA_stepper.jl")
 include("utils.jl")
 
-export DelayJumpProblem, DelayJumpSet, SSAStepper, MassActionJump, ConstantRateJump, JumpProblem, JumpSystem
+export DelayJumpProblem, DelayJumpSet, SSAStepper, MassActionJump, ConstantRateJump, JumpProblem, JumpSystem, JumpSet
 export DelayRejection, DelayMNRM, DelayDirect, DelayDirectCR
 export solve, remake
 

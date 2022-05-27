@@ -1,7 +1,18 @@
 # DelaySSAToolkit
 
-[![Dev](https://img.shields.io/badge/docs-dev-blue.svg)](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/)
-[![Build Status](https://github.com/palmtree2013/DelaySSAdocs.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain)
+| **Documentation** | **Build Status** |
+|:-----------------:|:----------------:|
+| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] |
+
+[doc dev badge]: https://img.shields.io/badge/docs-dev-blue.svg
+[doc dev link]: https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/
+
+[ci badge]: https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml/badge.svg?branch=main
+[ci link]: https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain
+
+[cov badge]: https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg
+[cov link]: https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl
+
 <!-- [![Coverage](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl) -->
 
 DelaySSAToolkit.jl is a tool developed on top of [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl) in Julia which solves the stochastic simulation [[1]](#1) coupled with delays. A portion of this library’s code is taken from the MIT licensed DiffEqJump.jl library. 
@@ -35,7 +46,7 @@ for the first time after installation.
 ### SEIR model
 Check [this example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/tutorials/) for more details.
 ```julia
-using Catalyst
+using Catalyst # ] add Catalyst
 using DelaySSAToolkit
 # Model: Markovian part
 rn = @reaction_network begin
@@ -62,7 +73,8 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false)
 dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
-sol = solve(djprob, SSAStepper())
+sol = solve(djprob, SSAStepper(),seed=1234)
+# ] add Plots
 using Plots; theme(:vibrant)
 plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:png)
 ```

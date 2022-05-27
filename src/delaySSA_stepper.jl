@@ -158,7 +158,7 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
         saveat_function!(integrator, last_t)
     end
 
-    if integrator.save_end && integrator.sol.t[end] != end_time
+    if integrator.save_end && (isempty(integrator.sol.t)||integrator.sol.t[end] != end_time)
         saveat_end_function!(integrator, last_t)
     end
     DiffEqBase.finalize!(integrator.opts.callback, integrator.u, integrator.t, integrator)

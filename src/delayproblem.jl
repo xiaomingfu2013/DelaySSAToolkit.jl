@@ -1,7 +1,7 @@
 """
 $(TYPEDEF)
 
-A delay jump set that consists of five inputs, namely `delay_trigger`, `delay_interrupt`, `delay_complete`, `delay_trigger_set` and `delay_interrupt_set`. One can only specify the first three inputs and the rest two can be automatically generated.
+A delay jump set that consists of five inputs, namely `delay_trigger`, `delay_interrupt`, `delay_complete`, `delay_trigger_set` and `delay_interrupt_set`. One only need to specify the first three inputs and the rest two can be automatically generated.
 
 # Fields
 $(FIELDS)
@@ -11,7 +11,7 @@ $(FIELDS)
     - Keys: Indices of reactions defined in the Markovian part that can trigger the delay reactions; 
     - Values: value type `T` can be either 
       - `Function`: 
-        a function that decides how to    update the delay channel and/or the state of the reactants. For example, one can define
+        a function that decides how to update the delay channel and/or the state of the reactants. For example, one can define
         ```julia
         delay_trigger_affect! = function(integrator, rng)
             append!(integrator.de_chan[1], rand(rng))
@@ -19,20 +19,20 @@ $(FIELDS)
         end
         ``` 
         which means adding a random number (with a given random seed `rng`) in (0,1) to the first delay channel, and adding 1 individual to the second species.
-      - `Pair` 
+      - `Vector{Pair{Int,T2}}` where T2<:Union{Real, Vector{Real}} 
         a pair type is a simplified update function for only changing the delay channel (which will render better performance). For example, setting `delay_trigger_affect! = [1=>τ]` is equivalent to 
         ```julia
         delay_trigger_affect! = function(integrator, rng)
             append!(integrator.de_chan[1], τ)
         end
         ```
-- `delay_interrupt::Dict{Int,T}`: reactions in the Markovian part that change the state of the delay channels or/and the state of the reactants in the middle of on-going delay reactions. 
+- `delay_interrupt::Dict{Int,Function}`: reactions in the Markovian part that change the state of the delay channels or/and the state of the reactants in the middle of on-going delay reactions. 
     - Keys: Indices of reactions defined in the Markovian part that can interrupt the delay reactions; 
-    - Values: value type `T` can be either an update functions of `Function` type or a `Pair` type that decides how to update the delay channel or the state of the reactants.
+    - Values: value type `T` can be an update function of `Function` type that decides how to update the delay channel or the state of the reactants.
 
-- `delay_complete::Dict{Int,Any}`: reactions that are initiated by delay trigger reactions and change the state of the delay channels or/and the state of the reactants upon completion. 
+- `delay_complete::Dict{Int,T}`: reactions that are initiated by delay trigger reactions and change the state of the delay channels or/and the state of the reactants upon completion. 
     - Keys: Indices of the delay channel; 
-    - Values: value type `T` can be either an update functions of `Function` type or a `Pair` type that decides how to update the delay channel or the state of the reactants upon completion
+    - Values: value type `T` can be either an update function of `Function` type or a `Vector{Pair{Int,Int}}` type that decides how to update the delay channel or the state of the reactants upon completion
 
 - `delay_trigger_set::Vector{Int}`: collection of indices of reactions that can trigger the delay reaction.
 
@@ -70,21 +70,24 @@ delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 ```
 
 """
-mutable struct DelayJumpSet
+mutable struct DelayJumpSet{T1<:Union{Function,Vector},T2<:Union{Function,Vector},T3<:Function}
     """reactions in the Markovian part that trigger the change of the state of the delay channels or/and the state of the reactants upon initiation."""
-    delay_trigger::Dict{Int,Any}
+    delay_trigger::Dict{Int,T1}
     """reactions in the Markovian part that change the state of the delay channels or/and the state of the reactants in the middle of on-going delay reactions."""
-    delay_complete::Dict{Int,Any}
+    delay_complete::Dict{Int,T2}
     """reactions that are initiated by delay trigger reactions and change the state of the delay channels or/and the state of the reactants upon completion."""
-    delay_interrupt::Dict{Int,Any}
+    delay_interrupt::Dict{Int,T3}
     """collection of indices of reactions that can interrupt the delay reactions. of `delay_trigger`."""
     delay_trigger_set::Vector{Int}
     """collection of indices of `delay_interrupt`."""
     delay_interrupt_set::Vector{Int}    
 end
+function DelayJumpSet(delay_trigger::Dict,delay_complete::Dict,delay_interrupt::Dict) 
+    delay_trigger_, delay_complete_, delay_interrupt_ = convert_delayset.([delay_trigger, delay_complete, delay_interrupt])
+    DelayJumpSet(delay_trigger_, delay_complete_, delay_interrupt_, collect(keys(delay_trigger_)), collect(keys(delay_interrupt_)))
+end
 
-DelayJumpSet(delay_trigger,delay_complete,delay_interrupt) = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt, collect(keys(delay_trigger)), collect(keys(delay_interrupt)))
-
+convert_delayset(delay_set::Dict) = isempty(delay_set) ? convert(Dict{Int,Function},delay_set) : delay_set
 
 #BEGIN DelayJump
 mutable struct DelayJumpProblem{iip,P,A,C,J<:Union{Nothing,AbstractJumpAggregator},J2,J3,J4,J5,deType} <: DiffEqBase.AbstractJumpProblem{P,J}
@@ -100,15 +103,10 @@ mutable struct DelayJumpProblem{iip,P,A,C,J<:Union{Nothing,AbstractJumpAggregato
     save_delay_channel::Bool
 end
 
-function DelayJumpProblem(jprob::JumpProblem, delayjumpsets::DelayJumpSet,de_chan0, save_delay_channel::Bool)
-    @unpack prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump = jprob
-    if !(aggregator<:AbstractDSSAJumpAggregator)
-        error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
-    end
-    DelayJumpProblem(prob, aggregator, discrete_jump_aggregation, jump_callback, variable_jumps, regular_jump, massaction_jump, delayjumpsets, de_chan0, save_delay_channel)
-end
-
 function DelayJumpProblem(p::P,a::A,dj::J,jc::C,vj::J2,rj::J3,mj::J4,djs::J5,de_chan0::deType,save_delay_channel::Bool) where {P,A,J,C,J2,J3,J4,J5,deType}
+    if !(typeof(a)<:AbstractDelayAggregatorAlgorithm)
+      error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
+    end
     iip = isinplace_jump(p,rj)
     DelayJumpProblem{iip,P,A,C,J,J2,J3,J4,J5,deType}(p,a,dj,jc,vj,rj,mj,djs,de_chan0,save_delay_channel)
 end
@@ -139,7 +137,7 @@ end
 """
 function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
                      save_positions = typeof(prob) <: DiffEqBase.AbstractDiscreteProblem ? (false,true) : (true,true),
-                     rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = false, useiszero = true, spatial_system = nothing, hopping_constants = nothing, save_delay_channel = false, kwargs...)
+                     rng = Xorshifts.Xoroshiro128Star(rand(UInt64)), scale_rates = false, useiszero = true,  save_delay_channel = false, kwargs...)
 
   # initialize the MassActionJump rate constants with the user parameters
   if using_params(jumps.massaction_jump) 
@@ -154,11 +152,11 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm, ju
 
   ## Constant Rate Handling
   t,end_time,u = prob.tspan[1],prob.tspan[2],prob.u0
-  if (typeof(jumps.constant_jumps) <: Tuple{}) && (maj === nothing) && !is_spatial(aggregator) # check if there are no jumps
+  if (typeof(jumps.constant_jumps) <: Tuple{}) && (maj === nothing)  # check if there are no jumps
     disc = nothing
     constant_jump_callback = CallbackSet()
   else
-    disc = aggregate(aggregator,u,prob.p,t,end_time,jumps.constant_jumps,maj,save_positions,rng; spatial_system = spatial_system, hopping_constants = hopping_constants, kwargs...)
+    disc = aggregate(aggregator,u,prob.p,t,end_time,jumps.constant_jumps,maj,save_positions,rng; kwargs...)
     constant_jump_callback = DiscreteCallback(disc)
   end
 
@@ -226,10 +224,13 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
         vtoj = jdeps.badjlist
         jtov = vdeps.badjlist
         jtoj = needs_depgraph(aggregator) ? eqeq_dependencies(jdeps, vdeps).fadjlist : nothing
+        dep_graph_delay = dep_gr_delay(delayjumpset, vtoj, length(eqs))
     else
-        vtoj = nothing; jtov = nothing; jtoj = nothing
+        vtoj = nothing; jtov = nothing; jtoj = nothing; dep_graph_delay = nothing;
     end
-    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; save_delay_channel=save_delay_channel, dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=scale_rates, nocopy=true, kwargs...)
+
+
+    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0; save_delay_channel=save_delay_channel, dep_graph=jtoj, vartojumps_map=vtoj, jumptovars_map=jtov, scale_rates=scale_rates, dep_graph_delay = dep_graph_delay, nocopy=true, kwargs...)
 end
 
 
@@ -270,16 +271,33 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
 end
 
 function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)
-    delayjumpsets_ = deepcopy(delayjumpsets)
+    @unpack delay_trigger, delay_complete, delay_interrupt = delayjumpsets
     for (key, value) in kwargs
-        if toexpr(key) in [:delay_trigger,:delay_interrupt, :delay_complete] 
-            setproperty!(delayjumpsets_, toexpr(key), value)
+        exp_key = toexpr(key)  
+        if exp_key == :delay_trigger
+            delay_trigger = value
+        elseif exp_key == :delay_complete
+            delay_complete = value
+        elseif exp_key == :delay_interrupt
+            delay_interrupt = value
         end
-    end    
-    setproperty!(delayjumpsets_, :delay_interrupt_set, collect(keys(delayjumpsets_.delay_interrupt)))
-    setproperty!(delayjumpsets_, :delay_trigger_set, collect(keys(delayjumpsets_.delay_trigger)))
-    return delayjumpsets_
+    end
+    DelayJumpSet(delay_trigger, delay_complete, delay_interrupt) 
 end
+
+# function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)
+#   delayjumpsets_ = deepcopy(delayjumpsets)
+#   @unpack delay_trigger_, delay_complete_, delay_interrupt_ = delayjumpsets
+#   for (key, value) in kwargs
+#       exp_key = toexpr(key)  
+#       if exp_key in [:delay_trigger, :delay_complete, :delay_interrupt]
+#           setproperty!(delayjumpsets_, exp_key, value)
+#       end
+#   end
+#   setproperty!(delayjumpsets_, :delay_interrupt_set, collect(keys(delayjumpsets_.delay_interrupt)))
+#   setproperty!(delayjumpsets_, :delay_trigger_set, collect(keys(delayjumpsets_.delay_trigger)))
+#   return delayjumpsets_
+# end
 
 Base.summary(io::IO, prob::DelayJumpProblem) = string(DiffEqBase.parameterless_type(prob)," with problem ",DiffEqBase.parameterless_type(prob.prob)," and aggregator ",typeof(prob.aggregator))
 function Base.show(io::IO, mime::MIME"text/plain", A::DelayJumpProblem)
