@@ -43,10 +43,15 @@ for the first time after installation.
 
 
 ## Examples
+To run the following two examples, Catalyst.jl has to be install by 
+```julia
+using Pkg
+Pkg.add("Catalyst)
+```
 ### SEIR model
 Check [this example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/tutorials/) for more details.
 ```julia
-using Catalyst # ] add Catalyst
+using Catalyst
 using DelaySSAToolkit
 # Model: Markovian part
 rn = @reaction_network begin
