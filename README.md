@@ -43,7 +43,7 @@ for the first time after installation.
 
 
 ## Examples
-To run the following two examples, Catalyst.jl has to be install by 
+To run the following two examples, Catalyst.jl has to be installed by 
 ```julia
 using Pkg
 Pkg.add("Catalyst")
