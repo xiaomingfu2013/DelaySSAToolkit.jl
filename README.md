@@ -46,7 +46,7 @@ for the first time after installation.
 To run the following two examples, Catalyst.jl has to be install by 
 ```julia
 using Pkg
-Pkg.add("Catalyst)
+Pkg.add("Catalyst")
 ```
 ### SEIR model
 Check [this example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/tutorials/) for more details.

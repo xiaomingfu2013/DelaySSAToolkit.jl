@@ -32,7 +32,7 @@ for the first time after installation.
 To run the examples in the Tutorials section, Catalyst.jl has to be install by
 ```julia
 using Pkg
-Pkg.add("Catalyst)
+Pkg.add("Catalyst")
 ```
 
 ## Recommendation  
