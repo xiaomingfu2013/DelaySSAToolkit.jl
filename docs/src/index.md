@@ -29,6 +29,11 @@ using Pkg
 Pkg.instantiate()
 ```
 for the first time after installation.
+To run the following examples in the Tutorials section, Catalyst.jl has to be install by 
+```julia
+using Pkg
+Pkg.add("Catalyst)
+```
 
 ## Recommendation  
 To solve a `DelayJumpProblem`, here are few recommendations for good performance:
