@@ -25,7 +25,7 @@ Then we convert the reaction network to a `JumpSystem`
 ```julia
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false).
 ```
-We initialise the problem by setting
+We initialize the problem by setting
 ```julia
 u0 = [0,0]
 tf = 400.
@@ -50,7 +50,7 @@ Thus, we can define the `DelayJumpProblem` by
 de_chan0 = [[]]
 djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true)).
 ```
-## Solution and Visualisation
+## Solution and Visualization
 Now we can solve the problem and plot two trajectories of $X$ and $Y$.
 ```julia
 sol_1 = solve(djprob, SSAStepper(), seed = 1)

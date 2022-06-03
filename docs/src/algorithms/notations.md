@@ -1,6 +1,6 @@
 # Notations and Basic Concepts
 
-DelaySSAToolkit now supports four exact delay stochastic simulation algorithms, namely, delay rejection method `DelayRejction` [1,2], delay direct method `DelayDirect` [3], delay modified next reaction method `DelayMNRM` [4] and delay direct method with composition and rejection `DelayDirectCR` [5,6], which intend to solve reaction systems with different scales with best performance. We refer to [recommendation](../index.md) for details. We point out that delay direct method with composition and rejection achieves better computational efficiency by a more complex underlying data structure and a partition of propensity functions (see [5-6] for more details), and the fundamental algorithm structure remains the same as delay rejection method. Here we briefly present the algorithm structures of the delay rejection method, delay direct method and delay modified next reaction method. First of all, we introduce some basic concepts for delay stochastic simulation algorithms.
+DelaySSAToolkit now supports four exact delay stochastic simulation algorithms, namely, delay rejection method `DelayRejction` [1,2], delay direct method `DelayDirect` [3], delay modified next reaction method `DelayMNRM` [4] and delay direct method with composition and rejection `DelayDirectCR` [5,6], which intend to solve reaction systems with different scales with the best performance. We refer to [recommendation](../index.md) for details. We point out that delay direct method with composition and rejection achieves better computational efficiency by a more complex underlying data structure and a partition of propensity functions (see [5-6] for more details), and the fundamental algorithm structure remains the same as delay rejection method. Here we briefly present the algorithm structures of the delay rejection method, delay direct method and delay modified next reaction method. First, we introduce some basic concepts for delay stochastic simulation algorithms.
 
 Consider a system consisting of $N \geq 1$ chemical species, $\{X_1,\ldots, X_N\}$, undergoing $M \geq 1$ chemical reactions through reaction channels $\{R_1,\ldots,R_M\}$, each of which is equipped with a propensity function (or intensity function in the mathematics literature), $a_k(X)$. The dynamic state of this chemical system can be described by the state vector $X(t) =[X_1(t),\ldots,X_N(t)]^T$, where $X_n(t),n = 1,\ldots,N$, is the number of $X_n$ molecules at time $t$, and $[·]^T$ denotes the transpose of the vector in the bracket.
 
@@ -13,7 +13,7 @@ a_k(X(t)) \Delta t + \omicron (t) = & \text{ the probability that  reaction }k \
 \end{aligned}
 ```
 
-where $\omicron (\Delta t)/\Delta t \rightarrow 0$  as  $\Delta t \rightarrow 0$.
+where $\omicron (\Delta t)/\Delta t \rightarrow 0$ as $\Delta t \rightarrow 0$.
 
 Because the assumption above only pertains to the initiation times of reactions, we must handle the completions separately. There are three different types of reactions, so there are three cases that need consideration.
 

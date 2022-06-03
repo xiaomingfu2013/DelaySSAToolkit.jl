@@ -39,7 +39,7 @@ end C γ β
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
 ```
 
-We refer to [this example](tutorials.md) for more details about the construction of a reaction network. Then we initialise the problem by setting
+We refer to [this example](tutorials.md) for more details about the construction of a reaction network. Then we initialize the problem by setting
 
 ```julia
 u0 = [0, 0]
@@ -89,7 +89,7 @@ djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, 
 
 where `de_chan0` is the initial condition for the delay channel, which is a vector of arrays whose *k*th entry stores the scheduled delay time for *k*th delay channel. Here we assume $X_I(0) = 0$, thus only an empty array.
 
-## Visualisation
+## Visualization
 
 Now we can solve the problem and plot a trajectory
 
@@ -188,7 +188,7 @@ de_chan0 = [[]]
 djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions=(false,false))
 ```
 
-## Visualisation
+## Visualization
 
 ```julia
 ens_prob = EnsembleProblem(djprob)

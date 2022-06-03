@@ -20,7 +20,7 @@ DelaySSAToolkit.jl is a tool developed on top of [DiffEqJump.jl](https://github.
 
 DelaySSAToolkit can be installed through the Julia package manager:
 ```julia
-]add https://github.com/palmtree2013/DelaySSAToolkit.jl
+]add DelaySSAToolkit
 using DelaySSAToolkit
 ```
 and you might need to run
@@ -40,7 +40,7 @@ To solve a `DelayJumpProblem`, here are few recommendations for good performance
 
 - Use Catalyst.jl to build your Markovian model (model without delays). For certain algorithms that need dependency graph, it will be auto-generated. Otherwise you must explicitly construct and pass these mappings in `JumpSet` (see [Jump Problems](https://diffeq.sciml.ai/stable/types/jump_types/#Jump-Problems) for details).
 
-- For a small number of jumps, `DelayRejection` and `DelayDirect` will often perform better than other aggregators.
+- For a few number of jumps, `DelayRejection` and `DelayDirect` will often perform better than other aggregators.
 
 - For large numbers of jumps with sparse chain like structures and similar jump rates, for example continuous time random walks, `DelayDirectCR` and `DelayMNRM` often have the best performance.
 

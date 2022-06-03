@@ -41,7 +41,7 @@ Define *Tstruct*, whose $i$th $(i=1,\dots,d)$ row stores $T_i$ and the index, $\
 11. Set $t=t+\Delta$.
 12. Return to Step 2 or quit.
 
-Remark. Notice that in the above pseudo-code, we modified the Step 4 in the orignal algorithm for computational efficiency but both are equivalent.
+Remark. Notice that in the above pseudocode, we modified the Step 4 in the original algorithm for computational efficiency, but both are equivalent.
 
 ## References
 

@@ -16,9 +16,9 @@ a_k(t)\Delta t = &\text{ the probability, given } X(t)=\mathbf{x}, \\
 \end{equation}
 ```
 
-Defining the probability rate constant $c_k$ as the probability that a randomly selected combination of $R_k$ reactant molecules reacts in a unit time period, we can calculate  $a_k(t)$ from $c_k$ and the molecular numbers of $R_k$ reactants at time $t$ using the method given by Gillespie.
+Defining the probability rate constant $c_k$ as the probability that a randomly selected combination of $R_k$ reactant molecules reacts in a unit time period, we can calculate $a_k(t)$ from $c_k$ and the molecular numbers of $R_k$ reactants at time $t$ using the method given by Gillespie.
 
-For a chemical system in a given state $X(t)=\mathbf{x}$ at time $t$, assuming that all reactions occur instantly, Gillespie’s exact SSA answers the following two questions: (i)  when will the next reaction occur?  (ii)  which reaction will occur? Specifically, Gillespie’s exact SSA simulates the following event in each step:
+For a chemical system in a given state $X(t)=\mathbf{x}$ at time $t$, assuming that all reactions occur instantly, Gillespie’s exact SSA answers the following two questions: (i) when will the next reaction occur?  (ii) which reaction will occur? Specifically, Gillespie’s exact SSA simulates the following event in each step:
 
 ```math
 \begin{equation}
@@ -46,13 +46,13 @@ f_\mu(\mu)={{a_\mu(t)} \over {a_0(t)}},\ \ \ \ \  \mu = 1,\ldots,M,
 \end{equation}
 ```
 
-where $a_0(t)=\begin{matrix} \sum_{k=1}^M a_k(t) \end{matrix}$. According to the PDF Eq. ([4](#mjx-eqn-4)), a realization of $\mu$ can be generated from a standard uniform random variable $r_2$, by taking $\mu$ to be the integer for which $\sum_{k=1}^{\mu-1} a_k(t)  < r_2 a_0(t) \leq \sum_{k=1}^\mu a_k(t)$;based on the PDF Eq. ([3](#mjx-eqn-3)), a realization of $\Delta$ can be generated from another standard uniform random variable $r_1$ as $\Delta=−\ln(r_1)/a_0(t)$. Therefore, Gillespie’s exact SSA generates a realization of $\mu$ and $\Delta$ in each step of simulation, and then updates the time and system state as $t\leftarrow t+\Delta$ and  $\mathbf{x} \leftarrow \mathbf{x}+ \mathbf{\nu_\mu}$, respectively.
+where $a_0(t)=\begin{matrix} \sum_{k=1}^M a_k(t) \end{matrix}$. According to the PDF Eq. ([4](#mjx-eqn-4)), a realization of $\mu$ can be generated from a standard uniform random variable $r_2$, by taking $\mu$ to be the integer for which $\sum_{k=1}^{\mu-1} a_k(t)  < r_2 a_0(t) \leq \sum_{k=1}^\mu a_k(t)$;based on the PDF Eq. ([3](#mjx-eqn-3)), a realization of $\Delta$ can be generated from another standard uniform random variable $r_1$ as $\Delta=−\ln(r_1)/a_0(t)$. Therefore, Gillespie’s exact SSA generates a realization of $\mu$ and $\Delta$ in each step of simulation, and then updates the time and system state as $t\leftarrow t+\Delta$ and $\mathbf{x} \leftarrow \mathbf{x}+ \mathbf{\nu_\mu}$, respectively.
 
 ## Exact SSA for stochastic modelling coupled with delays
 
 ### Delay direct method
 
-As in the derivation of Gillespie’s exact SSA, we first need to find the probability of event Eq. ([2](#mjx-eqn-2)), that is defined as $P(\Delta,\mu)\text{d}\Delta$, where $P(\Delta,\mu)$ is the joint PDF of $\Delta$ and $\mu$. Suppose that there are $d$ ongoing reactions at time $t$, which will finish at $t+T_1,\ldots,t+T_{d}$, respectively. Without loss of generality, we assume that $T_1 \leq T_2 \leq \ldots \leq T_d$. Unlike in the reaction system without delays where the propensity functions remain unchanged in the time interval $[t,t+\Delta]$, the propensity functions here change at $t+T_i,i=1,\ldots,d$, due to delayed reactions. We need to take into account such changes in propensity functions when deriving  $P(\Delta,\mu)$.
+As in the derivation of Gillespie’s exact SSA, we first need to find the probability of event Eq. ([2](#mjx-eqn-2)), that is defined as $P(\Delta,\mu)\text{d}\Delta$, where $P(\Delta,\mu)$ is the joint PDF of $\Delta$ and $\mu$. Suppose that there are $d$ ongoing reactions at time $t$, which will finish at $t+T_1,\ldots,t+T_{d}$, respectively. Without loss of generality, we assume that $T_1 \leq T_2 \leq \ldots \leq T_d$. Unlike in the reaction system without delays where the propensity functions remain unchanged in the time interval $[t,t+\Delta]$, the propensity functions here change at $t+T_i,i=1,\ldots,d$, due to delayed reactions. We need to take into account such changes in propensity functions when deriving $P(\Delta,\mu)$.
 
 As in the derivation of Gillespie’s exact SSA, $P(\Delta,\mu)\text{d}\Delta$ can be found from the fundamental premise Eq. ([1](#mjx-eqn-1)) as
 
@@ -134,7 +134,7 @@ Since we need $T_1,\ldots,T_d$ to generate $\Delta$ and $\mu$, we define an arra
 
 
 ### [Delay rejection method](@id delay_rejection_method)
-Bratsun et al. [3] and Barrio et al. [4] used an algorithm for computing the initiation times that is exactly like the original Gillespie Algorithm except that if there is a stored delayed reaction set to finish within a computed timestep, then the computed timestep is discarded, and the system is updated to incorporate the stored delayed reaction. The algorithm then attempts another step starting at its new state. This algorithm is called the Rejection Method. We briefly summarised this algorithm in [delay rejection method](algorithms/delayrejection.md).
+Bratsun et al. [3] and Barrio et al. [4] used an algorithm for computing the initiation times that is exactly like the original Gillespie Algorithm except that if there is a stored delayed reaction set to finish within a computed time step, then the computed time step is discarded, and the system is updated to incorporate the stored delayed reaction. The algorithm then attempts another step starting at its new state. This algorithm is called the Rejection Method. We briefly summarized this algorithm in [delay rejection method](algorithms/delayrejection.md).
 
 The rejection algorithm essentially generates $\Delta$ in the event ([2](#mjx-eqn-2)) using a rejection method in an iterative fashion: in the *i*-th iteration, it generates a $\Delta_i$ according to an exponential PDF with parameter $a_0(t+T_{i−1})$, where we have denoted the time to next event generated in the *i*-th iteration as $\Delta_i$. If $\Delta_i < T_i - T_{i−1}$, then we have $\Delta = T_{i-1} + \Delta_i$ and the algorithm continues simulation to generate $\mu$; otherwise, it rejects $\Delta_i$, updates the state vector $X(t+T_i)$, calculates $a_k(t+T_i),k=1,\ldots,M$, and goes to the next iteration. If $\Delta$ is determined in the *(i+1)*-th iteration, where *i*
 is a non-negative integer, then we have $\Delta \in [T_i,T_{i+1})$ and *i* delayed reactions finished in the time interval $[t,t+\Delta)$.
@@ -155,7 +155,7 @@ because $\Delta_k,k=1,\ldots,i$, are rejected. Since $\Delta_{i+1}$ is accepted,
 P_0(\Delta) = P(\Delta_{i+1} > \Delta - T_i) \prod_{k=1}^i P(\Delta_k > T_k - T_{k-1}).
 \end{equation}
 ```
-The random variables  $\Delta_k,k=1,\ldots,i+1$, follow an exponential distribution with parameter $a_0(t+T_{k−1})$, and thus we have
+The random variables $\Delta_k,k=1,\ldots,i+1$, follow an exponential distribution with parameter $a_0(t+T_{k−1})$, and thus we have
 ```math
 \begin{equation}
 \begin{aligned}
@@ -173,7 +173,7 @@ P(\Delta_{i+1} > \Delta −T_i) = \exp(-a_0(t+T_i)(\Delta-T_i)).
 Substituting Eqs. ([10](#mjx-eqn-10)) and ([11](#mjx-eqn-11)) into Eq. ([9](#mjx-eqn-9)), we find that $P_0(\Delta)$ in Eq. ([9](#mjx-eqn-9)) is exactly the same as $P_0(\Delta)$ in Eq. ([7](#mjx-eqn-7)) that is derived directly from the event ([2](#mjx-eqn-2)) and the fundamental premise ([1](#mjx-eqn-1)). Since the delay direct algorithm generates $\Delta$ and $\mu$ according to PDFs of $\Delta$ and $\mu$ derived from $P_0(\Delta)$ in Eq. ([7](#mjx-eqn-7)), the rejection method is equivalent to the direct method and also is an exact SSA for chemical reaction systems with delays.
 
 ### Other Methods
-The rigorous proof of [delay rejection method](@ref delay_rejection_method) opens a way to transform any exact SSA method to an exact delay SSA method. If we denote `dt_reaction` as the time to the next reaction generated by the instantaneous reactions $\{R_1,\ldots,R_M\}$ using a given exact stochastic simulation algorithm method, for instance next reaction method [5], direct method with composition and rejection [6-7], partial propensity method [8] etc. To extend such an SSA method to a delay SSA method, it suffice to compare `dt_reaction` with `dt_delay` which is time to the next delay reaction (the minimum delay time in the delay channels). If `dt_reaction` < `dt_delay`, we reject `dt_delay`, otherwise accept `dt_delay`. Based on the proof in [delay rejection method](@ref delay_rejection_method), such an extension guarantees to the exactness of transformed delay SSA method.
+The rigorous proof of [delay rejection method](@ref delay_rejection_method) opens a way to transform any exact SSA method to an exact delay SSA method. If we denote `dt_reaction` as the time to the next reaction generated by the instantaneous reactions $\{R_1,\ldots,R_M\}$ using a given exact stochastic simulation algorithm method, for instance next reaction method [5], direct method with composition and rejection [6-7], partial propensity method [8] etc. To extend such an SSA method to a delay SSA method, it suffices to compare `dt_reaction` with `dt_delay` which is the time to the next delay reaction (the minimum delay time in the delay channels). If `dt_reaction` < `dt_delay`, we reject `dt_delay`, otherwise accept `dt_delay`. Based on the proof in [delay rejection method](@ref delay_rejection_method), such an extension guarantees to the exactness of transformed delay SSA method.
 
 ## References
 
