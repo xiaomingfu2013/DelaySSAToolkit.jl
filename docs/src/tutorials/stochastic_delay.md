@@ -12,7 +12,7 @@ Note that $G\xrightarrow{\rho}G+N$ will trigger $N\Rightarrow \emptyset$ after a
 ### Markovian part
 We first define the model using Catalyst (see [this example](tutorials.md) for more details about the construction of a reaction network).
 ```julia
-using DiffEqJump, Catalyst, DelaySSAToolkit
+using Catalyst, DelaySSAToolkit
 using Random, Distributions
 rn = @reaction_network begin
     kon, Goff --> Gon
