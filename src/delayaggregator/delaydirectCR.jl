@@ -1,6 +1,6 @@
 const MINJUMPRATE = 2.0^exponent(1e-12)
 
-mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.PriorityTable,W<:Function} <: AbstractDSSAJumpAggregator
+mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:JumpProcesses.PriorityTable,W<:Function} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int
     next_jump_time::T
@@ -50,10 +50,10 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
 
     # use the largest power of two that is <= the passed in minrate
     minrate = 2.0^minexponent
-    ratetogroup = rate -> DiffEqJump.priortogid(rate, minexponent)
+    ratetogroup = rate -> JumpProcesses.priortogid(rate, minexponent)
 
     # construct an empty initial priority table -- we'll reset this in init
-    rt = DiffEqJump.PriorityTable(ratetogroup, zeros(T, 1), minrate, 2 * minrate)
+    rt = JumpProcesses.PriorityTable(ratetogroup, zeros(T, 1), minrate, 2 * minrate)
     nd = Int64[]
     nnd = Int64[]
     ttnj = zero(et)
@@ -98,9 +98,9 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
         p.dep_gr_delay = dep_gr_delay(integrator.delayjumpsets, p.vartojumps_map, length(p.cur_rates))
     end
     # setup PriorityTable
-    DiffEqJump.reset!(p.rt)
+    JumpProcesses.reset!(p.rt)
     for (pid, priority) in enumerate(p.cur_rates)
-        DiffEqJump.insert!(p.rt, pid, priority)
+        JumpProcesses.insert!(p.rt, pid, priority)
     end
     find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
@@ -126,7 +126,7 @@ function generate_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params,
         if !isempty(p.next_delay)
             p.next_jump = 0
         else
-            p.next_jump = DiffEqJump.sample(p.rt, p.cur_rates, p.rng)
+            p.next_jump = JumpProcesses.sample(p.rt, p.cur_rates, p.rng)
         end
     end
     nothing
@@ -159,9 +159,9 @@ function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrat
         cur_rates[rx] = calculate_jump_rate(ma_jumps, num_majumps, rates, u, params, t, rx)
 
         # update table
-        DiffEqJump.update!(rt, rx, oldrate, cur_rates[rx])
+        JumpProcesses.update!(rt, rx, oldrate, cur_rates[rx])
     end
 
-    p.sum_rate = DiffEqJump.groupsum(rt)
+    p.sum_rate = JumpProcesses.groupsum(rt)
     nothing
 end

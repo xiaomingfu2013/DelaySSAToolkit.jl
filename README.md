@@ -15,7 +15,7 @@
 
 <!-- [![Coverage](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl) -->
 
-DelaySSAToolkit.jl is a tool developed on top of [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl) in Julia which solves the stochastic simulation [[1]](#1) coupled with delays. A portion of this library’s code is taken from the MIT licensed DiffEqJump.jl library. 
+DelaySSAToolkit.jl is a tool developed on top of [JumpProcesses.jl](https://github.com/SciML/JumpProcesses.jl) in Julia which solves the stochastic simulation [[1]](#1) coupled with delays. A portion of this library’s code is taken from the MIT licensed JumpProcesses.jl library. 
 That code is copyright (c) 2017: Chris Rackauckas. This package contains the following features:
 
 ## Features
@@ -24,7 +24,7 @@ That code is copyright (c) 2017: Chris Rackauckas. This package contains the fol
 - Multiple delay channels and simultaneous delay reactions are supported;
 - A cascade of delay reactions is supported (a delay reaction that causes other delay reactions);
 - Priority queue and dependency graph are integrated for high computational performance;
-- Ecosystem with [Catalyst.jl](https://github.com/SciML/Catalyst.jl), [DiffEqJump.jl](https://github.com/SciML/DiffEqJump.jl), [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
+- Ecosystem with [Catalyst.jl](https://github.com/SciML/Catalyst.jl), [JumpProcesses.jl](https://github.com/SciML/JumpProcesses.jl), [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
 
 More information is available in the [documentation](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/). Please feel free to open issues and submit pull requests!
 

@@ -60,7 +60,6 @@ jprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan
 where `de_chan0` is the initial condition for the delay channel where we assume no ongoing delay reactions at $t=0$. `DelayJumpProblem` inputs `JumpSystem`, `DelayJumpProblem`, `DelayJumpSet`, the algorithm and the initial condition of the delay channel `de_chan0`.
 ## Visualization
 ```julia
-using DiffEqJump
 ensprob = EnsembleProblem(jprob)
 @time ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
 ```

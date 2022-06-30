@@ -29,7 +29,7 @@ where $a = β + γ$.
 ## Markovian part
 
 ```julia
-using DiffEqJump, Catalyst, DelaySSAToolkit
+using Catalyst, DelaySSAToolkit
 rn = @reaction_network begin
    C, 0 --> Xₐ
    γ, Xₐ --> 0

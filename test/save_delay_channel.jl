@@ -1,5 +1,5 @@
 using DelaySSAToolkit
-using Test, DiffEqJump, StaticArrays
+using Test, JumpProcesses, StaticArrays
 #σ_off: Gon -> Goff
 #σ_on: Goff -> Gon
 #ρ_on: Gon -> Gon + N, triggers N => τ 0
