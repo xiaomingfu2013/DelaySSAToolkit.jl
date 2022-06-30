@@ -3,15 +3,15 @@
 
 
 Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int) = [A.u[i], A.channel[i]]
-Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int, ::Colon) = [A.u[j][i] for j in 1:length(A.t)]
+Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int, ::Colon) = [A.u[j][i] for j in eachindex(A.u)]
 
 function (A::DSSASolution)(s::Symbol,i::Int)
     if s == :channel
         @assert i <= length(A.channel[1])
-        return [A.channel[j][i] for j in 1:length(A.t)]
+        return [A.channel[j][i] for j in eachindex(A.u)]
     elseif s ==:u
         @assert i <= length(A.u[1])
-        return [A.u[j][i] for j in 1:length(A.t)]
+        return [A.u[j][i] for j in eachindex(A.u)]
     end
 end 
 
@@ -22,8 +22,8 @@ end
 
 
 
-(integrator::DSSAIntegrator)(t) = copy(integrator.u)
-(integrator::DSSAIntegrator)(out,t) = (out .= integrator.u)
+# (integrator::DSSAIntegrator)(t) = copy(integrator.u)
+# (integrator::DSSAIntegrator)(out,t) = (out .= integrator.u)
 
 
 function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)

@@ -1,4 +1,4 @@
-using DiffEqJump, DelaySSAToolkit
+using JumpProcesses, DelaySSAToolkit
 using Random, Distributions
 
 rn = @reaction_network begin

@@ -10,8 +10,8 @@ mutable struct DelayDirectJumpAggregation{T,S,F1,F2,RNG,IType} <: AbstractDSSAJu
     affects!::F2
     save_positions::Tuple{Bool,Bool}
     rng::RNG
-    next_delay::Union{Nothing,Vector{Int}}
-    num_next_delay::Union{Nothing,Vector{Int}}
+    next_delay::Vector{Int}
+    num_next_delay::Vector{Int}
     time_to_next_jump::T
     next_delay_time::T
     shadow_integrator::IType
@@ -27,9 +27,9 @@ end
 function DelayDirectJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T, maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool}, rng::RNG; u0, kwargs...) where {T,S,F1,F2,RNG}
     ttnj = zero(et)
     ndt = zero(et)
-    shadow_integrator = ShadowIntegrator{typeof(u0),Vector{Vector{T}}, T}(copy(u0), [Vector{T}()], DelayJumpSet(Dict(), Dict(), Dict()), copy(crs))
-    nd = nothing
-    nnd = [] # in the Direct Method the number of next delay equals always 1
+    shadow_integrator = ShadowIntegrator{typeof(u0),Vector{Vector{T}}, T}(copy(u0), [Vector{T}()], DelayJumpSet(Dict(),Dict(),Dict()), copy(crs))
+    nd = Int64[]
+    nnd = Int64[] # in the Direct Method the number of next delay equals always 1
     DelayDirectJumpAggregation{T,S,F1,F2,RNG,typeof(shadow_integrator)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, nd, nnd, ttnj, ndt, shadow_integrator, false)
 end
 
@@ -162,7 +162,7 @@ function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
     # constant jump rates
     idx += 1
     rates = p.rates
-    @inbounds for i in 1:length(p.rates)
+    @inbounds for i in eachindex(p.rates)
         new_rate = rates[i](u, params, t)
         cur_rates[idx] = new_rate + prev_rate
         prev_rate = cur_rates[idx]
@@ -190,7 +190,7 @@ function calculate_sum_rate!(p, s::ShadowIntegrator, u, params, t)
     # constant jump rates
     idx += 1
     rates = p.rates
-    @inbounds for i in 1:length(rates)
+    @inbounds for i in eachindex(rates)
         new_rate = rates[i](u, params, t)
         cur_rates[idx] = new_rate + prev_rate
         prev_rate = cur_rates[idx]
@@ -213,7 +213,7 @@ end
     num_ma_rates = get_num_majumps(ma_jumps)
     if next_jump <= num_ma_rates # if the next jump is a mass action jump
         if u isa SVector
-            integrator.u = executerx(u, next_jump, ma_jumps)
+            integrator.u =  executerx(integrator.u, next_jump, ma_jumps)
         else
             @inbounds executerx!(integrator.u, next_jump, ma_jumps)
         end

@@ -1,6 +1,6 @@
 const MINJUMPRATE = 2.0^exponent(1e-12)
 
-mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.PriorityTable,W<:Function} <: AbstractDSSAJumpAggregator
+mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:JumpProcesses.PriorityTable,W<:Function} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int
     next_jump_time::T
@@ -17,17 +17,18 @@ mutable struct DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,DEPGR,U<:DiffEqJump.Pr
     maxrate::T   # initial maxrate only, table can increase beyond it!
     rt::U
     ratetogroup::W
-    next_delay::Union{Nothing,Vector{Int}}
-    num_next_delay::Union{Nothing,Vector{Int}}
+    next_delay::Vector{Int}
+    num_next_delay::Vector{Int}
     time_to_next_jump::T
     dt_delay::T
+    vartojumps_map::Union{Nothing,Vector{Vector{Int}}}
     dep_gr_delay::Union{Nothing,Dict{Int,Vector{Int}}}
 end
 
 function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
     maj::S, rs::F1, affs!::F2, sps::Tuple{Bool,Bool},
-    rng::RNG; num_specs, dep_graph=nothing,
-    minrate=convert(T, MINJUMPRATE), maxrate=convert(T, Inf),
+    rng::RNG; num_specs, dep_graph=nothing, dep_graph_delay=nothing,
+    minrate=convert(T, MINJUMPRATE), maxrate=convert(T, Inf), vartojumps_map = nothing,
     kwargs...) where {T,S,F1,F2,RNG}
 
     # a dependency graph is needed and must be provided if there are constant rate jumps
@@ -49,18 +50,28 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
 
     # use the largest power of two that is <= the passed in minrate
     minrate = 2.0^minexponent
-    ratetogroup = rate -> DiffEqJump.priortogid(rate, minexponent)
+    ratetogroup = rate -> JumpProcesses.priortogid(rate, minexponent)
 
     # construct an empty initial priority table -- we'll reset this in init
-    rt = DiffEqJump.PriorityTable(ratetogroup, zeros(T, 1), minrate, 2 * minrate)
-    nd = nothing
-    nnd = nothing
+    rt = JumpProcesses.PriorityTable(ratetogroup, zeros(T, 1), minrate, 2 * minrate)
+    nd = Int64[]
+    nnd = Int64[]
     ttnj = zero(et)
     dt_delay = zero(et)
-    dep_gr_delay = nothing
+    if vartojumps_map === nothing
+        if (get_num_majumps(maj) == 0) || !isempty(rs)
+            if dep_graph_delay === nothing
+                @warn "To use ConstantRateJumps with the DelayDirectCR algorithm: make sure a delay dependency graph is correctly supplied!"
+                vartojumps_map = repeat([1:length(crs)], num_specs)
+            end
+        else
+            vartojumps_map = var_to_jumps_map(num_specs, maj)
+        end
+    end
+    dep_gr_delay = dep_graph_delay
     DelayDirectCRJumpAggregation{T,S,F1,F2,RNG,typeof(dg),typeof(rt),typeof(ratetogroup)}(
         nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng,
-        dg, minrate, maxrate, rt, ratetogroup, nd, nnd, ttnj, dt_delay, dep_gr_delay)
+        dg, minrate, maxrate, rt, ratetogroup, nd, nnd, ttnj, dt_delay, vartojumps_map, dep_gr_delay)
 end
 
 
@@ -83,11 +94,13 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
 
     # initialize rates
     fill_rates_and_sum!(p, u, params, t)
-    p.dep_gr_delay = dep_gr_delay(p, integrator)
+    if p.dep_gr_delay === nothing
+        p.dep_gr_delay = dep_gr_delay(integrator.delayjumpsets, p.vartojumps_map, length(p.cur_rates))
+    end
     # setup PriorityTable
-    DiffEqJump.reset!(p.rt)
+    JumpProcesses.reset!(p.rt)
     for (pid, priority) in enumerate(p.cur_rates)
-        DiffEqJump.insert!(p.rt, pid, priority)
+        JumpProcesses.insert!(p.rt, pid, priority)
     end
     find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
@@ -100,7 +113,7 @@ function execute_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params, 
     update_state_delay!(p, integrator, u, t)
 
     # update current jump rates
-    update_dependent_rates_delay!(p, integrator, u, params, t)
+    update_dependent_rates_delay!(p, integrator, integrator.u, params, t)
     nothing
 end
 
@@ -110,10 +123,10 @@ function generate_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params,
     dt_delay_generation!(p, integrator)
     compare_delay!(p, integrator.de_chan, p.dt_delay, dt_reaction, t)
     if p.next_jump_time < p.end_time
-        if p.next_delay != nothing
+        if !isempty(p.next_delay)
             p.next_jump = 0
         else
-            p.next_jump = DiffEqJump.sample(p.rt, p.cur_rates, p.rng)
+            p.next_jump = JumpProcesses.sample(p.rt, p.cur_rates, p.rng)
         end
     end
     nothing
@@ -128,7 +141,7 @@ end
 # requires dependency graph
 function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
 
-    if p.next_delay == nothing  # if next reaction is not delay reaction 
+    if isempty(p.next_delay)  # if next reaction is not delay reaction 
         @inbounds dep_rxs = p.dep_gr[p.next_jump]
     else
         # find the dep_rxs w.r.t next_delay vectors
@@ -146,9 +159,9 @@ function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrat
         cur_rates[rx] = calculate_jump_rate(ma_jumps, num_majumps, rates, u, params, t, rx)
 
         # update table
-        DiffEqJump.update!(rt, rx, oldrate, cur_rates[rx])
+        JumpProcesses.update!(rt, rx, oldrate, cur_rates[rx])
     end
 
-    p.sum_rate = DiffEqJump.groupsum(rt)
+    p.sum_rate = JumpProcesses.groupsum(rt)
     nothing
 end

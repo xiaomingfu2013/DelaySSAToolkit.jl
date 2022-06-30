@@ -1,7 +1,7 @@
 # A telegraph model of stochastic delay 
 
 ## Model
-According to [1], a telegraph gene expression model with stochastic delay assumes that the gene can switch between active $G$ and inactive $G^*$ states, transcribes nascent mRNA (denoted by  $N$) while in the active state which subsequently is removed a time $\tau$ later. Here the delay $\tau$ can be a random variable. The reaction scheme is given by
+According to [1], a telegraph gene expression model with stochastic delay assumes that the gene can switch between active $G$ and inactive $G^*$ states, transcribes nascent mRNA (denoted by $N$) while in the active state which subsequently is removed a time $\tau$ later. Here the delay $\tau$ can be a random variable. The reaction scheme is given by
 ```math
 G^*\xrightarrow{k_{\text{on}}} G,\\
 G\xrightarrow{k_{\text{off}}}G^*,\\
@@ -12,7 +12,7 @@ Note that $G\xrightarrow{\rho}G+N$ will trigger $N\Rightarrow \emptyset$ after a
 ### Markovian part
 We first define the model using Catalyst (see [this example](tutorials.md) for more details about the construction of a reaction network).
 ```julia
-using DiffEqJump, Catalyst, DelaySSAToolkit
+using Catalyst, DelaySSAToolkit
 using Random, Distributions
 rn = @reaction_network begin
     kon, Goff --> Gon
@@ -29,7 +29,7 @@ tspan = (0,tf)
 dprob = DiscreteProblem(u0, tspan)
 ```
 ### Non-Markovian part
-Unlike other examples, the elongation time $\tau$ is a random variable sampled from two different LogNormal distributions. We assume $\tau\sim \text{LogNormal}(0,2)+120$ and $\tau\sim \text{LogNormal}(1,\sqrt{2})+120$. For instance, we take $\tau\sim \text{LogNormal}(1,\sqrt{2})+120$ and define 
+Unlike other examples, the elongation time $\tau$ is a random variable sampled from two different Log Normal distributions. We assume $\tau\sim \text{LogNormal}(0,2)+120$ and $\tau\sim \text{LogNormal}(1,\sqrt{2})+120$. For instance, we take $\tau\sim \text{LogNormal}(1,\sqrt{2})+120$ and define 
 ```julia
 delay_trigger_affect! = function (integrator, rng)
     τ=rand(LogNormal(1,sqrt(2)))+120
@@ -40,7 +40,7 @@ delay_complete = Dict(1=>[3=>-1])
 delay_interrupt = Dict() 
 delayjumpset = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 ```
-To see how to define the `DelayJumpSet`, we refers to [this example](tutorials.md).
+To see how to define the `DelayJumpSet`, we refer to [this example](tutorials.md).
 Thus, we can define the problem
 ```julia
 de_chan0 = [[]]

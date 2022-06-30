@@ -19,7 +19,7 @@ Delay Direct Method from  Xiaodong Cai, "Exact stochastic simulation of coupled 
 struct DelayDirect <: AbstractDelayAggregatorAlgorithm end
 """
 $(TYPEDEF)
-A modifed Composition-Rejection Direct Method with delays (DelayDirectCR), implementation combining features from the original article and from the code in  `DiffEqJump` package: DirectCR :
+A modifed Composition-Rejection Direct Method with delays (DelayDirectCR), implementation combining features from the original article and from the code in  `JumpProcesses` package: DirectCR :
 *A constant-time kinetic Monte Carlo algorithm for simulation of large biochemical reaction networks*,
 by A. Slepoy, A.P. Thompson and S.J. Plimpton, J. Chem. Phys, 128, 205101 (2008).
 and
@@ -34,8 +34,10 @@ David F. Anderson, "A modified Next Reaction Method for simulating chemical syst
 """
 struct DelayMNRM <: AbstractDelayAggregatorAlgorithm end
 
-is_spatial(aggregator::AbstractDelayAggregatorAlgorithm) = false
 needs_vartojumps_map(aggregator::AbstractDelayAggregatorAlgorithm) = false
 needs_depgraph(aggregator::AbstractDelayAggregatorAlgorithm) = false
+
 needs_depgraph(aggregator::DelayMNRM) = true
+needs_vartojumps_map(aggregator::DelayMNRM) = true
 needs_depgraph(aggregator::DelayDirectCR) = true
+needs_vartojumps_map(aggregator::DelayDirectCR) = true
