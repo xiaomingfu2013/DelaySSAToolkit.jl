@@ -11,7 +11,7 @@ This model is studied in [1]. This delayed birth–death process can be used to 
 ### Markovian part
 To define the Markovian part of the model, we set the model by
 ```julia
-using Catalyst, DiffEqJump
+using Catalyst
 using Distributions, Random
 using DelaySSAToolkit
 rn = @reaction_network begin

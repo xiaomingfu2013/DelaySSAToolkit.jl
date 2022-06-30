@@ -135,7 +135,7 @@ end
     @inbounds return val * majump.scaled_rates[rxidx]
 end
 
-@inline @fastmath function executerx!(speciesvec::AbstractVector{T}, rxidx::S,majump::M) where {T,S,M <: DiffEqJump.AbstractMassActionJump}
+@inline @fastmath function executerx!(speciesvec::AbstractVector{T}, rxidx::S,majump::M) where {T,S,M <: JumpProcesses.AbstractMassActionJump}
     @inbounds net_stoch = majump.net_stoch[rxidx]
     @inbounds for specstoch in net_stoch
         speciesvec[specstoch[1]] += specstoch[2]
@@ -143,7 +143,7 @@ end
     nothing
 end
 
-@inline @fastmath function executerx(speciesvec::SVector{T}, rxidx::S,majump::M) where {T,S,M <: DiffEqJump.AbstractMassActionJump}
+@inline @fastmath function executerx(speciesvec::SVector{T}, rxidx::S,majump::M) where {T,S,M <: JumpProcesses.AbstractMassActionJump}
     @inbounds net_stoch = majump.net_stoch[rxidx]
     @inbounds for specstoch in net_stoch
         speciesvec = setindex(speciesvec,speciesvec[specstoch[1]]+specstoch[2],specstoch[1])

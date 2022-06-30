@@ -247,16 +247,16 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
   if :prob ∉ keys(kwargs)
     dprob = DiffEqBase.remake(thing.prob; kwargs...)
     # if the parameters were changed we must remake the MassActionJump too
-    if (:p ∈ keys(kwargs)) && DiffEqJump.using_params(thing.massaction_jump)
-        DiffEqJump.update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
+    if (:p ∈ keys(kwargs)) && JumpProcesses.using_params(thing.massaction_jump)
+        JumpProcesses.update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
     end      
   else
     any(k -> k in keys(kwargs), (:u0,:p,:tspan)) && error("If remaking a DelayJumpProblem you can not pass both prob and any of u0, p, or tspan.")
     dprob = kwargs[:prob]
 
     # we can't know if p was changed, so we must remake the MassActionJump
-    if DiffEqJump.using_params(thing.massaction_jump)
-      DiffEqJump.update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
+    if JumpProcesses.using_params(thing.massaction_jump)
+      JumpProcesses.update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
     end 
   end
   if any(k -> k in keys(kwargs), propertynames(thing.delayjumpsets)) 
