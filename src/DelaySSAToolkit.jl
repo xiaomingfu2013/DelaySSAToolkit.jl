@@ -2,6 +2,9 @@ module DelaySSAToolkit
 
 using Reexport
 @reexport using DiffEqBase
+using UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays, DocStringExtensions
+using FunctionWrappers, RandomNumbers
+
 
 import DiffEqBase: DiscreteCallback, init, solve, solve!, initialize!
 # Types and Structs
@@ -19,8 +22,7 @@ import ModelingToolkit: JumpSysMajParamMapper, assemble_maj, assemble_vrj, assem
 using DataStructures
 import DataStructures: update!
 
-using UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays, DocStringExtensions
-using FunctionWrappers, ArrayInterface, RandomNumbers
+
 using StaticArrays, Base.Threads
 import Base.Threads
 @static if VERSION < v"1.3"
@@ -39,6 +41,7 @@ include("delayaggregator/delaydirectCR.jl")
 include("delaySSA_stepper.jl")
 include("utils.jl")
 
+# export DSSAIntegrator
 export DelayJumpProblem, DelayJumpSet, SSAStepper, MassActionJump, ConstantRateJump, JumpProblem, JumpSystem, JumpSet
 export DelayRejection, DelayMNRM, DelayDirect, DelayDirectCR
 export solve, remake

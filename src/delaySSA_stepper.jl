@@ -1,5 +1,3 @@
-export DSSAIntegrator
-
 
 mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,chanType,chanS} <: DiffEqBase.DEIntegrator{SSAStepper,Nothing,uType,tType}
     f::F
