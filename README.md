@@ -1,8 +1,12 @@
 # DelaySSAToolkit
 
-| **Documentation** | **Build Status** | **Downloads** |
+<!-- | **Documentation** | **Build Status** | **Downloads** |
 |:-----------------:|:----------------:|:----------------:|
-| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] | [![download badge]][download link]|
+| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] | [![download badge]][download link]| -->
+
+| **Documentation** | **Build Status** |
+|:-----------------:|:----------------:|
+| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] |
 
 [doc dev badge]: https://img.shields.io/badge/docs-dev-blue.svg
 [doc dev link]: https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/
