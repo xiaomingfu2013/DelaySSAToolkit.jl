@@ -223,11 +223,13 @@ Find the minimal dt_delay in all delay channels.
 """
 function find_next_delay_dt!(p, integrator)
     de_chan = integrator.de_chan 
-    p.dt_delay = find_minimun_dt_delay(de_chan)
+    p.dt_delay = find_minimum_dt_delay(de_chan)
     nothing
 end
 
-function find_minimun_dt_delay(de_chan::Vector{Vector{T}}) where {T}
+
+# find the minimum of a vector of vectors
+function find_minimum_dt_delay(de_chan::Vector{Vector{T}}) where {T}
     val_vec = Vector{T}(undef,length(de_chan))
     @inbounds for i in eachindex(de_chan)
         val_vec[i] = isempty(de_chan[i]) ? typemax(T) : minimum(de_chan[i])
@@ -235,9 +237,19 @@ function find_minimun_dt_delay(de_chan::Vector{Vector{T}}) where {T}
     minimum(val_vec)
 end
 
+# find the minimum of a vector of vectors alternative
+# function find_minimum_dt_delay(vec::Vector{Vector{T}})::T where {T<:Real}
+#     minimum(map(subvec -> minimum(subvec), vec))
+# end
+#minimum of an empty vector
+# function minimum_empty(vec::Vector{T})::T where {T<:Real}
+#     isempty(vec) ? typemax(T) : minimum(vec)
+# end
+
+
 function find_next_delay_num!(p, de_chan::Vector{Vector{T}}) where {T}
     @label restart
-    val = find_minimun_dt_delay(de_chan)
+    val = find_minimum_dt_delay(de_chan)
     if val < eps(T)
         shift_delay_channel!(de_chan, eps(T))
         update_delay_channel!(de_chan)
