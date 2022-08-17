@@ -35,10 +35,8 @@ delay_trigger_affect!
 delay_trigger = Dict([Pair(i, delay_trigger_affect![i]) for i in 1:burst_sup])
 delay_complete = Dict(1=>[1=>-1])
 delay_interrupt = Dict()
-# alg = DelayRejection()
-# alg = DelayMNRM()
-alg = DelayDirect()
-# alg = DelayDirectCR()
+alg = DelayRejection()
+
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0, save_positions=(true, true),  save_delay_channel = false)
 # saveat = 0:1:tf
