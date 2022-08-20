@@ -39,8 +39,8 @@ More information is available in the [documentation](https://palmtree2013.github
 ## Installation
 DelaySSAToolkit can be installed through the Julia package manager:
 ```julia 
-]add DelaySSAToolkit
-using DelaySSAToolkit
+using Pkg
+Pkg.add("DelaySSAToolkit")
 ```
 and you might need to run
 ```julia
