@@ -42,14 +42,6 @@ DelaySSAToolkit can be installed through the Julia package manager:
 using Pkg
 Pkg.add("DelaySSAToolkit")
 ```
-and you might need to run
-```julia
-using Pkg
-Pkg.instantiate()
-```
-for the first time after installation.
-
-
 ## Examples
 To run the following two examples, Catalyst.jl has to be installed by 
 ```julia
