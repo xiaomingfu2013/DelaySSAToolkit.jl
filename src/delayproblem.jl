@@ -87,7 +87,7 @@ function DelayJumpSet(delay_trigger::Dict, delay_complete::Dict, delay_interrupt
   DelayJumpSet(delay_trigger_, delay_complete_, delay_interrupt_, collect(keys(delay_trigger_)), collect(keys(delay_interrupt_)))
 end
 
-convert_delayset(delay_set::Dict) = isempty(delay_set) ? convert(Dict{Int,Function}, delay_set) : delay_set
+convert_delayset(delay_set::Dict{T1, T2}) where {T1,T2} = isempty(delay_set) ? convert(Dict{Int,Function}, delay_set) : convert(Dict{Int,T2}, delay_set)
 
 #BEGIN DelayJump
 mutable struct DelayJumpProblem{iip,P,A,C,J<:Union{Nothing,AbstractJumpAggregator},J2,J3,J4,J5,deType,K} <: DiffEqBase.AbstractJumpProblem{P,J}
