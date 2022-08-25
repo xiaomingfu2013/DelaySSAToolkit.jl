@@ -70,7 +70,7 @@ delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 ```
 
 """
-mutable struct DelayJumpSet{T1<:Union{Function,Vector},T2<:Union{Function,Vector},T3<:Function}
+mutable struct DelayJumpSet{T1<:Any,T2<:Any,T3<:Function}
   """reactions in the Markovian part that trigger the change of the state of the delay channels or/and the state of the reactants upon initiation."""
   delay_trigger::Dict{Int,T1}
   """reactions in the Markovian part that change the state of the delay channels or/and the state of the reactants in the middle of on-going delay reactions."""
