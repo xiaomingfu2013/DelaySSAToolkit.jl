@@ -184,7 +184,7 @@ delayjumpset = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 ```
 
 ```julia
-de_chan0 = [[]]
+de_chan0 = [[],[]]
 djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions=(false,false))
 ```
 
