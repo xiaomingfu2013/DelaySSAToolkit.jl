@@ -155,7 +155,6 @@ jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
 u0 = [0, 0, 0]
 tf = 30.
 saveat = .1
-de_chan0 = [[]]
 tspan = (0.,tf)
 dprob = DiscreteProblem(u0, tspan, p)
 ```
