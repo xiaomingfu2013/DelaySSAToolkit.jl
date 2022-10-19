@@ -138,6 +138,26 @@ To solve a `DelayJumpProblem`, here are few recommendations for good performance
 - [FiniteStateProjection.jl](https://github.com/kaandocal/FiniteStateProjection.jl): Finite State Projection algorithms for chemical reaction networks.
 - [MomentClosure.jl](https://github.com/augustinas1/MomentClosure.jl): Tools to generate and study moment equations for any chemical reaction network using various moment closure approximations.
 
+## Citation
+```
+@article{fuDelaySSAToolkitJlStochastic2022,
+  title = {{{DelaySSAToolkit}}.Jl: Stochastic Simulation of Reaction Systems with Time Delays in {{Julia}}},
+  shorttitle = {{{DelaySSAToolkit}}.Jl},
+  author = {Fu, Xiaoming and Zhou, Xinyi and Gu, Dongyang and Cao, Zhixing and Grima, Ramon},
+  editor = {Valencia, Alfonso},
+  year = {2022},
+  month = sep,
+  journal = {Bioinformatics},
+  volume = {38},
+  number = {17},
+  pages = {4243--4245},
+  issn = {1367-4803, 1460-2059},
+  doi = {10.1093/bioinformatics/btac472},
+  copyright = {All rights reserved},
+  langid = {english}
+}
+```
+
 ## References
 <a id="1">[1]</a> Daniel T. Gillespie, "Exact stochastic simulation of coupled chemical reactions", The Journal of Physical Chemistry 1977 81 (25), 2340-2361.
 [https://doi.org/10.1021/j100540a008](https://doi.org/10.1021/j100540a008)
