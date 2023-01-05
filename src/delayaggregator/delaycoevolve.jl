@@ -33,7 +33,7 @@ function DelayCoevolveJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
                                  rng::RNG; u::U, dep_graph = nothing, lrates, urates,
                                  rateintervals, haslratevec, dep_graph_delay = nothing, vartojumps_map = nothing,) where {T, S, F1, F2, RNG, U}
     if dep_graph === nothing
-        if (get_num_majumps(maj) == 0) || !isempty(rs)
+        if (get_num_majumps(maj) == 0) || !isempty(urates)
             error("To use DelayCoevolve a dependency graph between jumps must be supplied.")
         else
             dg = make_dependency_graph(length(u), maj)
@@ -60,7 +60,9 @@ function DelayCoevolveJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
     ttnj = zero(et)
     dt_delay = zero(et)
     if vartojumps_map === nothing
-        if (get_num_majumps(maj) == 0) || !isempty(rs)
+        # println(dep_graph_delay)
+        # println(urates)
+        if (get_num_majumps(maj) == 0) || !isempty(urates)
             if dep_graph_delay === nothing  
                 @warn "To use ConstantRateJumps with this algorithm: make sure a delay dependency graph is correctly supplied!"
                 vartojumps_map = repeat([1:length(crs)], num_specs)
