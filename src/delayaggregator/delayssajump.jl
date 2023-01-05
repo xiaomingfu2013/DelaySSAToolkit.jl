@@ -122,7 +122,7 @@ Recalculate the rate for the jump with index `rx`.
 end
 
 
-@inline @fastmath function evalrxrate(speciesvec::AbstractVector{T}, rxidx::S,majump::MassActionJump{U,V,W,X})::R where {T,S,R,U <: AbstractVector{R},V,W,X}
+@inline function evalrxrate(speciesvec::AbstractVector{T}, rxidx::S,majump::MassActionJump{U,V,W,X})::R where {T,S,R,U <: AbstractVector{R},V,W,X}
     val = one(T)
     @inbounds for specstoch in majump.reactant_stoch[rxidx]
         specpop = speciesvec[specstoch[1]]
@@ -135,7 +135,7 @@ end
     @inbounds return val * majump.scaled_rates[rxidx]
 end
 
-@inline @fastmath function executerx!(speciesvec::AbstractVector{T}, rxidx::S,majump::M) where {T,S,M <: JumpProcesses.AbstractMassActionJump}
+@inline function executerx!(speciesvec::AbstractVector{T}, rxidx::S,majump::M) where {T,S,M <: JumpProcesses.AbstractMassActionJump}
     @inbounds net_stoch = majump.net_stoch[rxidx]
     @inbounds for specstoch in net_stoch
         speciesvec[specstoch[1]] += specstoch[2]
@@ -143,7 +143,7 @@ end
     nothing
 end
 
-@inline @fastmath function executerx(speciesvec::SVector{T}, rxidx::S,majump::M) where {T,S,M <: JumpProcesses.AbstractMassActionJump}
+@inline function executerx(speciesvec::SVector{T}, rxidx::S,majump::M) where {T,S,M <: JumpProcesses.AbstractMassActionJump}
     @inbounds net_stoch = majump.net_stoch[rxidx]
     @inbounds for specstoch in net_stoch
         speciesvec = setindex(speciesvec,speciesvec[specstoch[1]]+specstoch[2],specstoch[1])
@@ -177,7 +177,7 @@ end
                 @inbounds executerx!(u, next_jump, ma_jumps)
             end
         else
-            idx = next_jump - num_ma_rates
+            idx = sub_fast(next_jump, num_ma_rates)
             @inbounds p.affects![idx](integrator)
         end
         # shift delay channel !
@@ -213,7 +213,7 @@ function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_rea
     p.time_to_next_jump = ttnj
     p.next_delay = next_delay
     p.num_next_delay = num_next_delay
-    @fastmath p.next_jump_time = t + ttnj
+    p.next_jump_time = add_fast(t, ttnj)
     nothing
 end
 

@@ -53,7 +53,7 @@ end
 
 function generate_jumps!(p::DelayDirectJumpAggregation, integrator, u, params, t)
     generate_time_to_next_jump!(p, integrator, params, t)
-    @fastmath p.next_jump_time = t + p.time_to_next_jump
+    p.next_jump_time = add_fast(t, p.time_to_next_jump)
     @inbounds p.next_jump = searchsortedfirst(p.cur_rates, rand(p.rng) * p.sum_rate) # 
     nothing
 end
@@ -97,17 +97,17 @@ end
 
             aₜ_ = aₜ # backup aₜ
             aₜ += shadow_integrator.cur_rates[end] * (p.next_delay_time)
-            F = one(t) - exp(-aₜ)
+            F = sub_fast(one(t), exp_fast(-aₜ))
         end
         sum_ = p.copied ? shadow_integrator.cur_rates[end] : p.sum_rate
-        ttnj_last = (-log(one(t) - r1) - aₜ_) / sum_
-        ttnj = prev_T1 + ttnj_last
+        ttnj_last = div_fast(sub_fast(-log_fast(one(t) - r1), aₜ_), sum_) 
+        ttnj = add_fast(prev_T1, ttnj_last)
     end
     
     if p.copied
         shift_delay_channel!(shadow_integrator.de_chan, ttnj_last)
         update_delay_channel!(shadow_integrator.de_chan)
-        fill_cum_rates_and_sum!(p, shadow_integrator.u, params, t + ttnj)
+        fill_cum_rates_and_sum!(p, shadow_integrator.u, params, add_fast(t, ttnj))
     end
     p.time_to_next_jump = ttnj
     nothing
@@ -136,7 +136,7 @@ function update_delay_at_tstop_test!(p, integrator, params, t, tgap)
         prev_T1 = cur_T1 # to avoid cur_T1 = Inf 
         cur_T1 += p.next_delay_time    
     end
-    ttnj_last = tgap - prev_T1
+    ttnj_last = sub_fast(tgap, prev_T1)
     shift_delay_channel!(integrator.de_chan, ttnj_last)
     update_delay_channel!(integrator.de_chan)
     nothing
@@ -156,7 +156,7 @@ function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
     idx = get_num_majumps(majumps)
     @inbounds for i in 1:idx
         new_rate = evalrxrate(u, i, majumps)
-        cur_rates[i] = new_rate + prev_rate
+        cur_rates[i] = add_fast(prev_rate, new_rate)
         prev_rate = cur_rates[i]
     end
     # constant jump rates
@@ -164,7 +164,7 @@ function fill_cum_rates_and_sum!(p::DelayDirectJumpAggregation, u, params, t)
     rates = p.rates
     @inbounds for i in eachindex(p.rates)
         new_rate = rates[i](u, params, t)
-        cur_rates[idx] = new_rate + prev_rate
+        cur_rates[idx] = add_fast(prev_rate, new_rate)
         prev_rate = cur_rates[idx]
         idx += 1
     end
@@ -184,7 +184,7 @@ function calculate_sum_rate!(p, s::ShadowIntegrator, u, params, t)
     idx = get_num_majumps(majumps)
     @inbounds for i in 1:idx
         new_rate = evalrxrate(u, i, majumps)
-        cur_rates[i] = new_rate + prev_rate
+        cur_rates[i] = add_fast(prev_rate, new_rate)
         prev_rate = cur_rates[i]
     end
     # constant jump rates
@@ -192,7 +192,7 @@ function calculate_sum_rate!(p, s::ShadowIntegrator, u, params, t)
     rates = p.rates
     @inbounds for i in eachindex(rates)
         new_rate = rates[i](u, params, t)
-        cur_rates[idx] = new_rate + prev_rate
+        cur_rates[idx] = add_fast(prev_rate, new_rate)
         prev_rate = cur_rates[idx]
         idx += 1
     end

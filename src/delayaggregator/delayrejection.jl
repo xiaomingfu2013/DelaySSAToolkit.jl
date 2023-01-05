@@ -58,7 +58,7 @@ function generate_jumps!(p::DelayRejectionJumpAggregation, integrator, u, params
     nothing
 end
 
-@fastmath function time_to_next_jump!(p::DelayRejectionJumpAggregation, integrator, u, params, t)
+function time_to_next_jump!(p::DelayRejectionJumpAggregation, integrator, u, params, t)
     prev_rate = zero(t)
     new_rate = zero(t)
     cur_rates = p.cur_rates
@@ -67,7 +67,7 @@ end
     idx = get_num_majumps(majumps)
     @inbounds for i in 1:idx
         new_rate = evalrxrate(u, i, majumps)
-        cur_rates[i] = new_rate + prev_rate
+        cur_rates[i] = add_fast(new_rate, prev_rate)
         prev_rate = cur_rates[i]
     end
     # constant jump rates
@@ -75,7 +75,7 @@ end
     rates = p.rates
     @inbounds for i in eachindex(p.rates)
         new_rate = rates[i](u, params, t)
-        cur_rates[idx] = new_rate + prev_rate
+        cur_rates[idx] = add_fast(new_rate, prev_rate)
         prev_rate = cur_rates[idx]
         idx += 1
     end

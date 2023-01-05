@@ -4,7 +4,7 @@ using Reexport
 @reexport using DiffEqBase
 using UnPack, Random, LinearAlgebra, DiffEqBase, StaticArrays, DocStringExtensions
 using FunctionWrappers, RandomNumbers
-
+using Base.FastMath: add_fast, sub_fast, exp_fast, log_fast, div_fast
 
 import DiffEqBase: DiscreteCallback, init, solve, solve!, initialize!
 # Types and Structs
