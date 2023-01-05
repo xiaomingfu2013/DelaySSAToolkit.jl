@@ -26,7 +26,7 @@ u0 = [0, 1, 0]
 de_chan0 = [[]]
 tspan = (0.0, tf)
 dprob = DiscreteProblem(u0, tspan)
-algs = [DelayRejection(), DelayDirect(), DelayMNRM(), DelayDirectCR()]
+algs = [DelayRejection(), DelayDirect(), DelayMNRM(), DelayDirectCR(), DelayCoevolve()]
 
 
 ## TEST

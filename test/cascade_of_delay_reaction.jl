@@ -42,7 +42,7 @@ dprob = DiscreteProblem(jumpsys, u0, tspan)
 
 
 using Test
-algos = [DelayRejection(),DelayDirect(), DelayMNRM(),  DelayDirectCR()]
+algos = [DelayRejection(),DelayDirect(), DelayMNRM(),  DelayDirectCR(), DelayCoevolve()]
 algo = algos[3]
 djprob = DelayJumpProblem(jumpsys, dprob, algo, delayjumpset, de_chan0, save_positions=(false,false), save_delay_channel= true)
 # p = djprob.jump_callback.discrete_callbacks[1].affect!

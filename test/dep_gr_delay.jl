@@ -23,7 +23,7 @@ delay_interrupt = Dict()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 # alg = DelayDirectCR()
 # alg = DelayMNRM()
-for alg = [DelayDirectCR(), DelayMNRM()]
+for alg = [DelayDirectCR(), DelayMNRM(), DelayCoevolve()]
   djprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0)
 
   p = djprob.discrete_jump_aggregation;

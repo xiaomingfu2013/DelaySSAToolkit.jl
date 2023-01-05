@@ -38,12 +38,13 @@ include("delayaggregator/delayrejection.jl")
 include("delayaggregator/delaymnrm.jl")
 include("delayaggregator/delaydirect.jl")
 include("delayaggregator/delaydirectCR.jl")
+include("delayaggregator/delaycoevolve.jl")
 include("delaySSA_stepper.jl")
 include("utils.jl")
 
 # export DSSAIntegrator
 export DelayJumpProblem, DelayJumpSet, SSAStepper, MassActionJump, ConstantRateJump, JumpProblem, JumpSystem, JumpSet
-export DelayRejection, DelayMNRM, DelayDirect, DelayDirectCR
+export DelayRejection, DelayMNRM, DelayDirect, DelayDirectCR, DelayCoevolve
 export solve, remake
 
 end

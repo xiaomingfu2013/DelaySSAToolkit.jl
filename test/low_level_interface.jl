@@ -38,9 +38,29 @@ jumpset_ = JumpSet((), (constant_rate_jump,), nothing, mass_action_jump_)
 dep_gr_delay = Dict(1=>[4])
 dep_gr = [[1,2,3],[1,2,3],[3,4],[4]]
 de_chan0 = [[]]
-algs = [DelayRejection(), DelayDirect(), DelayMNRM(), DelayDirectCR()]
-alg = algs[4]
+algs = [DelayRejection(), DelayDirect(), DelayMNRM(), DelayDirectCR(), DelayCoevolve()]
+alg = algs[5]
+djprob__ = DelayJumpProblem(dprob_, alg, jumpset_, delayjumpset, de_chan0, save_positions=(true, true), save_delay_channel=false, dep_graph = dep_gr, dep_graph_delay = dep_gr_delay)
+@info "Testing method $(alg)"
+sol = solve(djprob__, SSAStepper(), seed =2)
 
+djprob_no_dep_gr_delay = DelayJumpProblem(dprob_, alg, jumpset_, delayjumpset, de_chan0, save_positions=(true, true), save_delay_channel=false, dep_graph = dep_gr)
+@info "Testing method $(alg)"
+sol_no_dep_gr_delay = solve(djprob_no_dep_gr_delay, SSAStepper(), seed = 2)
+plot(sol)
+plot!(sol_no_dep_gr_delay)
+
+for i in eachindex(sol.u)
+    @test sol.u[i][3] == length(sol.channel[i][1])
+end
+
+for i in eachindex(sol.u)
+    @test sol_no_dep_gr_delay.u[i][3] == length(sol_no_dep_gr_delay.channel[i][1])
+end
+for i in eachindex(sol.u)
+    @test sol_no_dep_gr_delay.u[i] == sol.u[i]
+    @test sol_no_dep_gr_delay.channel[i] == sol.channel[i]
+end
 
 for alg in algs
     djprob__ = DelayJumpProblem(dprob_, alg, jumpset_, delayjumpset, de_chan0, save_positions=(true, true), save_delay_channel=true, dep_graph = dep_gr, dep_graph_delay = dep_gr_delay)
