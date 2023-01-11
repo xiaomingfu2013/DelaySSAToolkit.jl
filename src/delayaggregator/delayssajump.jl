@@ -398,7 +398,7 @@ julia> find_next_delay_vec(A, x)
 ([1, 2, 3], [2, 1, 1])
 ```
 """
-function find_next_delay_vec(de_chan::Vector{Vector{T}}, ttnj::T) where {T}
+function find_next_delay_vec(de_chan::Vector{Vector{T}}, ttnj::T) where {T<:Real}
     position_indices = Vector{Int64}()
     num_in_vec = Vector{Int64}()
     for idx in eachindex(de_chan)
