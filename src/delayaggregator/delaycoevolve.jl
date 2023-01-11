@@ -29,9 +29,10 @@ mutable struct DelayCoevolveJumpAggregation{T, S, F1, F2, RNG, GR, PQ} <:
 end
 
 function DelayCoevolveJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::Nothing,
-                                 maj::S, rs::F1, affs!::F2, sps::Tuple{Bool, Bool},
-                                 rng::RNG; u::U, dep_graph = nothing, lrates, urates,
-                                 rateintervals, haslratevec, dep_graph_delay = nothing, vartojumps_map = nothing,) where {T, S, F1, F2, RNG, U}
+                                      maj::S, rs::F1, affs!::F2, sps::Tuple{Bool, Bool},
+                                      rng::RNG; u::U, dep_graph = nothing, lrates, urates,
+                                      rateintervals, haslratevec, dep_graph_delay = nothing,
+                                      vartojumps_map = nothing) where {T, S, F1, F2, RNG, U}
     if dep_graph === nothing
         if (get_num_majumps(maj) == 0) || !isempty(urates)
             error("To use DelayCoevolve a dependency graph between jumps must be supplied.")
@@ -63,7 +64,7 @@ function DelayCoevolveJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
         # println(dep_graph_delay)
         # println(urates)
         if (get_num_majumps(maj) == 0) || !isempty(urates)
-            if dep_graph_delay === nothing  
+            if dep_graph_delay === nothing
                 @warn "To use ConstantRateJumps with this algorithm: make sure a delay dependency graph is correctly supplied!"
                 vartojumps_map = repeat([1:length(crs)], num_specs)
             end
@@ -73,14 +74,18 @@ function DelayCoevolveJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
     end
     dep_gr_delay = dep_graph_delay
     DelayCoevolveJumpAggregation{T, S, F1, F2, RNG, typeof(dg),
-                            typeof(pq)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng,
-                                        dg, pq, lrates, urates, rateintervals, haslratevec, nd, nnd, ttnj, dt_delay, vartojumps_map, dep_gr_delay)
+                                 typeof(pq)}(nj, nj, njt, et, crs, sr, maj, rs, affs!, sps,
+                                             rng,
+                                             dg, pq, lrates, urates, rateintervals,
+                                             haslratevec, nd, nnd, ttnj, dt_delay,
+                                             vartojumps_map, dep_gr_delay)
 end
 
 # creating the JumpAggregation structure (tuple-based variable jumps)
 function aggregate(aggregator::DelayCoevolve, u, p, t, end_time, constant_jumps,
                    ma_jumps, save_positions, rng; dep_graph = nothing,
-                   variable_jumps = nothing, dep_graph_delay = nothing, vartojumps_map = nothing, kwargs...)
+                   variable_jumps = nothing, dep_graph_delay = nothing,
+                   vartojumps_map = nothing, kwargs...)
     AffectWrapper = FunctionWrappers.FunctionWrapper{Nothing, Tuple{Any}}
     RateWrapper = FunctionWrappers.FunctionWrapper{typeof(t),
                                                    Tuple{typeof(u), typeof(p), typeof(t)}}
@@ -122,8 +127,9 @@ function aggregate(aggregator::DelayCoevolve, u, p, t, end_time, constant_jumps,
     next_jump = 0
     next_jump_time = typemax(t)
     DelayCoevolveJumpAggregation(next_jump, next_jump_time, end_time, cur_rates, sum_rate,
-                            ma_jumps, rates, affects!, save_positions, rng;
-                            u, dep_graph, lrates, urates, rateintervals, haslratevec, dep_graph_delay, vartojumps_map)
+                                 ma_jumps, rates, affects!, save_positions, rng;
+                                 u, dep_graph, lrates, urates, rateintervals, haslratevec,
+                                 dep_graph_delay, vartojumps_map)
 end
 
 # set up a new simulation and calculate the first jump / jump time
@@ -131,7 +137,8 @@ function initialize!(p::DelayCoevolveJumpAggregation, integrator, u, params, t)
     p.end_time = integrator.sol.prob.tspan[2]
     fill_rates_and_get_times!(p, u, params, t)
     if p.dep_gr_delay === nothing
-        p.dep_gr_delay = dep_gr_delay(integrator.delayjumpsets, p.vartojumps_map, length(p.cur_rates))
+        p.dep_gr_delay = dep_gr_delay(integrator.delayjumpsets, p.vartojumps_map,
+                                      length(p.cur_rates))
     end
     find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
@@ -163,7 +170,8 @@ function generate_jumps!(p::DelayCoevolveJumpAggregation, integrator, u, params,
 end
 
 ######################## SSA specific helper routines ########################
-function update_dependent_rates_delay!(p::DelayCoevolveJumpAggregation, integrator, u, params, t)
+function update_dependent_rates_delay!(p::DelayCoevolveJumpAggregation, integrator, u,
+                                       params, t)
     if isempty(p.next_delay)  # if next reaction is not delay reaction 
         @inbounds deps = p.dep_gr[p.next_jump]
     else

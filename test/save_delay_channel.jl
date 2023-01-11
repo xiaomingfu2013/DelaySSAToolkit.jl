@@ -11,7 +11,7 @@ params = [0.1, 0.1, 10.0, 0.1, 10.0, 50.0]
 rates = [σ_off, σ_on, ρ_on, d]
 react_stoich = [[1 => 1], [2 => 1], [1 => 1], [3 => 1]]
 net_stoich = [[1 => -1, 2 => 1], [1 => 1, 2 => -1], [3 => 1], [3 => -1]]
-mass_action_jump = MassActionJump(rates, react_stoich, net_stoich; scale_rates=false)
+mass_action_jump = MassActionJump(rates, react_stoich, net_stoich; scale_rates = false)
 jumpset = JumpSet((), (), nothing, mass_action_jump)
 delay_trigger = Dict(3 => [1 => τ])
 delay_complete = Dict(1 => [3 => -1])
@@ -27,7 +27,6 @@ de_chan0 = [[]]
 tspan = (0.0, tf)
 dprob = DiscreteProblem(u0, tspan)
 algs = [DelayRejection(), DelayDirect(), DelayMNRM(), DelayDirectCR(), DelayCoevolve()]
-
 
 ## TEST
 # alg = algs[3]
@@ -45,12 +44,12 @@ algs = [DelayRejection(), DelayDirect(), DelayMNRM(), DelayDirectCR(), DelayCoev
 # end  
 
 for alg in algs
-    djprob = DelayJumpProblem(dprob, alg, jumpset, delayjumpset, de_chan0, save_positions=(true, true), save_delay_channel=true)
+    djprob = DelayJumpProblem(dprob, alg, jumpset, delayjumpset, de_chan0,
+                              save_positions = (true, true), save_delay_channel = true)
     @info "Testing method $(alg)"
     sol = solve(djprob, SSAStepper())
-    
+
     for i in eachindex(sol.u)
         @test sol.u[i][3] == length(sol.channel[i][1])
     end
 end
-

@@ -1,5 +1,6 @@
 
-mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,chanType,chanS} <: DiffEqBase.DEIntegrator{SSAStepper,Nothing,uType,tType}
+mutable struct DSSAIntegrator{F, uType, tType, P, S, CB, SA, OPT, TS, chanType, chanS} <:
+               DiffEqBase.DEIntegrator{SSAStepper, Nothing, uType, tType}
     f::F
     u::uType
     t::tType
@@ -24,8 +25,7 @@ mutable struct DSSAIntegrator{F,uType,tType,P,S,CB,SA,OPT,TS,chanType,chanS} <: 
     save_delay_channel::Bool
 end
 
-
-mutable struct DSSASolution{uType,tType,chanS}
+mutable struct DSSASolution{uType, tType, chanS}
     u::uType
     t::tType
     channel::chanS
@@ -33,19 +33,16 @@ mutable struct DSSASolution{uType,tType,chanS}
 end
 function DSSASolution(ode_sol::DiffEqBase.ODESolution, channel)
     @unpack u, t = ode_sol
-    DSSASolution{typeof(u),typeof(t),typeof(channel)}(u, t, channel, ode_sol)
+    DSSASolution{typeof(u), typeof(t), typeof(channel)}(u, t, channel, ode_sol)
 end
-
-
-
 
 function DiffEqBase.u_modified!(integrator::DSSAIntegrator, bool::Bool)
     integrator.u_modified = bool
 end
 
 function DiffEqBase.__solve(djump_prob::DelayJumpProblem,
-    alg::SSAStepper;
-    kwargs...)
+                            alg::SSAStepper;
+                            kwargs...)
     integrator = init(djump_prob, alg; kwargs...)
     solve!(integrator)
     if integrator.save_delay_channel
@@ -58,15 +55,15 @@ end
 ## Initiate the Problem
 
 function DiffEqBase.__init(djump_prob::DelayJumpProblem,
-    alg::SSAStepper;
-    save_start=true,
-    save_end=true,
-    seed=nothing,
-    alias_jump=Threads.threadid() == 1,
-    saveat=nothing,
-    callback=nothing,
-    tstops=eltype(djump_prob.prob.tspan)[],
-    numsteps_hint=100)
+                           alg::SSAStepper;
+                           save_start = true,
+                           save_end = true,
+                           seed = nothing,
+                           alias_jump = Threads.threadid() == 1,
+                           saveat = nothing,
+                           callback = nothing,
+                           tstops = eltype(djump_prob.prob.tspan)[],
+                           numsteps_hint = 100)
     if !(djump_prob.prob isa DiscreteProblem)
         error("SSAStepper only supports DiscreteProblems.")
     end
@@ -86,7 +83,7 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
         end
     end
 
-    opts = (callback=CallbackSet(callback),)
+    opts = (callback = CallbackSet(callback),)
     prob = djump_prob.prob
     de_chan0 = convert(Vector{Vector{typeof(prob.tspan[1])}}, djump_prob.de_chan0)
     if save_start
@@ -99,7 +96,9 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
         chan_sol = typeof(de_chan0)[] # DelaySSA: build chan_sol
     end
 
-    sol = DiffEqBase.build_solution(prob, alg, t, u, dense=false, calculate_error=false, destats=DiffEqBase.DEStats(0), interp=DiffEqBase.ConstantInterpolation(t, u))
+    sol = DiffEqBase.build_solution(prob, alg, t, u, dense = false, calculate_error = false,
+                                    destats = DiffEqBase.DEStats(0),
+                                    interp = DiffEqBase.ConstantInterpolation(t, u))
     save_everystep = any(cb.save_positions)
 
     if typeof(saveat) <: Number
@@ -125,7 +124,11 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
         sizehint!(t, save_start + save_end)
     end
 
-    integrator = DSSAIntegrator(prob.f, copy(prob.u0), prob.tspan[1], prob.tspan[1], prob.p, sol, 1, prob.tspan[1], cb, _saveat, save_everystep, save_end, cur_saveat, opts, tstops, 1, false, true, deepcopy(de_chan0), chan_sol, djump_prob.delayjumpsets, djump_prob.save_delay_channel)
+    integrator = DSSAIntegrator(prob.f, copy(prob.u0), prob.tspan[1], prob.tspan[1], prob.p,
+                                sol, 1, prob.tspan[1], cb, _saveat, save_everystep,
+                                save_end, cur_saveat, opts, tstops, 1, false, true,
+                                deepcopy(de_chan0), chan_sol, djump_prob.delayjumpsets,
+                                djump_prob.save_delay_channel)
 
     cb.initialize(cb, integrator.u, prob.tspan[1], integrator)
     DiffEqBase.initialize!(opts.callback, integrator.u, prob.tspan[1], integrator)
@@ -134,15 +137,13 @@ end
 
 function DiffEqBase.add_tstop!(integrator::DSSAIntegrator, tstop)
     if tstop > integrator.t
-        future_tstops = @view integrator.tstops[integrator.tstops_idx:end]
+        future_tstops = @view integrator.tstops[(integrator.tstops_idx):end]
         insert_index = integrator.tstops_idx + searchsortedfirst(future_tstops, tstop) - 1
         Base.insert!(integrator.tstops, insert_index, tstop)
     end
 end
 
-
 function DiffEqBase.solve!(integrator::DSSAIntegrator)
-
     end_time = integrator.sol.prob.tspan[2]
     while should_continue_solve(integrator) # It stops before adding a tstop over
         step!(integrator)
@@ -156,12 +157,12 @@ function DiffEqBase.solve!(integrator::DSSAIntegrator)
         saveat_function!(integrator, last_t)
     end
 
-    if integrator.save_end && (isempty(integrator.sol.t)||integrator.sol.t[end] != end_time)
+    if integrator.save_end &&
+       (isempty(integrator.sol.t) || integrator.sol.t[end] != end_time)
         saveat_end_function!(integrator, last_t)
     end
     DiffEqBase.finalize!(integrator.opts.callback, integrator.u, integrator.t, integrator)
 end
-
 
 function saveat_end_function!(integrator, prev_t)
     # save last t
@@ -171,7 +172,8 @@ function saveat_end_function!(integrator, prev_t)
 
     # save last u 
     if typeof(integrator.cb.affect!) <: DelayDirectJumpAggregation
-        update_delay_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, prev_t, t_final_gap)
+        update_delay_at_tstop_test!(integrator.cb.affect!, integrator, integrator.p, prev_t,
+                                    t_final_gap)
     end
     push!(integrator.sol.u, copy(integrator.u))
 
@@ -195,7 +197,8 @@ function saveat_function!(integrator, prev_t)
     if integrator.saveat !== nothing && !isempty(integrator.saveat)
         # Split to help prediction
         last_saved_t = prev_t
-        while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
+        while integrator.cur_saveat < length(integrator.saveat) &&
+            (integrator.saveat[integrator.cur_saveat] < integrator.t)
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
             push!(integrator.sol.t, integrator.saveat[integrator.cur_saveat])
             push!(integrator.sol.u, copy(integrator.u))
@@ -222,19 +225,21 @@ function saveat_function_direct_method_test!(integrator, prev_t)
         # save for last step and copied = false
         changed = false
         aggregator = integrator.cb.affect!
-        if (integrator.cur_saveat < length(integrator.saveat)) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
+        if (integrator.cur_saveat < length(integrator.saveat)) &&
+           (integrator.saveat[integrator.cur_saveat] < integrator.t)
             shadow_integrator = aggregator.shadow_integrator
             shadow_integrator.u = copy(integrator.u)
             shadow_integrator.de_chan = deepcopy(integrator.de_chan)
             aggregator.copied = true
             changed = true
         end
-        while integrator.cur_saveat < length(integrator.saveat) && (integrator.saveat[integrator.cur_saveat] < integrator.t)
-
+        while integrator.cur_saveat < length(integrator.saveat) &&
+            (integrator.saveat[integrator.cur_saveat] < integrator.t)
             tgap = integrator.saveat[integrator.cur_saveat] - last_saved_t
             push!(integrator.sol.t, integrator.saveat[integrator.cur_saveat])
 
-            update_delay_at_tstop_test!(aggregator, shadow_integrator, integrator.p, last_saved_t, tgap)
+            update_delay_at_tstop_test!(aggregator, shadow_integrator, integrator.p,
+                                        last_saved_t, tgap)
             push!(integrator.sol.u, copy(shadow_integrator.u))
 
             if integrator.save_delay_channel
@@ -246,31 +251,33 @@ function saveat_function_direct_method_test!(integrator, prev_t)
             integrator.cur_saveat += 1
         end
         if aggregator.copied && changed
-            tend = integrator.t == integrator.sol.prob.tspan[2] ? integrator.sol.prob.tspan[2] : aggregator.next_jump_time
+            tend = integrator.t == integrator.sol.prob.tspan[2] ?
+                   integrator.sol.prob.tspan[2] : aggregator.next_jump_time
             last_tgap = tend - last_saved_t
-            update_delay_at_tstop_test!(aggregator, shadow_integrator, integrator.p, last_saved_t, last_tgap)
+            update_delay_at_tstop_test!(aggregator, shadow_integrator, integrator.p,
+                                        last_saved_t, last_tgap)
         end
     end
 end
 
 # The Jump aggregators should not register the next jump through add_tstop! for SSAIntegrator
 # such that we can achieve maximum performance
-@inline function register_next_jump_time!(integrator::DSSAIntegrator, p::AbstractDSSAJumpAggregator, t)
+@inline function register_next_jump_time!(integrator::DSSAIntegrator,
+                                          p::AbstractDSSAJumpAggregator, t)
     integrator.tstop = p.next_jump_time
     nothing
 end
 
-
 ## Delay SSA modify
 function DiffEqBase.step!(integrator::DSSAIntegrator)
     integrator.tprev = integrator.t
-    next_jump_time = integrator.tstop > integrator.t ? integrator.tstop : typemax(integrator.tstop)
+    next_jump_time = integrator.tstop > integrator.t ? integrator.tstop :
+                     typemax(integrator.tstop)
 
     doaffect = false
     if !isempty(integrator.tstops) &&
        integrator.tstops_idx <= length(integrator.tstops) &&
        integrator.tstops[integrator.tstops_idx] < next_jump_time
-
         integrator.t = integrator.tstops[integrator.tstops_idx]
         integrator.tstops_idx += 1
     else
@@ -284,7 +291,6 @@ function DiffEqBase.step!(integrator::DSSAIntegrator)
         saveat_function!(integrator, integrator.tprev)
     end
 
-
     # FP error means the new time may equal the old if the next jump time is 
     # sufficiently small, hence we add this check to execute jumps until
     # this is no longer true.
@@ -293,7 +299,8 @@ function DiffEqBase.step!(integrator::DSSAIntegrator)
     end
 
     if !(typeof(integrator.opts.callback.discrete_callbacks) <: Tuple{})
-        discrete_modified, saved_in_cb = DiffEqBase.apply_discrete_callback!(integrator, integrator.opts.callback.discrete_callbacks...)
+        discrete_modified, saved_in_cb = DiffEqBase.apply_discrete_callback!(integrator,
+                                                                             integrator.opts.callback.discrete_callbacks...)
     else
         saved_in_cb = false
     end
@@ -303,8 +310,7 @@ function DiffEqBase.step!(integrator::DSSAIntegrator)
     nothing
 end
 
-
-function DiffEqBase.savevalues!(integrator::DSSAIntegrator, force=false)
+function DiffEqBase.savevalues!(integrator::DSSAIntegrator, force = false)
     saved, savedexactly = false, false
 
     # No saveat in here since it would only use previous values,
@@ -336,6 +342,5 @@ function should_continue_solve(integrator::DSSAIntegrator)
 
     integrator.keep_stepping && (has_jump || has_tstop)
 end
-
 
 num_constant_rate_jumps(aggregator::AbstractDSSAJumpAggregator) = length(aggregator.rates)
