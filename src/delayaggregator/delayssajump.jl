@@ -352,8 +352,8 @@ input::Vector{Int} species indices
 output::Vector{Int} reactions need to be updated
 """
 
-function vars_to_jumps_delay(vartojumps_map::Vector{Vector{Int}}, vars::Vector{Int})
-    jumps = []
+function vars_to_jumps_delay(vartojumps_map::Vector{Vector{Int}}, vars::Vector{Int})::Vector{Int}
+    jumps = Vector{Int}[]
     for var in vars
         push!(jumps, vartojumps_map[var])
     end
