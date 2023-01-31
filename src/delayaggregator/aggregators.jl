@@ -56,3 +56,5 @@ needs_depgraph(aggregator::DelayDirectCR) = true
 needs_vartojumps_map(aggregator::DelayDirectCR) = true
 needs_depgraph(aggregator::DelayCoevolve) = true
 needs_vartojumps_map(aggregator::DelayCoevolve) = true
+supports_variablerates(aggregator::AbstractDelayAggregatorAlgorithm) = false
+supports_variablerates(aggregator::DelayCoevolve) = true

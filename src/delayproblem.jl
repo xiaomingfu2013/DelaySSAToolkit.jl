@@ -99,7 +99,7 @@ end
 
 #BEGIN DelayJump
 mutable struct DelayJumpProblem{iip, P, A, C, J <: Union{Nothing, AbstractJumpAggregator},
-                                J2, J3, J4, J5, deType, K} <:
+                                J2, J3, J4, J5, deType, R, K} <:
                DiffEqBase.AbstractJumpProblem{P, J}
     prob::P
     aggregator::A
@@ -111,19 +111,20 @@ mutable struct DelayJumpProblem{iip, P, A, C, J <: Union{Nothing, AbstractJumpAg
     delayjumpsets::J5
     de_chan0::deType
     save_delay_channel::Bool
+    rng::R
     kwargs::K
 end
 
 function DelayJumpProblem(p::P, a::A, dj::J, jc::C, vj::J2, rj::J3, mj::J4, djs::J5,
-                          de_chan0::deType, save_delay_channel::Bool,
-                          kwargs::K) where {P, A, J, C, J2, J3, J4, J5, deType, K}
+                          de_chan0::deType, save_delay_channel::Bool, rng::R,
+                          kwargs::K) where {P, A, J, C, J2, J3, J4, J5, deType, R, K}
     if !(typeof(a) <: AbstractDelayAggregatorAlgorithm)
         error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
     end
     iip = isinplace_jump(p, rj)
-    DelayJumpProblem{iip, P, A, C, J, J2, J3, J4, J5, deType, K}(p, a, dj, jc, vj, rj, mj,
+    DelayJumpProblem{iip, P, A, C, J, J2, J3, J4, J5, deType, R, K}(p, a, dj, jc, vj, rj, mj,
                                                                  djs, de_chan0,
-                                                                 save_delay_channel, kwargs)
+                                                                 save_delay_channel, rng, kwargs)
 end
 
 """
@@ -155,7 +156,7 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
                                            (false, true) : (true, true),
                           rng = Xorshifts.Xoroshiro128Star(rand(UInt64)),
                           scale_rates = false, useiszero = true, save_delay_channel = false,
-                          callback = nothing, kwargs...)
+                          callback = nothing, use_vrj_bounds = true, kwargs...)
 
     # initialize the MassActionJump rate constants with the user parameters
     if using_params(jumps.massaction_jump)
@@ -169,41 +170,61 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
         maj = jumps.massaction_jump
     end
 
+    ndiscjumps = get_num_majumps(maj) + num_crjs(jumps)
+
+    # separate bounded variable rate jumps *if* the aggregator can use them
+    if use_vrj_bounds && supports_variablerates(aggregator) && (num_bndvrjs(jumps) > 0)
+        bvrjs = filter(isbounded, jumps.variable_jumps)
+        cvrjs = filter(!isbounded, jumps.variable_jumps)
+        kwargs = merge((; variable_jumps = bvrjs), kwargs)
+        ndiscjumps += length(bvrjs)
+    else
+        bvrjs = nothing
+        cvrjs = jumps.variable_jumps
+    end
+    
+
     ## Constant Rate Handling
     t, end_time, u = prob.tspan[1], prob.tspan[2], prob.u0
-    if (typeof(jumps.constant_jumps) <: Tuple{}) && (maj === nothing)  # check if there are no jumps
-        disc = nothing
+
+    # handle majs, crjs, and bounded vrjs
+    if (ndiscjumps == 0)
+        disc_agg = nothing
         constant_jump_callback = CallbackSet()
     else
-        disc = aggregate(aggregator, u, prob.p, t, end_time, jumps.constant_jumps, maj,
-                         save_positions, rng; kwargs...)
-        constant_jump_callback = DiscreteCallback(disc)
+        disc_agg = aggregate(aggregator, u, prob.p, t, end_time, jumps.constant_jumps, maj,
+                             save_positions, rng; kwargs...)
+        constant_jump_callback = DiscreteCallback(disc_agg)
+    end
+
+    # handle any remaining vrjs
+    if length(cvrjs) > 0
+        new_prob = extend_problem(prob, cvrjs; rng)
+        variable_jump_callback = build_variable_callback(CallbackSet(), 0, cvrjs...; rng)
+        cont_agg = cvrjs
+    else
+        new_prob = prob
+        variable_jump_callback = CallbackSet()
+        cont_agg = JumpSet().variable_jumps
     end
 
     iip = isinplace_jump(prob, jumps.regular_jump)
 
     ## Variable Rate Handling
-    if typeof(jumps.variable_jumps) <: Tuple{}
-        new_prob = prob
-        variable_jump_callback = CallbackSet()
-    else
-        new_prob = extend_problem(prob, jumps)
-        variable_jump_callback = build_variable_callback(CallbackSet(), 0,
-                                                         jumps.variable_jumps...)
-    end
+
     callbacks = CallbackSet(constant_jump_callback, variable_jump_callback)
 
     solkwargs = make_kwarg(; callback)
 
     DelayJumpProblem{iip, typeof(new_prob), typeof(aggregator), typeof(callbacks),
-                     typeof(disc), typeof(jumps.variable_jumps),
+                     typeof(disc_agg), typeof(cont_agg),
                      typeof(jumps.regular_jump), typeof(maj), typeof(delayjumpsets),
-                     typeof(de_chan0), typeof(solkwargs)}(new_prob, aggregator, disc,
+                     typeof(de_chan0), typeof(rng), typeof(solkwargs)}(new_prob, aggregator, disc_agg,
                                                           callbacks,
                                                           jumps.variable_jumps,
                                                           jumps.regular_jump, maj,
                                                           delayjumpsets, de_chan0,
-                                                          save_delay_channel, solkwargs)
+                                                          save_delay_channel, rng, solkwargs)
 end
 
 make_kwarg(; kwargs...) = kwargs
@@ -242,8 +263,8 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
     majs = isempty(eqs.x[1]) ? nothing : assemble_maj(eqs.x[1], statetoid, majpmapper)
     crjs = ConstantRateJump[assemble_crj(js, j, statetoid) for j in eqs.x[2]]
     vrjs = VariableRateJump[assemble_vrj(js, j, statetoid) for j in eqs.x[3]]
-    ((prob isa DiscreteProblem) && !isempty(vrjs)) &&
-        error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
+    # ((prob isa DiscreteProblem) && !isempty(vrjs)) &&
+        # error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
     jset = JumpSet(Tuple(vrjs), Tuple(crjs), nothing, majs)
 
     if needs_vartojumps_map(aggregator) || needs_depgraph(aggregator)
@@ -305,7 +326,7 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
     DelayJumpProblem(dprob, thing.aggregator, thing.discrete_jump_aggregation,
                      thing.jump_callback,
                      thing.variable_jumps, thing.regular_jump, thing.massaction_jump,
-                     delayjumpsets, de_chan0, thing.save_delay_channel, thing.kwargs)
+                     delayjumpsets, de_chan0, thing.save_delay_channel, thing.rng, thing.kwargs)
 end
 
 function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)

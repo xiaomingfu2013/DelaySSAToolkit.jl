@@ -15,7 +15,7 @@ import JumpProcesses: AbstractJumpAggregator, AbstractJump, JumpProblem, Constan
 import JumpProcesses: make_dependency_graph, add_self_dependencies!, var_to_jumps_map
 # other functions
 import JumpProcesses: using_params, get_jump_info_fwrappers, isinplace_jump, extend_problem,
-                      build_variable_callback, get_num_majumps
+                      build_variable_callback, get_num_majumps, num_crjs, num_bndvrjs, supports_variablerates
 
 # using Catalyst 
 using ModelingToolkit
