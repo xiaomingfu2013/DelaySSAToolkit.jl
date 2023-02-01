@@ -221,7 +221,7 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
                      typeof(jumps.regular_jump), typeof(maj), typeof(delayjumpsets),
                      typeof(de_chan0), typeof(rng), typeof(solkwargs)}(new_prob, aggregator, disc_agg,
                                                           callbacks,
-                                                          jumps.variable_jumps,
+                                                          cont_agg,
                                                           jumps.regular_jump, maj,
                                                           delayjumpsets, de_chan0,
                                                           save_delay_channel, rng, solkwargs)

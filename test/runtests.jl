@@ -9,4 +9,5 @@ using Test, SafeTestsets
     @time @safetestset "delay problem test" begin include("delay_problem_test.jl") end
     @time @safetestset "remake problem test" begin include("remake_test.jl") end
     @time @safetestset "low level interface test" begin include("low_level_interface.jl") end
+    @time @safetestset "delay coevolve test" begin include("hawkes_delay_test.jl") end
 end
