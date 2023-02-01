@@ -1,7 +1,7 @@
 name = "DelaySSAToolkit"
 uuid = "d39380a9-d0d7-4ae6-ae63-0e8d8b7efa9e"
 authors = ["Xiaoming Fu"]
-version = "0.2.3"
+version = "0.2.4"
 
 [deps]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
