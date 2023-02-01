@@ -5,6 +5,7 @@ An abstract type that contains delay stochastic simulation algorithms:
 - DelayRejection
 - DelayMNRM
 - DelayDirectCR
+- DelayCoevolve
 """
 abstract type AbstractDelayAggregatorAlgorithm end
 """

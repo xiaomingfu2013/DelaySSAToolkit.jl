@@ -122,9 +122,11 @@ function DelayJumpProblem(p::P, a::A, dj::J, jc::C, vj::J2, rj::J3, mj::J4, djs:
         error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
     end
     iip = isinplace_jump(p, rj)
-    DelayJumpProblem{iip, P, A, C, J, J2, J3, J4, J5, deType, R, K}(p, a, dj, jc, vj, rj, mj,
-                                                                 djs, de_chan0,
-                                                                 save_delay_channel, rng, kwargs)
+    DelayJumpProblem{iip, P, A, C, J, J2, J3, J4, J5, deType, R, K}(p, a, dj, jc, vj, rj,
+                                                                    mj,
+                                                                    djs, de_chan0,
+                                                                    save_delay_channel, rng,
+                                                                    kwargs)
 end
 
 """
@@ -182,7 +184,6 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
         bvrjs = nothing
         cvrjs = jumps.variable_jumps
     end
-    
 
     ## Constant Rate Handling
     t, end_time, u = prob.tspan[1], prob.tspan[2], prob.u0
@@ -219,12 +220,16 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
     DelayJumpProblem{iip, typeof(new_prob), typeof(aggregator), typeof(callbacks),
                      typeof(disc_agg), typeof(cont_agg),
                      typeof(jumps.regular_jump), typeof(maj), typeof(delayjumpsets),
-                     typeof(de_chan0), typeof(rng), typeof(solkwargs)}(new_prob, aggregator, disc_agg,
-                                                          callbacks,
-                                                          cont_agg,
-                                                          jumps.regular_jump, maj,
-                                                          delayjumpsets, de_chan0,
-                                                          save_delay_channel, rng, solkwargs)
+                     typeof(de_chan0), typeof(rng), typeof(solkwargs)}(new_prob, aggregator,
+                                                                       disc_agg,
+                                                                       callbacks,
+                                                                       cont_agg,
+                                                                       jumps.regular_jump,
+                                                                       maj,
+                                                                       delayjumpsets,
+                                                                       de_chan0,
+                                                                       save_delay_channel,
+                                                                       rng, solkwargs)
 end
 
 make_kwarg(; kwargs...) = kwargs
@@ -264,7 +269,7 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
     crjs = ConstantRateJump[assemble_crj(js, j, statetoid) for j in eqs.x[2]]
     vrjs = VariableRateJump[assemble_vrj(js, j, statetoid) for j in eqs.x[3]]
     # ((prob isa DiscreteProblem) && !isempty(vrjs)) &&
-        # error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
+    # error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
     jset = JumpSet(Tuple(vrjs), Tuple(crjs), nothing, majs)
 
     if needs_vartojumps_map(aggregator) || needs_depgraph(aggregator)
@@ -326,7 +331,8 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
     DelayJumpProblem(dprob, thing.aggregator, thing.discrete_jump_aggregation,
                      thing.jump_callback,
                      thing.variable_jumps, thing.regular_jump, thing.massaction_jump,
-                     delayjumpsets, de_chan0, thing.save_delay_channel, thing.rng, thing.kwargs)
+                     delayjumpsets, de_chan0, thing.save_delay_channel, thing.rng,
+                     thing.kwargs)
 end
 
 function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)

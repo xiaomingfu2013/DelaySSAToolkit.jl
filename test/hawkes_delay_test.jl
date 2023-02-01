@@ -54,12 +54,12 @@ function hawkes_jump(i::Int, g, h, agg; uselrate = true)
         end
     end
     if typeof(agg) <: DelayCoevolve
-        affect! = (integrator) -> begin 
+        affect! = (integrator) -> begin
             push!(h[i], integrator.t)
             integrator.u[i] += 0
         end
     else
-        affect! = (integrator) -> begin 
+        affect! = (integrator) -> begin
             push!(h[i], integrator.t)
             integrator.u[i] += 1
         end
@@ -77,11 +77,12 @@ function hawkes_problem(p, agg::DelayCoevolve; u = [0.0], tspan = (0.0, 50.0),
     dprob = DiscreteProblem(u, tspan, p)
     jumps = JumpSet(hawkes_jump(u, g, h, agg; uselrate)...)
     de_chan0 = [[]]
-    delay_trigger = Dict(1=>[1=>delay]) # add a delay of 1.0 to the first jump
-    delay_complete = Dict(1=>[1=>1]) # complete the delay will duplicate 1 product
+    delay_trigger = Dict(1 => [1 => delay]) # add a delay of 1.0 to the first jump
+    delay_complete = Dict(1 => [1 => 1]) # complete the delay will duplicate 1 product
     delay_interrupt = Dict()
     delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-    jprob = DelayJumpProblem(dprob, agg, jumps, delayjumpset, de_chan0; dep_graph = g, save_positions, rng)
+    jprob = DelayJumpProblem(dprob, agg, jumps, delayjumpset, de_chan0; dep_graph = g,
+                             save_positions, rng)
     return jprob
 end
 
@@ -109,7 +110,7 @@ function expected_stats_hawkes_problem(p, tspan, agg)
     λ, α, β = p
     γ = β - α
     κ = β / γ
-    Eλ = λ * κ 
+    Eλ = λ * κ
     # Equation 21
     # J. Da Fonseca and R. Zaatour,
     # “Hawkes Process: Fast Calibration, Application to Trade Clustering and Diffusive Limit.”
@@ -123,8 +124,6 @@ p = (0.5, 0.5, 2.0)
 tspan = (0.0, 250.0)
 g = [[1]]
 h = [Float64[]]
-
-
 
 aggs = (Direct(), DelayCoevolve(), DelayCoevolve())
 uselrate = zeros(Bool, length(aggs))
@@ -148,7 +147,8 @@ for (i, agg) in enumerate(aggs)
         λs = permutedims(mapreduce((sol) -> empirical_rate(sol, agg), hcat, sols))
     else
         cols = length(sols[1].u[1].u)
-        λs = permutedims(mapreduce((sol) -> empirical_rate(sol, agg), hcat, sols))[:, 1:cols]
+        λs = permutedims(mapreduce((sol) -> empirical_rate(sol, agg), hcat, sols))[:,
+                                                                                   1:cols]
     end
     Eλ, Varλ = expected_stats_hawkes_problem(p, tspan, agg)
     @test isapprox(mean(λs), Eλ; atol = 0.01)
