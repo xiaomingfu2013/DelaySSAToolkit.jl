@@ -20,8 +20,8 @@ DelaySSAToolkit.jl is a tool developed on top of [JumpProcesses.jl](https://gith
 
 DelaySSAToolkit can be installed through the Julia package manager:
 ```julia
-]add DelaySSAToolkit
-using DelaySSAToolkit
+using Pkg
+Pkg.add("DelaySSAToolkit")
 ```
 and you might need to run
 ```julia

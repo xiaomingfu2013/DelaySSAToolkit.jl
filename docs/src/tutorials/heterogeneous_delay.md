@@ -78,9 +78,6 @@ ensprob2 = EnsembleProblem(jprob, prob_func = prob_func)
 Note that a simulation of $10^4$ samples with very high production number (up to ~1000 for X and ~3000 for Y) only takes few minutes on a laptop:
 ```julia-repl
 julia> @time ens2 = solve(ensprob2, SSAStepper(), EnsembleThreads(), trajectories = 10^4)
-
- 78.925908 seconds (249.65 M allocations: 28.632 GiB, 6.60% gc time)
-EnsembleSolution Solution of length 10000 with uType
 ```
 Here we plot the histogram of the number of unfinished reactant $X$s in the delay channel.
 

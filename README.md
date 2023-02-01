@@ -4,9 +4,9 @@
 |:-----------------:|:----------------:|:----------------:|
 | [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] | [![download badge]][download link]| -->
 
-| **Documentation** | **Build Status** |
-|:-----------------:|:----------------:|
-| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] |
+| **Documentation** | **Build Status** | **Code Style** |
+|:-----------------:|:----------------:|:----------------:|
+| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] | [![SciML Code Style](https://img.shields.io/static/v1?label=code%20style&message=SciML&color=9558b2&labelColor=389826)](https://github.com/SciML/SciMLStyle)
 
 [doc dev badge]: https://img.shields.io/badge/docs-dev-blue.svg
 [doc dev link]: https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/
