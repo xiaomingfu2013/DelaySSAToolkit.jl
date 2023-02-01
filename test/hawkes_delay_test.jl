@@ -1,3 +1,4 @@
+# this test is a small modification of https://github.com/SciML/JumpProcesses.jl/blob/master/test/hawkes_test.jl
 using DelaySSAToolkit, JumpProcesses, OrdinaryDiffEq, Statistics
 using Test
 using Random

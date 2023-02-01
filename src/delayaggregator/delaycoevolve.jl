@@ -1,5 +1,6 @@
 """
 Queue method. This method handles variable intensity rates.
+See https://github.com/SciML/JumpProcesses.jl/pull/276
 """
 mutable struct DelayCoevolveJumpAggregation{T, S, F1, F2, RNG, GR, PQ} <:
                AbstractDSSAJumpAggregator
