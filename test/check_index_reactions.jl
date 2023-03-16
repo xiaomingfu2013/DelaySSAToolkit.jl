@@ -2,10 +2,12 @@ using Catalyst
 using Test
 using DelaySSAToolkit
 rn = @reaction_network begin
+    @parameters ρ, r
+    @species S, E, I, R
     ρ, S + I --> E + I
     1 / I, I --> R
     r, I --> R
-end ρ r
+end
 
 m = get_reaction_idx(rn)
 eqs = equations(rn)

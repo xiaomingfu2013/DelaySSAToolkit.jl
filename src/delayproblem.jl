@@ -268,8 +268,8 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
     majs = isempty(eqs.x[1]) ? nothing : assemble_maj(eqs.x[1], statetoid, majpmapper)
     crjs = ConstantRateJump[assemble_crj(js, j, statetoid) for j in eqs.x[2]]
     vrjs = VariableRateJump[assemble_vrj(js, j, statetoid) for j in eqs.x[3]]
-    # ((prob isa DiscreteProblem) && !isempty(vrjs)) &&
-    # error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
+    ((prob isa DiscreteProblem) && !isempty(vrjs)) &&
+    error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
     jset = JumpSet(Tuple(vrjs), Tuple(crjs), nothing, majs)
 
     if needs_vartojumps_map(aggregator) || needs_depgraph(aggregator)

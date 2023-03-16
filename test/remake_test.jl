@@ -1,9 +1,11 @@
 using Test, DelaySSAToolkit, Catalyst
 
 rn = @reaction_network begin
+    @parameters ρ r
+    @species S(t) E(t) I(t) R(t)
     ρ, S + I --> E + I
     r, I --> R
-end ρ r
+end
 u0 = [999, 1, 0, 0] # S, I, E, R
 tf = 400.0
 tspan = (0, tf)

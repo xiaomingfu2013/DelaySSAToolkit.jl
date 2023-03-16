@@ -5,8 +5,8 @@ using Test
 using StaticArrays
 
 reltol = 1e-1
-@parameters t
-@variables X(t)
+@variables t
+@species X(t)
 burst_sup = 30
 a, b = [0.0282, 3.46]
 rxs = [Reaction(a * b^i / (1 + b)^(i + 1), nothing, [X], nothing, [i]) for i in 1:burst_sup]
