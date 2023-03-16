@@ -91,8 +91,9 @@ Check this [example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutor
 using DelaySSAToolkit
 using Catalyst
 # Model: Markovian part
-@parameters a b t
-@variables X(t)
+@parameters a b
+@variables t
+@species X(t)
 burst_sup = 30
 rxs = [Reaction(a*b^i/(1+b)^(i+1),nothing,[X],nothing,[i]) for i in 1:burst_sup]
 rxs = vcat(rxs)
