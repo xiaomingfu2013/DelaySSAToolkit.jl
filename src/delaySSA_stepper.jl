@@ -97,7 +97,7 @@ function DiffEqBase.__init(djump_prob::DelayJumpProblem,
     end
 
     sol = DiffEqBase.build_solution(prob, alg, t, u, dense = false, calculate_error = false,
-                                    destats = DiffEqBase.DEStats(0),
+                                    stats = DiffEqBase.Stats(0),
                                     interp = DiffEqBase.ConstantInterpolation(t, u))
     save_everystep = any(cb.save_positions)
 

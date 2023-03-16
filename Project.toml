@@ -18,9 +18,8 @@ StaticArrays = "90137ffa-7385-5640-81b9-e52037218182"
 UnPack = "3a884ed6-31ef-47d7-9d2a-63182c4928ed"
 
 [compat]
-    Catalyst = "12.0"
 DataStructures = "0.17, 0.18"
-DiffEqBase = "6.45"
+DiffEqBase = "6.122"
 DocStringExtensions = "0.8, 0.9"
 FunctionWrappers = "1.0"
 JumpProcesses = "9.0"

@@ -1,6 +1,7 @@
 using DelaySSAToolkit, Catalyst
 using Test
 rn = @reaction_network begin
+    @species X(t) Y(t)
     1 / (1 + Y^2), 0 --> X
     1 / (1 + Y), Y --> 0
 end

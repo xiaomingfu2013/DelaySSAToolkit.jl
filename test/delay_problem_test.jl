@@ -41,8 +41,10 @@ show(io1, "text/plain", sol1)
 rn = @reaction_network begin
     ρ, S + I --> E + I
     r, I --> R
-end ρ r
+end
+
 jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
+dprob = DiscreteProblem(jumpsys, u0, tspan, ps)
 djprob_ = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0,
                            save_positions = (false, false), save_delay_channel = true)
 
