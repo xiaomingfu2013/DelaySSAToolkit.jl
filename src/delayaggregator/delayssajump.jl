@@ -290,9 +290,11 @@ end
 function update_delay_interrupt!(p, integrator)
     delay_interrupt = integrator.delayjumpsets.delay_interrupt
     execute_delay_interrupt!(delay_interrupt[p.next_jump], p, integrator)
+    nothing
 end
 function execute_delay_interrupt!(delay_interrupt_affect!::Function, p, integrator)
     delay_interrupt_affect!(integrator, p.rng)
+    nothing
 end
 
 """
@@ -300,17 +302,19 @@ end
 """
 function update_delay_trigger!(p, integrator)
     delay_trigger = integrator.delayjumpsets.delay_trigger
-
     execute_delay_trigger!(delay_trigger[p.next_jump], p, integrator)
+    nothing
 end
 function execute_delay_trigger!(delay_trigger_affect!::Function, p, integrator)
     delay_trigger_affect!(integrator, p.rng)
+    nothing
 end
 function execute_delay_trigger!(delay_trigger_affect!::Vector{Pair{Int64, T}}, p,
                                 integrator) where {T}
     for (chan_idx, τ) in delay_trigger_affect!
         append!(integrator.de_chan[chan_idx], τ)
     end
+    nothing
 end
 
 """
@@ -326,6 +330,7 @@ function update_delay_complete!(p, integrator)
         execute_delay_complete!(delay_complete[next_delay], num_next_delay, integrator,
                                 p.rng)
     end
+    nothing
 end
 
 function execute_delay_complete!(delay_complete::Vector{Pair{Int64, Int64}},
