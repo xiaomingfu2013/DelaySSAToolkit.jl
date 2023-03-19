@@ -153,7 +153,7 @@ function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrat
         dep_rxs = reduce(vcat, dep_rxs_)
     end
 
-    @unpack cur_rates, rates, ma_jumps, rt = p
+    SimpleUnPack.@unpack cur_rates, rates, ma_jumps, rt = p
     num_majumps = get_num_majumps(ma_jumps)
 
     @inbounds for rx in dep_rxs

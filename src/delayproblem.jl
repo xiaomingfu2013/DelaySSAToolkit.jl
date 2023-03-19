@@ -336,7 +336,7 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
 end
 
 function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)
-    @unpack delay_trigger, delay_complete, delay_interrupt = delayjumpsets
+    SimpleUnPack.@unpack delay_trigger, delay_complete, delay_interrupt = delayjumpsets
     for (key, value) in kwargs
         exp_key = toexpr(key)
         if exp_key == :delay_trigger
@@ -352,7 +352,7 @@ end
 
 # function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)
 #   delayjumpsets_ = deepcopy(delayjumpsets)
-#   @unpack delay_trigger_, delay_complete_, delay_interrupt_ = delayjumpsets
+#   SimpleUnPack.@unpack delay_trigger_, delay_complete_, delay_interrupt_ = delayjumpsets
 #   for (key, value) in kwargs
 #       exp_key = toexpr(key)  
 #       if exp_key in [:delay_trigger, :delay_complete, :delay_interrupt]

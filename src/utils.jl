@@ -15,7 +15,7 @@ function (A::DSSASolution)(s::Symbol, i::Int)
 end
 
 function (A::DSSASolution)(tval)
-    @unpack odesol = A
+    SimpleUnPack.@unpack odesol = A
     odesol(tval)
 end
 

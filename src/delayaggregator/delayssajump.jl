@@ -165,7 +165,7 @@ end
 @inline function dt_delay_generation!(p, integrator)
     next_jump = p.next_jump
     ttnj = p.time_to_next_jump
-    @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
+    SimpleUnPack.@unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
     if !isempty(p.next_delay) ||
        any(set -> next_jump in set, [delay_interrupt_set, delay_trigger_set])
         find_next_delay_dt!(p, integrator)
@@ -175,8 +175,8 @@ end
 end
 
 @inline function update_state_delay!(p::AbstractDSSAJumpAggregator, integrator, u, t)
-    @unpack ma_jumps, next_jump, next_delay, time_to_next_jump = p
-    @unpack delay_interrupt, delay_trigger, delay_trigger_set, delay_interrupt_set, delay_complete = integrator.delayjumpsets
+    SimpleUnPack.@unpack ma_jumps, next_jump, next_delay, time_to_next_jump = p
+    SimpleUnPack.@unpack delay_interrupt, delay_trigger, delay_trigger_set, delay_interrupt_set, delay_complete = integrator.delayjumpsets
 
     ttnj = time_to_next_jump
     if isempty(next_delay)

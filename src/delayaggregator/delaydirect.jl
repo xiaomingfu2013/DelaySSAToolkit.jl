@@ -214,8 +214,8 @@ function calculate_sum_rate!(p, s::ShadowIntegrator, u, params, t)
 end
 
 @inline function update_state_delay_direct!(p::DelayDirectJumpAggregation, integrator, u, t)
-    @unpack ma_jumps, next_jump, time_to_next_jump = p
-    @unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
+    SimpleUnPack.@unpack ma_jumps, next_jump, time_to_next_jump = p
+    SimpleUnPack.@unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
     if p.copied
         integrator.u = copy(p.shadow_integrator.u)
         integrator.de_chan = deepcopy(p.shadow_integrator.de_chan)

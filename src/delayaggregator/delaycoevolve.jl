@@ -180,7 +180,7 @@ function update_dependent_rates_delay!(p::DelayCoevolveJumpAggregation, integrat
         dep_rxs_ = [p.dep_gr_delay[p.next_delay[i]] for i in eachindex(p.next_delay)]
         deps = reduce(vcat, dep_rxs_)
     end
-    @unpack cur_rates, end_time, pq = p
+    SimpleUnPack.@unpack cur_rates, end_time, pq = p
     for (ix, i) in enumerate(deps)
         ti, last_urate_i = next_time(p, u, params, t, i, end_time)
         update!(pq, i, ti)
@@ -210,7 +210,7 @@ end
 end
 
 function next_time(p::DelayCoevolveJumpAggregation{T}, u, params, t, i, tstop::T) where {T}
-    @unpack rng, haslratevec = p
+    SimpleUnPack.@unpack rng, haslratevec = p
     num_majumps = get_num_majumps(p.ma_jumps)
     num_cjumps = length(p.urates) - length(p.rates)
     uidx = i - num_majumps
@@ -258,7 +258,7 @@ end
 
 # reevaulate all rates, recalculate all jump times, and reinit the priority queue
 function fill_rates_and_get_times!(p::DelayCoevolveJumpAggregation, u, params, t)
-    @unpack end_time = p
+    SimpleUnPack.@unpack end_time = p
     num_jumps = get_num_majumps(p.ma_jumps) + length(p.urates)
     p.cur_rates = zeros(typeof(t), num_jumps)
     jump_times = Vector{typeof(t)}(undef, num_jumps)

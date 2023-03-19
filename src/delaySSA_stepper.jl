@@ -32,7 +32,7 @@ mutable struct DSSASolution{uType, tType, chanS}
     odesol::DiffEqBase.ODESolution
 end
 function DSSASolution(ode_sol::DiffEqBase.ODESolution, channel)
-    @unpack u, t = ode_sol
+    SimpleUnPack.@unpack u, t = ode_sol
     DSSASolution{typeof(u), typeof(t), typeof(channel)}(u, t, channel, ode_sol)
 end
 

@@ -124,7 +124,7 @@ function update_dependent_rates_delay!(p::DelayMNRMJumpAggregation, integrator, 
         dep_rxs_ = [p.dep_gr_delay[p.next_delay[i]] for i in eachindex(p.next_delay)]
         dep_rxs = reduce(vcat, dep_rxs_)
     end
-    @unpack cur_rates, rates, ma_jumps = p
+    SimpleUnPack.@unpack cur_rates, rates, ma_jumps = p
     num_majumps = get_num_majumps(ma_jumps)
     @inbounds for rx in dep_rxs
         oldrate = cur_rates[rx]
