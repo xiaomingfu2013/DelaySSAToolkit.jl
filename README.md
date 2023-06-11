@@ -57,7 +57,7 @@ using DelaySSAToolkit
 rn = @reaction_network begin
     ρ, S+I --> E+I
     r, I --> R
-end ρ r
+end
 u0 = [999,1,0,0] # S, I, E, R
 tf = 400.
 tspan = (0,tf)
