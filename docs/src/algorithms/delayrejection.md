@@ -5,6 +5,7 @@ Simulation methods for systems with delays need to calculate when reactions init
 ## Algorithm
 
  1. Initialize. Set the initial number of molecules of each species and set $t = 0$.
+
  2. Calculate the propensity function, $a_k$, for each reaction.
  3. Set $a_0 = \sum_{k=1}^M a_k$.
  4. Generate an independent uniform $(0,1)$ random number, $r_1$, and set $\Delta = 1/a_0 \ln(1/r_1)$.

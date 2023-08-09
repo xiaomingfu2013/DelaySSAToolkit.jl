@@ -9,7 +9,7 @@ rn = @reaction_network begin
     β, Xₐ --> Xᵢ₁ + Xᵢ₂
     γ, Xᵢ₁ --> 0
     γ, Xᵢ₂ --> 0
-end C γ β
+end
 jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 
 C, γ, β, τ = [2.0, 0.1, 0.5, 15.0]

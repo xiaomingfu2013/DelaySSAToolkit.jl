@@ -11,11 +11,13 @@ Suppose that at time $t$ there are ongoing delayed reactions set to complete at 
 Define *Tstruct*, whose $i$th $(i=1,\dots,d)$ row stores $T_i$ and the index, $\mu_i$, of the reaction that $T_i$ is associated with.
 
  1. Initialize. Set the initial number of molecules of each species and set  $t=0$. Clear *Tstruct*.
+
  2. Calculate the propensity of function $a_k$, for each reaction $k \in 1,\ldots, M$.
  3. Set $a_0=\sum_{k=1}^M{a_k}$.
  4. Generate  $\Delta$.
     
       + Input the time $t$ and $a_0=\sum_{k=1}^M{a_k}$.
+    
       + Generate an independent uniform $(0,1)$ random number $r_1$.
       + If *Tstruct* is empty
         
@@ -23,6 +25,7 @@ Define *Tstruct*, whose $i$th $(i=1,\dots,d)$ row stores $T_i$ and the index, $\
       + Else
         
           * Set $i=1$, $a_t = a_0T_1$ and  $F=1-e^{-a_t}$.
+        
           * While $F < r_1$
             
               - Update the state vector $\mathbf{x}$ due to the finish of the delayed reaction $t+T_i$.

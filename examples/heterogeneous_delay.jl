@@ -5,21 +5,21 @@ using DelaySSAToolkit
 rn = @reaction_network begin
     A, 0 --> X
     B, Y --> 0
-end A B
+end
 
 u0 = [0, 0]
 de_chan0 = [[]]
 tf = 100.0
 tspan = (0, tf)
-ps = [10.0, 1.0] # dummy variables, later on will be drawn from a Gamma distribution 
-τ = 1 # dummy variables, later on will be drawn from a Gamma distribution 
+ps = [10.0, 1.0] # dummy variables, later on will be drawn from a Gamma distribution
+τ = 1 # dummy variables, later on will be drawn from a Gamma distribution
 delay_trigger = Dict(1 => [1 => τ])
 delay_complete = Dict(1 => [1 => -1, 2 => 1])
 delay_interrupt = Dict()
 
 jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 dprob = DiscreteProblem(jumpsys, u0, tspan, ps)
-# use ensemble problem 
+# use ensemble problem
 algo = DelayRejection()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 djprob = DelayJumpProblem(

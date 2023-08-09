@@ -1,12 +1,12 @@
-# The model is 
-# C: 0 -> X_A, 
-# γ: X_A -> 0 
+# The model is
+# C: 0 -> X_A,
+# γ: X_A -> 0
 # β: X_A ->X_I : trigger X_I  -> 0 after τ time
 # γ: X_I ->0 : delay_interrupt
 
 # According to Lafuerza, Toral 2011 the exact solution is obtainable
-# if we denote x_A(t) to be the mean value of X_A at time t, and x_I(t) the mean value of X_I at time t, then 
-# x_A(t)= C/a (1-e^(-at))  
+# if we denote x_A(t) to be the mean value of X_A at time t, and x_I(t) the mean value of X_I at time t, then
+# x_A(t)= C/a (1-e^(-at))
 # x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((1-exp(-γ*τ))/γ + exp(-a*t)*(1-exp(-(a-γ)τ))/(a-γ))
 # where a = β + γ
 
@@ -18,7 +18,7 @@ rn = @reaction_network begin
     γ, Xₐ --> 0
     β, Xₐ --> Xᵢ
     γ, Xᵢ --> 0
-end C γ β
+end
 
 jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 

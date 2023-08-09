@@ -49,6 +49,7 @@ where $t$ is the current time of the system. These ideas form the heart of the N
 ## Algorithm
 
  1. Initialize. Set the initial number of molecules of each species and set $t = 0$. For each $k \leq M$, set $P_k = 0$ and $T_k = 0$, and for each delayed reaction channel set $s_l = [\infty]$.
+
  2. Calculate the propensity function, $a_k$, for each reaction.
  3. Generate $M$ independent, uniform $(0,1)$ random numbers, $r_k$, and set $P_k = \ln(1/r_k)$.
  4. Set $\Delta t_k = (P_k − T_k)/a_k$.

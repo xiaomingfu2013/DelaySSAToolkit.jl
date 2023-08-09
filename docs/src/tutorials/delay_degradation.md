@@ -35,7 +35,7 @@ rn = @reaction_network begin
     γ, Xₐ --> 0
     β, Xₐ --> Xᵢ
     γ, Xᵢ --> 0
-end C γ β
+end
 jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 ```
 
@@ -74,6 +74,7 @@ delaysets = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
     
       + Keys: Indices of reactions defined in Markovian part that can trigger the delay reaction. Here we have the 3rd reaction $\beta: X_A \rightarrow X_I$ that will trigger the degradation of $X_I$ after time $\tau$.
       + Values: A update function that determines how to update the delay channel. In this example, once the delay reaction is triggered, the first delay channel (which is the channel for $X_I$) will be added to a delay time $\tau$.
+
   - `delay_interrupt`
     
       + Keys: Indices of reactions defined in Markovian part that can cause the change in the delay channels. In this example, the 4th reaction $\gamma : X_I \rightarrow \emptyset$ will change the scheduled delay reaction channel immediately.
@@ -158,7 +159,7 @@ rn = @reaction_network begin
     β, Xₐ --> Xᵢ₁ + Xᵢ₂
     γ, Xᵢ₁ --> 0
     γ, Xᵢ₂ --> 0
-end C γ β
+end
 jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 ```
 

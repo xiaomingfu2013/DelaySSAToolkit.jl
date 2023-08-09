@@ -3,90 +3,98 @@
 <!-- | **Documentation** | **Build Status** | **Downloads** |
 |:-----------------:|:----------------:|:----------------:|
 | [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] | [![download badge]][download link]| -->
-
-| **Documentation** | **Build Status** |
-|:-----------------:|:----------------:|
-| [![doc dev badge]][doc dev link] | [![ci badge]][ci link] [![cov badge]][cov link] | 
-
-[doc dev badge]: https://img.shields.io/badge/docs-dev-blue.svg
-[doc dev link]: https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/
-
-[ci badge]: https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml/badge.svg?branch=main
-[ci link]: https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain
-
-[cov badge]: https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg
-[cov link]: https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl
-
-
-[download badge]: https://shields.io/endpoint?url=https://pkgs.genieframework.com/api/v1/badge/DelaySSAToolkit
-[download link]: https://pkgs.genieframework.com?packages=DelaySSAToolkit
+| **Documentation**                                                                                                          | **Build Status**                                                                                                                                                                                                                                                                                                                                                           |
+|:--------------------------------------------------------------------------------------------------------------------------:|:--------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------:|
+| [![doc dev badge](https://img.shields.io/badge/docs-dev-blue.svg)](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/) | [![ci badge](https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/palmtree2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain) [![cov badge](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl) |
 
 <!-- [![Coverage](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl) -->
-
-DelaySSAToolkit.jl is a tool developed on top of [JumpProcesses.jl](https://github.com/SciML/JumpProcesses.jl) in Julia which solves the stochastic simulation [[1]](#1) coupled with delays. A portion of this library’s code is taken from the MIT licensed JumpProcesses.jl library. 
+DelaySSAToolkit.jl is a tool developed on top of [JumpProcesses.jl](https://github.com/SciML/JumpProcesses.jl) in Julia which solves the stochastic simulation [[1]](#1) coupled with delays. A portion of this library’s code is taken from the MIT licensed JumpProcesses.jl library.
 That code is copyright (c) 2017: Chris Rackauckas. This package contains the following features:
 
 ## Features
-- Various delay stochastic simulation algorithms are provided [[2-6]](#2);
-- Stochastic delay type is supported;
-- Multiple delay channels and simultaneous delay reactions are supported;
-- A cascade of delay reactions is supported (a delay reaction that causes other delay reactions);
-- Priority queue and dependency graph are integrated for high computational performance;
-- Ecosystem with [Catalyst.jl](https://github.com/SciML/Catalyst.jl), [JumpProcesses.jl](https://github.com/SciML/JumpProcesses.jl), [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
+
+  - Various delay stochastic simulation algorithms are provided [[2-6]](#2);
+  - Stochastic delay type is supported;
+  - Multiple delay channels and simultaneous delay reactions are supported;
+  - A cascade of delay reactions is supported (a delay reaction that causes other delay reactions);
+  - Priority queue and dependency graph are integrated for high computational performance;
+  - Ecosystem with [Catalyst.jl](https://github.com/SciML/Catalyst.jl), [JumpProcesses.jl](https://github.com/SciML/JumpProcesses.jl), [DifferentialEquations.jl](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
 
 More information is available in the [documentation](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/). Please feel free to open issues and submit pull requests!
 
 ## Installation
+
 DelaySSAToolkit can be installed through the Julia package manager:
-```julia 
+
+```julia
 using Pkg
 Pkg.add("DelaySSAToolkit")
 ```
+
 ## Examples
-To run the following two examples, Catalyst.jl has to be installed by 
+
+To run the following two examples, Catalyst.jl has to be installed by
+
 ```julia
 using Pkg
 Pkg.add("Catalyst")
 ```
+
 ### SEIR model
+
 Check [this example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/tutorials/) for more details.
+
 ```julia
 using Catalyst
 using DelaySSAToolkit
 # Model: Markovian part
 rn = @reaction_network begin
-    ρ, S+I --> E+I
+    ρ, S + I --> E + I
     r, I --> R
 end
-u0 = [999,1,0,0] # S, I, E, R
-tf = 400.
-tspan = (0,tf)
+u0 = [999, 1, 0, 0] # S, I, E, R
+tf = 400.0
+tspan = (0, tf)
 ps = [1e-4, 1e-2]
 
 # Model: non-Markovian part (delay reactions)
-τ = 20.
+τ = 20.0
 delay_trigger_affect! = function (integrator, rng)
-    append!(integrator.de_chan[1], τ) # add a delay time τ to the first delay channel
+    return append!(integrator.de_chan[1], τ) # add a delay time τ to the first delay channel
 end
-delay_trigger = Dict(1=>delay_trigger_affect!) # the first reaction S+I -> E+I will trigger a delay reaction: E --> I after τ time.  
-delay_complete = Dict(1=>[2=>1, 3=>-1]) # E --> I after τ time: transfer from E (minus 1) to I (plus 1) after the completed delay reaction
-delay_interrupt = Dict() 
+delay_trigger = Dict(1 => delay_trigger_affect!) # the first reaction S+I -> E+I will trigger a delay reaction: E --> I after τ time.  
+delay_complete = Dict(1 => [2 => 1, 3 => -1]) # E --> I after τ time: transfer from E (minus 1) to I (plus 1) after the completed delay reaction
+delay_interrupt = Dict()
 de_chan0 = [[]] # initial condition for delay channel: no on-going delay reactions
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 
 # convert the ReactionSystem to a JumpSystem
-jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false)
-dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
-djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(true,true))
-sol = solve(djprob, SSAStepper(),seed=1234)
+jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
+dprob = DiscreteProblem(jumpsys, u0, tspan, ps)
+djprob = DelayJumpProblem(
+    jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0; save_positions=(true, true)
+)
+sol = solve(djprob, SSAStepper(); seed=1234)
 # ] add Plots
-using Plots; theme(:vibrant)
-plot(sol, label = ["S" "I" "E" "R"], linewidth = 3, legend = :top, ylabel = "# of individuals", xlabel = "Time", fmt=:png)
+using Plots;
+theme(:vibrant);
+plot(
+    sol;
+    label=["S" "I" "E" "R"],
+    linewidth=3,
+    legend=:top,
+    ylabel="# of individuals",
+    xlabel="Time",
+    fmt=:png,
+)
 ```
+
 ![seir](docs/src/assets/seir.png)
 
 ### A bursty model [[7]](#7)
+
 Check this [example](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/bursty/) for more details.
+
 ```julia
 using DelaySSAToolkit
 using Catalyst
@@ -95,51 +103,55 @@ using Catalyst
 @variables t
 @species X(t)
 burst_sup = 30
-rxs = [Reaction(a*b^i/(1+b)^(i+1),nothing,[X],nothing,[i]) for i in 1:burst_sup]
+rxs = [Reaction(a * b^i / (1 + b)^(i + 1), nothing, [X], nothing, [i]) for i in 1:burst_sup]
 rxs = vcat(rxs)
-@named rs = ReactionSystem(rxs,t,[X],[a,b])
+@named rs = ReactionSystem(rxs, t, [X], [a, b])
 u0 = [0]
-tf = 200.
-tspan = (0,tf)
+tf = 200.0
+tspan = (0, tf)
 ps = [0.0282, 3.46]
 # Model: non-Markovian part
-τ = 130.
+τ = 130.0
 delay_trigger_affect! = []
 for i in 1:burst_sup
     push!(delay_trigger_affect!, function (integrator, rng)
-    append!(integrator.de_chan[1], fill(τ, i))
+        return append!(integrator.de_chan[1], fill(τ, i))
     end)
 end
 delay_trigger = Dict([Pair(i, delay_trigger_affect![i]) for i in 1:burst_sup])
-delay_complete = Dict(1=>[1=>-1])
+delay_complete = Dict(1 => [1 => -1])
 delay_interrupt = Dict()
 de_chan0 = [[]]
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 
 # convert the ReactionSystem to a JumpSystem
-jumpsys = convert(JumpSystem, rs, combinatoric_ratelaws=false)
+jumpsys = convert(JumpSystem, rs; combinatoric_ratelaws=false)
 dprob = DiscreteProblem(jumpsys, u0, tspan, ps)
-djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0, save_positions=(false,false))
+djprob = DelayJumpProblem(
+    jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0; save_positions=(false, false)
+)
 ensprob = EnsembleProblem(djprob)
-ens = solve(ensprob, SSAStepper(), EnsembleThreads(), trajectories=10^5)
+ens = solve(ensprob, SSAStepper(), EnsembleThreads(); trajectories=10^5)
 ```
+
 ![bursty](docs/src/assets/bursty.svg)
 
-
 ## Recommendations
+
 To solve a `DelayJumpProblem`, here are few recommendations for good performance:
 
-- Use Catalyst.jl to build your Markovian model (model without delays). For certain algorithms that need dependency graph, it will be auto-generated. 
+  - Use Catalyst.jl to build your Markovian model (model without delays). For certain algorithms that need dependency graph, it will be auto-generated.
 
-- For a small number of jumps, `DelayRejection` and `DelayDirect` will often perform better than other aggregators.
-
-- For large numbers of jumps with sparse chain like structures and similar jump rates, for example continuous time random walks, `DelayDirectCR` and `DelayMNRM` often have the best performance.
+  - For a small number of jumps, `DelayRejection` and `DelayDirect` will often perform better than other aggregators.
+  - For large numbers of jumps with sparse chain like structures and similar jump rates, for example continuous time random walks, `DelayDirectCR` and `DelayMNRM` often have the best performance.
 
 ## Other related packages
-- [FiniteStateProjection.jl](https://github.com/kaandocal/FiniteStateProjection.jl): Finite State Projection algorithms for chemical reaction networks.
-- [MomentClosure.jl](https://github.com/augustinas1/MomentClosure.jl): Tools to generate and study moment equations for any chemical reaction network using various moment closure approximations.
+
+  - [FiniteStateProjection.jl](https://github.com/kaandocal/FiniteStateProjection.jl): Finite State Projection algorithms for chemical reaction networks.
+  - [MomentClosure.jl](https://github.com/augustinas1/MomentClosure.jl): Tools to generate and study moment equations for any chemical reaction network using various moment closure approximations.
 
 ## Citation
+
 ```
 @article{fuDelaySSAToolkitJlStochastic2022,
   title = {{{DelaySSAToolkit}}.Jl: Stochastic Simulation of Reaction Systems with Time Delays in {{Julia}}},
@@ -160,6 +172,7 @@ To solve a `DelayJumpProblem`, here are few recommendations for good performance
 ```
 
 ## References
+
 <a id="1">[1]</a> Daniel T. Gillespie, "Exact stochastic simulation of coupled chemical reactions", The Journal of Physical Chemistry 1977 81 (25), 2340-2361.
 [https://doi.org/10.1021/j100540a008](https://doi.org/10.1021/j100540a008)
 

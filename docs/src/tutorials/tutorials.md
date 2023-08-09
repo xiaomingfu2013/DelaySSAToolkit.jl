@@ -18,7 +18,7 @@ For the non-Markovian model, what differs from the Markovian model is the introd
 rn = @reaction_network begin
     ρ, S+I --> E+I
     r, I --> R
-end ρ r
+end
 ```
 We can easily obtain a `Jumpsystem` from the reaction network `rn`.
 ```julia
@@ -29,10 +29,10 @@ where `combinatoric_ratelaws` is an optional parameter that specifies whether th
 With the initial conditions, we can then define `DiscreteProblem`
 ```julia
 u0 = [999,1,0,0] # S, I, E, R
-tf = 400.
-tspan = (0,tf)
+tf = 400.0
+tspan = (0.0,tf)
 ps = [1e-4, 1e-2] # parameters for ρ, r
-τ = 20.
+τ = 20.0
 dprob = DiscreteProblem(jumpsys,u0,tspan,ps)
 ```
 where `DiscreteProblem` has inputs as the jump system `jumpsys`, the initial condition of reactants `u0`, the simulation timespan `tspan` and the reaction rates `ps`. 

@@ -5,7 +5,7 @@ rn = @reaction_network begin
     kon, Goff --> Gon
     koff, Gon --> Goff
     ρ, Gon --> Gon + N
-end kon koff ρ
+end
 jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 
 u0 = [1, 0, 0]

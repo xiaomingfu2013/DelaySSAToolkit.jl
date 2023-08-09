@@ -28,9 +28,9 @@ jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws=false).
 We initialize the problem by setting
 ```julia
 u0 = [0,0]
-tf = 400.
+tf = 400.0
 tspan = (0,tf)
-τ = 20.
+τ = 20.0
 dprob = DiscreteProblem(jumpsys, u0, tspan)
 ```
 ## Non-Markovian part
