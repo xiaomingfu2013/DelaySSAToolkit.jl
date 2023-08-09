@@ -1,8 +1,8 @@
 const MINJUMPRATE = 2.0^exponent(1e-12)
 
-mutable struct DelayDirectCRJumpAggregation{T, S, F1, F2, RNG, DEPGR,
-                                            U <: JumpProcesses.PriorityTable, W <: Function
-                                            } <: AbstractDSSAJumpAggregator
+mutable struct DelayDirectCRJumpAggregation{
+    T,S,F1,F2,RNG,DEPGR,U<:JumpProcesses.PriorityTable,W<:Function
+} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int
     next_jump_time::T
@@ -12,7 +12,7 @@ mutable struct DelayDirectCRJumpAggregation{T, S, F1, F2, RNG, DEPGR,
     ma_jumps::S
     rates::F1
     affects!::F2
-    save_positions::Tuple{Bool, Bool}
+    save_positions::Tuple{Bool,Bool}
     rng::RNG
     dep_gr::DEPGR
     minrate::T
@@ -23,22 +23,36 @@ mutable struct DelayDirectCRJumpAggregation{T, S, F1, F2, RNG, DEPGR,
     num_next_delay::Vector{Int}
     time_to_next_jump::T
     dt_delay::T
-    vartojumps_map::Union{Nothing, Vector{Vector{Int}}}
-    dep_gr_delay::Union{Nothing, Dict{Int, Vector{Int}}}
+    vartojumps_map::Union{Nothing,Vector{Vector{Int}}}
+    dep_gr_delay::Union{Nothing,Dict{Int,Vector{Int}}}
 end
 
-function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
-                                      maj::S, rs::F1, affs!::F2, sps::Tuple{Bool, Bool},
-                                      rng::RNG; num_specs, dep_graph = nothing,
-                                      dep_graph_delay = nothing,
-                                      minrate = convert(T, MINJUMPRATE),
-                                      maxrate = convert(T, Inf), vartojumps_map = nothing,
-                                      kwargs...) where {T, S, F1, F2, RNG}
+function DelayDirectCRJumpAggregation(
+    nj::Int,
+    njt::T,
+    et::T,
+    crs::Vector{T},
+    sr::T,
+    maj::S,
+    rs::F1,
+    affs!::F2,
+    sps::Tuple{Bool,Bool},
+    rng::RNG;
+    num_specs,
+    dep_graph=nothing,
+    dep_graph_delay=nothing,
+    minrate=convert(T, MINJUMPRATE),
+    maxrate=convert(T, Inf),
+    vartojumps_map=nothing,
+    kwargs...,
+) where {T,S,F1,F2,RNG}
 
     # a dependency graph is needed and must be provided if there are constant rate jumps
     if dep_graph === nothing
         if (get_num_majumps(maj) == 0) || !isempty(rs)
-            error("To use ConstantRateJumps with the DelayDirectCR algorithm a dependency graph must be supplied.")
+            error(
+                "To use ConstantRateJumps with the DelayDirectCR algorithm a dependency graph must be supplied.",
+            )
         else
             dg = make_dependency_graph(num_specs, maj)
         end
@@ -73,26 +87,67 @@ function DelayDirectCRJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr
         end
     end
     dep_gr_delay = dep_graph_delay
-    DelayDirectCRJumpAggregation{T, S, F1, F2, RNG, typeof(dg), typeof(rt),
-                                 typeof(ratetogroup)}(nj, nj, njt, et, crs, sr, maj, rs,
-                                                      affs!, sps, rng,
-                                                      dg, minrate, maxrate, rt, ratetogroup,
-                                                      nd, nnd, ttnj, dt_delay,
-                                                      vartojumps_map, dep_gr_delay)
+    return DelayDirectCRJumpAggregation{
+        T,S,F1,F2,RNG,typeof(dg),typeof(rt),typeof(ratetogroup)
+    }(
+        nj,
+        nj,
+        njt,
+        et,
+        crs,
+        sr,
+        maj,
+        rs,
+        affs!,
+        sps,
+        rng,
+        dg,
+        minrate,
+        maxrate,
+        rt,
+        ratetogroup,
+        nd,
+        nnd,
+        ttnj,
+        dt_delay,
+        vartojumps_map,
+        dep_gr_delay,
+    )
 end
 
 ############################# Required Functions ##############################
 
 # creating the JumpAggregation structure (function wrapper-based constant jumps)
-function aggregate(aggregator::DelayDirectCR, u, p, t, end_time, constant_jumps,
-                   ma_jumps, save_positions, rng; kwargs...)
+function aggregate(
+    aggregator::DelayDirectCR,
+    u,
+    p,
+    t,
+    end_time,
+    constant_jumps,
+    ma_jumps,
+    save_positions,
+    rng;
+    kwargs...,
+)
 
     # handle constant jumps using function wrappers
     rates, affects! = get_jump_info_fwrappers(u, p, t, constant_jumps)
 
-    build_jump_aggregation(DelayDirectCRJumpAggregation, u, p, t, end_time, ma_jumps,
-                           rates, affects!, save_positions, rng; num_specs = length(u),
-                           kwargs...)
+    return build_jump_aggregation(
+        DelayDirectCRJumpAggregation,
+        u,
+        p,
+        t,
+        end_time,
+        ma_jumps,
+        rates,
+        affects!,
+        save_positions,
+        rng;
+        num_specs=length(u),
+        kwargs...,
+    )
 end
 
 # set up a new simulation and calculate the first jump / jump time
@@ -101,8 +156,9 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
     # initialize rates
     fill_rates_and_sum!(p, u, params, t)
     if p.dep_gr_delay === nothing
-        p.dep_gr_delay = dep_gr_delay(integrator.delayjumpsets, p.vartojumps_map,
-                                      length(p.cur_rates))
+        p.dep_gr_delay = dep_gr_delay(
+            integrator.delayjumpsets, p.vartojumps_map, length(p.cur_rates)
+        )
     end
     # setup PriorityTable
     JumpProcesses.reset!(p.rt)
@@ -111,7 +167,7 @@ function initialize!(p::DelayDirectCRJumpAggregation, integrator, u, params, t)
     end
     find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
-    nothing
+    return nothing
 end
 
 # execute one jump, changing the system state
@@ -121,7 +177,7 @@ function execute_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params, 
 
     # update current jump rates
     update_dependent_rates_delay!(p, integrator, integrator.u, params, t)
-    nothing
+    return nothing
 end
 
 # calculate the next jump / jump time
@@ -136,15 +192,16 @@ function generate_jumps!(p::DelayDirectCRJumpAggregation, integrator, u, params,
             p.next_jump = JumpProcesses.sample(p.rt, p.cur_rates, p.rng)
         end
     end
-    nothing
+    return nothing
 end
 
 ######################## SSA specific helper routines #########################
 
 # recalculate jump rates for jumps that depend on the just executed jump
 # requires dependency graph
-function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrator, u,
-                                       params, t)
+function update_dependent_rates_delay!(
+    p::DelayDirectCRJumpAggregation, integrator, u, params, t
+)
     if isempty(p.next_delay)  # if next reaction is not delay reaction 
         @inbounds dep_rxs = p.dep_gr[p.next_jump]
     else
@@ -167,5 +224,5 @@ function update_dependent_rates_delay!(p::DelayDirectCRJumpAggregation, integrat
     end
 
     p.sum_rate = JumpProcesses.groupsum(rt)
-    nothing
+    return nothing
 end

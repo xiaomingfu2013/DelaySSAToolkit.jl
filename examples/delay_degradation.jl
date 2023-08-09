@@ -20,7 +20,7 @@ rn = @reaction_network begin
     γ, Xᵢ --> 0
 end C γ β
 
-jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
+jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 
 u0 = [0, 0]
 tf = 30
@@ -37,35 +37,46 @@ dprob = DiscreteProblem(u0, tspan, p)
 
 τ = 15.0
 delay_trigger_affect! = function (integrator, rng)
-    append!(integrator.de_chan[1], τ)
+    return append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(3 => delay_trigger_affect!)
 delay_complete = Dict(1 => [2 => -1])
 delay_affect! = function (integrator, rng)
     i = rand(rng, 1:length(integrator.de_chan[1]))
-    deleteat!(integrator.de_chan[1], i)
+    return deleteat!(integrator.de_chan[1], i)
 end
 delay_interrupt = Dict(4 => delay_affect!)
 delaysets = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo, delaysets, de_chan0,
-                          save_positions = (false, false), save_delay_channel = false)
-sol1 = @time solve(djprob, SSAStepper(), seed = 2, saveat = 0.1)
+djprob = DelayJumpProblem(
+    jumpsys,
+    dprob,
+    aggregatoralgo,
+    delaysets,
+    de_chan0;
+    save_positions=(false, false),
+    save_delay_channel=false,
+)
+sol1 = @time solve(djprob, SSAStepper(), seed=2, saveat=0.1)
 
 ens_prob = EnsembleProblem(djprob)
 Sample_size = Int(10^4)
-@time ens = solve(ens_prob, SSAStepper(), EnsembleThreads(), trajectories = Sample_size,
-                  saveat = 0.1)
+@time ens = solve(
+    ens_prob, SSAStepper(), EnsembleThreads(); trajectories=Sample_size, saveat=0.1
+)
 
 using Plots, DiffEqBase;
 theme(:vibrant);
-plot(ens[1], label = ["X_A" "X_I"], fmt = :svg)
+plot(ens[1]; label=["X_A" "X_I"], fmt=:svg)
 # savefig("docs/src/assets/delay_degradation1.svg")
 
 a = β + γ
 x_A(t) = C / a * (1 - exp(-a * t))
 function x_I(t)
-    0 <= t <= τ ? C * β / (a - γ) * ((1 - exp(-γ * t)) / γ - (1 - exp(-a * t)) / a) :
-    C * β / a * ((1 - exp(-γ * τ)) / γ + exp(-a * t) * (1 - exp((a - γ)τ)) / (a - γ))
+    return if 0 <= t <= τ
+        C * β / (a - γ) * ((1 - exp(-γ * t)) / γ - (1 - exp(-a * t)) / a)
+    else
+        C * β / a * ((1 - exp(-γ * τ)) / γ + exp(-a * t) * (1 - exp((a - γ)τ)) / (a - γ))
+    end
 end
 
 using StatsBase
@@ -75,10 +86,22 @@ tsm(t) = Catalyst.EnsembleAnalysis.timepoint_mean(ens, t)
 mean_A(t) = tsm(t)[1]
 mean_I(t) = tsm(t)[2]
 timestamps = 0:0.1:tf
-plot(timestamps, x_A.(timestamps), linewidth = 3, label = "X_A Exact", xlabel = "Time",
-     ylabel = "# of X_A")
-plot!(timestamps, mean_A.(timestamps), linewidth = 3, line = :dash, label = "X_A SSA")
-plot!(timestamps, x_I.(timestamps), linewidth = 3, label = "X_I Exact")
-plot!(timestamps, mean_I.(timestamps), linewidth = 3, line = :dash, legend = :topleft,
-      label = "X_I SSA")
+plot(
+    timestamps,
+    x_A.(timestamps);
+    linewidth=3,
+    label="X_A Exact",
+    xlabel="Time",
+    ylabel="# of X_A",
+)
+plot!(timestamps, mean_A.(timestamps); linewidth=3, line=:dash, label="X_A SSA")
+plot!(timestamps, x_I.(timestamps); linewidth=3, label="X_I Exact")
+plot!(
+    timestamps,
+    mean_I.(timestamps);
+    linewidth=3,
+    line=:dash,
+    legend=:topleft,
+    label="X_I SSA",
+)
 # savefig("docs/src/assets/delay_degradation2.svg")

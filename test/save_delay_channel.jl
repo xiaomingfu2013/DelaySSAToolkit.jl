@@ -11,13 +11,13 @@ params = [0.1, 0.1, 10.0, 0.1, 10.0, 50.0]
 rates = [σ_off, σ_on, ρ_on, d]
 react_stoich = [[1 => 1], [2 => 1], [1 => 1], [3 => 1]]
 net_stoich = [[1 => -1, 2 => 1], [1 => 1, 2 => -1], [3 => 1], [3 => -1]]
-mass_action_jump = MassActionJump(rates, react_stoich, net_stoich; scale_rates = false)
+mass_action_jump = MassActionJump(rates, react_stoich, net_stoich; scale_rates=false)
 jumpset = JumpSet((), (), nothing, mass_action_jump)
 delay_trigger = Dict(3 => [1 => τ])
 delay_complete = Dict(1 => [3 => -1])
 delay_affect! = function (integrator, rng)
     i = rand(rng, 1:length(integrator.de_chan[1]))
-    deleteat!(integrator.de_chan[1], i)
+    return deleteat!(integrator.de_chan[1], i)
 end
 delay_interrupt = Dict(4 => delay_affect!)
 
@@ -44,8 +44,15 @@ algs = [DelayRejection(), DelayDirect(), DelayMNRM(), DelayDirectCR(), DelayCoev
 # end  
 
 for alg in algs
-    djprob = DelayJumpProblem(dprob, alg, jumpset, delayjumpset, de_chan0,
-                              save_positions = (true, true), save_delay_channel = true)
+    djprob = DelayJumpProblem(
+        dprob,
+        alg,
+        jumpset,
+        delayjumpset,
+        de_chan0;
+        save_positions=(true, true),
+        save_delay_channel=true,
+    )
     @info "Testing method $(alg)"
     sol = solve(djprob, SSAStepper())
 

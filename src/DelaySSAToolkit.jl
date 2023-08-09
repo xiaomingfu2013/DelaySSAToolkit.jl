@@ -9,22 +9,45 @@ using Base.FastMath: add_fast, sub_fast, exp_fast, log_fast, div_fast
 import DiffEqBase: DiscreteCallback, init, solve, solve!, initialize!
 # Types and Structs
 using JumpProcesses
-import JumpProcesses: AbstractJumpAggregator, AbstractJump, JumpProblem, ConstantRateJump,
-                      VariableRateJump, RegularJump, MassActionJump, JumpSet, SSAStepper
+import JumpProcesses:
+    AbstractJumpAggregator,
+    AbstractJump,
+    JumpProblem,
+    ConstantRateJump,
+    VariableRateJump,
+    RegularJump,
+    MassActionJump,
+    JumpSet,
+    SSAStepper
 # Dependency graph functions
 import JumpProcesses: make_dependency_graph, add_self_dependencies!, var_to_jumps_map
 # other functions
-import JumpProcesses: using_params, get_jump_info_fwrappers, isinplace_jump, extend_problem,
-                      build_variable_callback, get_num_majumps, num_crjs
+import JumpProcesses:
+    using_params,
+    get_jump_info_fwrappers,
+    isinplace_jump,
+    extend_problem,
+    build_variable_callback,
+    get_num_majumps,
+    num_crjs
 
 # VariableRateJump
 import JumpProcesses: isbounded, num_bndvrjs, supports_variablerates, haslrate, nullrate
 
 # using Catalyst 
 using ModelingToolkit
-import ModelingToolkit: JumpSysMajParamMapper, assemble_maj, assemble_vrj, assemble_crj,
-                        eqeq_dependencies, variable_dependencies, JumpSystem, states,
-                        equations, asgraph, value
+import ModelingToolkit:
+    JumpSysMajParamMapper,
+    assemble_maj,
+    assemble_vrj,
+    assemble_crj,
+    eqeq_dependencies,
+    variable_dependencies,
+    JumpSystem,
+    states,
+    equations,
+    asgraph,
+    value
 
 using DataStructures
 import DataStructures: update!
@@ -49,8 +72,14 @@ include("delaySSA_stepper.jl")
 include("utils.jl")
 
 # export DSSAIntegrator
-export DelayJumpProblem, DelayJumpSet, SSAStepper, MassActionJump, ConstantRateJump,
-       JumpProblem, JumpSystem, JumpSet
+export DelayJumpProblem,
+    DelayJumpSet,
+    SSAStepper,
+    MassActionJump,
+    ConstantRateJump,
+    JumpProblem,
+    JumpSystem,
+    JumpSet
 export DelayRejection, DelayMNRM, DelayDirect, DelayDirectCR, DelayCoevolve
 export solve, remake
 

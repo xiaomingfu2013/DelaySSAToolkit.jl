@@ -31,23 +31,23 @@ where $a = β + γ$.
 ```julia
 using Catalyst, DelaySSAToolkit
 rn = @reaction_network begin
-   C, 0 --> Xₐ
-   γ, Xₐ --> 0
-   β, Xₐ --> Xᵢ
-   γ, Xᵢ --> 0
+    C, 0 --> Xₐ
+    γ, Xₐ --> 0
+    β, Xₐ --> Xᵢ
+    γ, Xᵢ --> 0
 end C γ β
-jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
+jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 ```
 
 We refer to [this example](tutorials.md) for more details about the construction of a reaction network. Then we initialize the problem by setting
 
 ```julia
 u0 = [0, 0]
-tf = 30.
-saveat = .1
-C, γ, β = [2., 0.1, 0.5]
+tf = 30.0
+saveat = 0.1
+C, γ, β = [2.0, 0.1, 0.5]
 p = [C, γ, β]
-tspan = (0.,tf)
+tspan = (0.0, tf)
 dprob = DiscreteProblem(u0, tspan, p)
 ```
 
@@ -56,35 +56,40 @@ dprob = DiscreteProblem(u0, tspan, p)
 Then we turn to the definition of delay reactions
 
 ```julia
-τ = 15.
+τ = 15.0
 delay_trigger_affect! = function (integrator, rng)
-   append!(integrator.de_chan[1], τ)
+    return append!(integrator.de_chan[1], τ)
 end
-delay_trigger = Dict(3=>delay_trigger_affect!)
-delay_complete = Dict(1=>[2=>-1]) 
+delay_trigger = Dict(3 => delay_trigger_affect!)
+delay_complete = Dict(1 => [2 => -1])
 delay_affect! = function (integrator, rng)
     i = rand(rng, 1:length(integrator.de_chan[1]))
-    deleteat!(integrator.de_chan[1],i)
+    return deleteat!(integrator.de_chan[1], i)
 end
-delay_interrupt = Dict(4=>delay_affect!) 
-delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
+delay_interrupt = Dict(4 => delay_affect!)
+delaysets = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 ```
 
-- `delay_trigger`
-  - Keys: Indices of reactions defined in Markovian part that can trigger the delay reaction. Here we have the 3rd reaction $\beta: X_A \rightarrow X_I$ that will trigger the degradation of $X_I$ after time $\tau$.
-  - Values: A update function that determines how to update the delay channel. In this example, once the delay reaction is triggered, the first delay channel (which is the channel for $X_I$) will be added to a delay time $\tau$.
-- `delay_interrupt`
-  - Keys: Indices of reactions defined in Markovian part that can cause the change in the delay channels. In this example, the 4th reaction $\gamma : X_I \rightarrow \emptyset$ will change the scheduled delay reaction channel immediately.
-  - Values: A update function that determines how to update the delay channel. In this example, once a `delay_interrupt` reaction happens, one randomly picked reactant $X_I$ (supposed to leave the system after time $\tau$) is degraded immediately.
-- `delay_complete`
-  - Keys: Indices of delay channels. Here the first delay channel corresponds to $X_I$.
-  - Values: A vector of `Pair`s, mapping species index to net change of stoichiometric coefficient. Here the second species $X_I$ has a net change of $-1$ upon delay completion.
+  - `delay_trigger`
+    
+      + Keys: Indices of reactions defined in Markovian part that can trigger the delay reaction. Here we have the 3rd reaction $\beta: X_A \rightarrow X_I$ that will trigger the degradation of $X_I$ after time $\tau$.
+      + Values: A update function that determines how to update the delay channel. In this example, once the delay reaction is triggered, the first delay channel (which is the channel for $X_I$) will be added to a delay time $\tau$.
+  - `delay_interrupt`
+    
+      + Keys: Indices of reactions defined in Markovian part that can cause the change in the delay channels. In this example, the 4th reaction $\gamma : X_I \rightarrow \emptyset$ will change the scheduled delay reaction channel immediately.
+      + Values: A update function that determines how to update the delay channel. In this example, once a `delay_interrupt` reaction happens, one randomly picked reactant $X_I$ (supposed to leave the system after time $\tau$) is degraded immediately.
+  - `delay_complete`
+    
+      + Keys: Indices of delay channels. Here the first delay channel corresponds to $X_I$.
+      + Values: A vector of `Pair`s, mapping species index to net change of stoichiometric coefficient. Here the second species $X_I$ has a net change of $-1$ upon delay completion.
 
 Next, we choose a delay SSA algorithm and define the problem
 
 ```julia
 de_chan0 = [[]]
-djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions=(false,false))
+djprob = DelayJumpProblem(
+    jumpsys, dprob, aggregatoralgo, delaysets, de_chan0; save_positions=(false, false)
+)
 ```
 
 where `de_chan0` is the initial condition for the delay channel, which is a vector of arrays whose *k*th entry stores the scheduled delay time for *k*th delay channel. Here we assume $X_I(0) = 0$, thus only an empty array.
@@ -94,7 +99,7 @@ where `de_chan0` is the initial condition for the delay channel, which is a vect
 Now we can solve the problem and plot a trajectory
 
 ```julia
-sol = solve(djprob, SSAStepper(), seed=2, saveat =.1)
+sol = solve(djprob, SSAStepper(); seed=2, saveat=0.1)
 ```
 
 ![degradation1](../assets/delay_degradation1.svg)
@@ -104,7 +109,7 @@ Then we simulate $10^4$ trajectories and calculate the evolution of the mean val
 ```julia
 using DiffEqBase
 ens_prob = EnsembleProblem(djprob)
-ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = 1e4, saveat = .1)
+ens = @time solve(ens_prob, SSAStepper(), EnsembleThreads(), trajectories=1e4, saveat=0.1)
 ```
 
 ### Verification with the exact solution
@@ -113,9 +118,15 @@ We compare with the mean values of the exact solutions $X_I, X_A$
 
 ```julia
 timestamps = 0:0.1:tf
-a = β + γ 
-mean_x_A(t) = C/a*(1-exp(-a*t))
-mean_x_I(t)= 0<=t<=τ ? C*β/(a-γ)*((1-exp(-γ*t))/γ - (1-exp(-a*t))/a) : C*β/a*((1-exp(-γ*τ))/γ + exp(-a*t)*(1-exp((a-γ)τ))/(a-γ))
+a = β + γ
+mean_x_A(t) = C / a * (1 - exp(-a * t))
+function mean_x_I(t)
+    return if 0 <= t <= τ
+        C * β / (a - γ) * ((1 - exp(-γ * t)) / γ - (1 - exp(-a * t)) / a)
+    else
+        C * β / a * ((1 - exp(-γ * τ)) / γ + exp(-a * t) * (1 - exp((a - γ)τ)) / (a - γ))
+    end
+end
 ```
 
 ![degradation2](../assets/delay_degradation2.svg)
@@ -142,56 +153,58 @@ Similarly, we define the problem as follows:
 
 ```julia
 rn = @reaction_network begin
-   C, 0 --> Xₐ
-   γ, Xₐ --> 0
-   β, Xₐ --> Xᵢ₁ + Xᵢ₂
-   γ, Xᵢ₁ --> 0
-   γ, Xᵢ₂ --> 0
+    C, 0 --> Xₐ
+    γ, Xₐ --> 0
+    β, Xₐ --> Xᵢ₁ + Xᵢ₂
+    γ, Xᵢ₁ --> 0
+    γ, Xᵢ₂ --> 0
 end C γ β
-jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
+jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 ```
 
 ```julia
 u0 = [0, 0, 0]
-tf = 30.
-saveat = .1
-tspan = (0.,tf)
+tf = 30.0
+saveat = 0.1
+tspan = (0.0, tf)
 dprob = DiscreteProblem(u0, tspan, p)
 ```
 
 ## Non-Markovian part
 
 ```julia
-τ = 15.
+τ = 15.0
 delay_trigger_affect! = function (integrator, rng)
-   append!(integrator.de_chan[1], τ)
-   append!(integrator.de_chan[2], τ)
+    append!(integrator.de_chan[1], τ)
+    return append!(integrator.de_chan[2], τ)
 end
-delay_trigger = Dict(3=>delay_trigger_affect!)
-delay_complete = Dict(1=>[2=>-1],2=>[3=>-1]) 
+delay_trigger = Dict(3 => delay_trigger_affect!)
+delay_complete = Dict(1 => [2 => -1], 2 => [3 => -1])
 
 delay_affect1! = function (integrator, rng)
     i = rand(rng, 1:length(integrator.de_chan[1]))
-    deleteat!(integrator.de_chan[1],i)
+    return deleteat!(integrator.de_chan[1], i)
 end
 delay_affect2! = function (integrator, rng)
     i = rand(rng, 1:length(integrator.de_chan[2]))
-    deleteat!(integrator.de_chan[2],i)
+    return deleteat!(integrator.de_chan[2], i)
 end
-delay_interrupt = Dict(4=>delay_affect1!,5=>delay_affect2!) 
-delayjumpset = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
+delay_interrupt = Dict(4 => delay_affect1!, 5 => delay_affect2!)
+delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 ```
 
 ```julia
-de_chan0 = [[],[]]
-djprob = DelayJumpProblem(jumpsys, dprob, aggregatoralgo,  delaysets, de_chan0, save_positions=(false,false))
+de_chan0 = [[], []]
+djprob = DelayJumpProblem(
+    jumpsys, dprob, aggregatoralgo, delaysets, de_chan0; save_positions=(false, false)
+)
 ```
 
 ## Visualization
 
 ```julia
 ens_prob = EnsembleProblem(djprob)
-ens =@time solve(ens_prob,SSAStepper(),EnsembleThreads(),trajectories = 10^4, saveat = .1)
+ens = @time solve(ens_prob, SSAStepper(), EnsembleThreads(), trajectories=10^4, saveat=0.1)
 ```
 
 ![degradation3](../assets/delay_multidegradation3.svg)

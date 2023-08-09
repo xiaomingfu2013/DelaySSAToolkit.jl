@@ -1,7 +1,7 @@
 
 Base.@propagate_inbounds Base.getindex(A::DSSASolution, i::Int) = [A.u[i], A.channel[i]]
 Base.@propagate_inbounds function Base.getindex(A::DSSASolution, i::Int, ::Colon)
-    [A.u[j][i] for j in eachindex(A.u)]
+    return [A.u[j][i] for j in eachindex(A.u)]
 end
 
 function (A::DSSASolution)(s::Symbol, i::Int)
@@ -16,7 +16,7 @@ end
 
 function (A::DSSASolution)(tval)
     SimpleUnPack.@unpack odesol = A
-    odesol(tval)
+    return odesol(tval)
 end
 
 # (integrator::DSSAIntegrator)(t) = copy(integrator.u)
@@ -33,8 +33,10 @@ function Base.show(io::IO, m::MIME"text/plain", A::DSSASolution)
     println(io)
     print(io, "channel: ")
     show(io, m, A.channel)
-    println(io,
-            "\n===\nUse sol.u to check the state variable and sol.channel to check the delay channel solution.\n===")
+    return println(
+        io,
+        "\n===\nUse sol.u to check the state variable and sol.channel to check the delay channel solution.\n===",
+    )
 end
 
 # """

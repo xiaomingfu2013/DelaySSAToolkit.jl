@@ -10,6 +10,7 @@ DelayJumpProblem
 ```
 
 ## Types and Algorithms
+
 ```@docs
 AbstractDelayAggregatorAlgorithm
 DelayDirect

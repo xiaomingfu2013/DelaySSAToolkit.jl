@@ -14,7 +14,7 @@ ps = [1e-4, 1e-2] # parameters for ρ, r
 dprob = DiscreteProblem(u0, tspan, ps)
 
 delay_trigger_affect! = function (integrator, rng)
-    append!(integrator.de_chan[1], τ)
+    return append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1 => delay_trigger_affect!)
 delay_complete = Dict(1 => [2 => 1, 3 => -1])
@@ -22,9 +22,16 @@ delay_interrupt = Dict()
 delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 
 de_chan0 = [[]]
-jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
-djprob = DelayJumpProblem(jumpsys, dprob, DelayRejection(), delayjumpset, de_chan0,
-                          save_positions = (false, false), save_delay_channel = true)
+jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
+djprob = DelayJumpProblem(
+    jumpsys,
+    dprob,
+    DelayRejection(),
+    delayjumpset,
+    de_chan0;
+    save_positions=(false, false),
+    save_delay_channel=true,
+)
 
 ps_ = 2 * ps
 de_chan0_ = [[1]]
@@ -34,8 +41,15 @@ tspan_ = (0.0, 200.0)
 delay_trigger_ = Dict(1 => [1 => 20.0])
 delay_complete_ = Dict(1 => [2 => 2, 3 => -2])
 # delay_interrupt_ = Dict()
-djprob_ = remake(djprob, p = ps_, de_chan0 = de_chan0_, u0 = u0_, tspan = tspan_,
-                 delay_trigger = delay_trigger_, delay_complete = delay_complete_)
+djprob_ = remake(
+    djprob;
+    p=ps_,
+    de_chan0=de_chan0_,
+    u0=u0_,
+    tspan=tspan_,
+    delay_trigger=delay_trigger_,
+    delay_complete=delay_complete_,
+)
 
 @test djprob_.prob.p == ps_
 @test djprob_.prob.u0 == u0_

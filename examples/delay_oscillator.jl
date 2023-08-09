@@ -10,7 +10,7 @@ rn = @reaction_network begin
     1 / (1 + Y), Y --> 0
 end
 
-jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
+jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 
 u0 = [0, 0]
 de_chan0 = [[]]
@@ -21,7 +21,7 @@ dprob = DiscreteProblem(jumpsys, u0, tspan)
 # jumpsys.dep_graph
 
 delay_trigger_affect! = function (integrator, rng)
-    append!(integrator.de_chan[1], τ)
+    return append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1 => delay_trigger_affect!)
 delay_complete = Dict(1 => [2 => 1, 1 => -1])
@@ -32,30 +32,50 @@ delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 # alg = DelayMNRM()
 alg = DelayDirectCR()
 djprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0)
-sol = solve(djprob, SSAStepper(), seed = 12345)
+sol = solve(djprob, SSAStepper(); seed=12345)
 using Plots
-plot(sol.t, [sol.u[i][1] for i in eachindex(sol.u)], alpha = 0.3, label = "X",
-     color = "green", linewidth = 2, legend = :top, ylabel = "# of individuals",
-     xlabel = "Time", fmt = :svg)
+plot(
+    sol.t,
+    [sol.u[i][1] for i in eachindex(sol.u)];
+    alpha=0.3,
+    label="X",
+    color="green",
+    linewidth=2,
+    legend=:top,
+    ylabel="# of individuals",
+    xlabel="Time",
+    fmt=:svg,
+)
 
-sol = solve(djprob, SSAStepper(), seed = 1234)
-plot!(sol.t, [sol.u[i][1] for i in eachindex(sol.u)], label = "X", linewidth = 2,
-      line = :dash, color = "green")
+sol = solve(djprob, SSAStepper(); seed=1234)
+plot!(
+    sol.t,
+    [sol.u[i][1] for i in eachindex(sol.u)];
+    label="X",
+    linewidth=2,
+    line=:dash,
+    color="green",
+)
 
 Sample_size = Int(1e4)
 ens_prob = EnsembleProblem(djprob)
-ens = solve(ens_prob, SSAStepper(), EnsembleThreads(), trajectories = Sample_size,
-            saveat = 0.1)
+ens = solve(ens_prob, SSAStepper(), EnsembleThreads(); trajectories=Sample_size, saveat=0.1)
 using StatsBase
 tsm(t) = timepoint_mean(ens, t)
 mean_X(t) = tsm(t)[1]
 mean_Y(t) = tsm(t)[2]
 
 timestamps = 0:1.0:tf
-plot(timestamps, mean_X.(timestamps), linewidth = 3, line = :dash, label = "X",
-     xlabel = "time", ylabel = "Mean Value")
-plot!(timestamps, mean_Y.(timestamps), linewidth = 3, line = :dash, legend = :topright,
-      label = "Y")
+plot(
+    timestamps,
+    mean_X.(timestamps);
+    linewidth=3,
+    line=:dash,
+    label="X",
+    xlabel="time",
+    ylabel="Mean Value",
+)
+plot!(timestamps, mean_Y.(timestamps); linewidth=3, line=:dash, legend=:topright, label="Y")
 
 # plot(mean_X.(timestamps),mean_Y.(timestamps))
 # might be very slow, can try with small end point

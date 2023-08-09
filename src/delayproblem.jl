@@ -70,37 +70,42 @@ delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
 ```
 
 """
-mutable struct DelayJumpSet{T1 <: Any, T2 <: Any, T3 <: Function}
+mutable struct DelayJumpSet{T1<:Any,T2<:Any,T3<:Function}
     """reactions in the Markovian part that trigger the change of the state of the delay channels or/and the state of the reactants upon initiation."""
-    delay_trigger::Dict{Int, T1}
+    delay_trigger::Dict{Int,T1}
     """reactions in the Markovian part that change the state of the delay channels or/and the state of the reactants in the middle of on-going delay reactions."""
-    delay_complete::Dict{Int, T2}
+    delay_complete::Dict{Int,T2}
     """reactions that are initiated by delay trigger reactions and change the state of the delay channels or/and the state of the reactants upon completion."""
-    delay_interrupt::Dict{Int, T3}
+    delay_interrupt::Dict{Int,T3}
     """collection of indices of reactions that can interrupt the delay reactions. of `delay_trigger`."""
     delay_trigger_set::Vector{Int}
     """collection of indices of `delay_interrupt`."""
     delay_interrupt_set::Vector{Int}
 end
 function DelayJumpSet(delay_trigger::Dict, delay_complete::Dict, delay_interrupt::Dict)
-    delay_trigger_, delay_complete_, delay_interrupt_ = convert_delayset.([
-                                                                              delay_trigger,
-                                                                              delay_complete,
-                                                                              delay_interrupt,
-                                                                          ])
-    DelayJumpSet(delay_trigger_, delay_complete_, delay_interrupt_,
-                 collect(keys(delay_trigger_)), collect(keys(delay_interrupt_)))
+    delay_trigger_, delay_complete_, delay_interrupt_ =
+        convert_delayset.([delay_trigger, delay_complete, delay_interrupt])
+    return DelayJumpSet(
+        delay_trigger_,
+        delay_complete_,
+        delay_interrupt_,
+        collect(keys(delay_trigger_)),
+        collect(keys(delay_interrupt_)),
+    )
 end
 
-function convert_delayset(delay_set::Dict{T1, T2}) where {T1, T2}
-    isempty(delay_set) ? convert(Dict{Int, Function}, delay_set) :
-    convert(Dict{Int, T2}, delay_set)
+function convert_delayset(delay_set::Dict{T1,T2}) where {T1,T2}
+    return if isempty(delay_set)
+        convert(Dict{Int,Function}, delay_set)
+    else
+        convert(Dict{Int,T2}, delay_set)
+    end
 end
 
 #BEGIN DelayJump
-mutable struct DelayJumpProblem{iip, P, A, C, J <: Union{Nothing, AbstractJumpAggregator},
-                                J2, J3, J4, J5, deType, R, K} <:
-               DiffEqBase.AbstractJumpProblem{P, J}
+mutable struct DelayJumpProblem{
+    iip,P,A,C,J<:Union{Nothing,AbstractJumpAggregator},J2,J3,J4,J5,deType,R,K
+} <: DiffEqBase.AbstractJumpProblem{P,J}
     prob::P
     aggregator::A
     discrete_jump_aggregation::J
@@ -115,18 +120,27 @@ mutable struct DelayJumpProblem{iip, P, A, C, J <: Union{Nothing, AbstractJumpAg
     kwargs::K
 end
 
-function DelayJumpProblem(p::P, a::A, dj::J, jc::C, vj::J2, rj::J3, mj::J4, djs::J5,
-                          de_chan0::deType, save_delay_channel::Bool, rng::R,
-                          kwargs::K) where {P, A, J, C, J2, J3, J4, J5, deType, R, K}
+function DelayJumpProblem(
+    p::P,
+    a::A,
+    dj::J,
+    jc::C,
+    vj::J2,
+    rj::J3,
+    mj::J4,
+    djs::J5,
+    de_chan0::deType,
+    save_delay_channel::Bool,
+    rng::R,
+    kwargs::K,
+) where {P,A,J,C,J2,J3,J4,J5,deType,R,K}
     if !(typeof(a) <: AbstractDelayAggregatorAlgorithm)
         error("To solve DelayJumpProblem, one has to use one of the delay aggregators.")
     end
     iip = isinplace_jump(p, rj)
-    DelayJumpProblem{iip, P, A, C, J, J2, J3, J4, J5, deType, R, K}(p, a, dj, jc, vj, rj,
-                                                                    mj,
-                                                                    djs, de_chan0,
-                                                                    save_delay_channel, rng,
-                                                                    kwargs)
+    return DelayJumpProblem{iip,P,A,C,J,J2,J3,J4,J5,deType,R,K}(
+        p, a, dj, jc, vj, rj, mj, djs, de_chan0, save_delay_channel, rng, kwargs
+    )
 end
 
 """
@@ -151,23 +165,38 @@ end
 
     The initial condition of the delay channel.
 """
-function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
-                          jumps::JumpSet, delayjumpsets::DelayJumpSet, de_chan0;
-                          save_positions = typeof(prob) <:
-                                           DiffEqBase.AbstractDiscreteProblem ?
-                                           (false, true) : (true, true),
-                          rng = Xorshifts.Xoroshiro128Star(rand(UInt64)),
-                          scale_rates = false, useiszero = true, save_delay_channel = false,
-                          callback = nothing, use_vrj_bounds = true, kwargs...)
+function DelayJumpProblem(
+    prob,
+    aggregator::AbstractDelayAggregatorAlgorithm,
+    jumps::JumpSet,
+    delayjumpsets::DelayJumpSet,
+    de_chan0;
+    save_positions=if typeof(prob) <: DiffEqBase.AbstractDiscreteProblem
+        (false, true)
+    else
+        (true, true)
+    end,
+    rng=Xorshifts.Xoroshiro128Star(rand(UInt64)),
+    scale_rates=false,
+    useiszero=true,
+    save_delay_channel=false,
+    callback=nothing,
+    use_vrj_bounds=true,
+    kwargs...,
+)
 
     # initialize the MassActionJump rate constants with the user parameters
     if using_params(jumps.massaction_jump)
         rates = jumps.massaction_jump.param_mapper(prob.p)
-        maj = MassActionJump(rates, jumps.massaction_jump.reactant_stoch,
-                             jumps.massaction_jump.net_stoch,
-                             jumps.massaction_jump.param_mapper; scale_rates = scale_rates,
-                             useiszero = useiszero,
-                             nocopy = true)
+        maj = MassActionJump(
+            rates,
+            jumps.massaction_jump.reactant_stoch,
+            jumps.massaction_jump.net_stoch,
+            jumps.massaction_jump.param_mapper;
+            scale_rates=scale_rates,
+            useiszero=useiszero,
+            nocopy=true,
+        )
     else
         maj = jumps.massaction_jump
     end
@@ -178,7 +207,7 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
     if use_vrj_bounds && supports_variablerates(aggregator) && (num_bndvrjs(jumps) > 0)
         bvrjs = filter(isbounded, jumps.variable_jumps)
         cvrjs = filter(!isbounded, jumps.variable_jumps)
-        kwargs = merge((; variable_jumps = bvrjs), kwargs)
+        kwargs = merge((; variable_jumps=bvrjs), kwargs)
         ndiscjumps += length(bvrjs)
     else
         bvrjs = nothing
@@ -193,8 +222,18 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
         disc_agg = nothing
         constant_jump_callback = CallbackSet()
     else
-        disc_agg = aggregate(aggregator, u, prob.p, t, end_time, jumps.constant_jumps, maj,
-                             save_positions, rng; kwargs...)
+        disc_agg = aggregate(
+            aggregator,
+            u,
+            prob.p,
+            t,
+            end_time,
+            jumps.constant_jumps,
+            maj,
+            save_positions,
+            rng;
+            kwargs...,
+        )
         constant_jump_callback = DiscreteCallback(disc_agg)
     end
 
@@ -217,19 +256,33 @@ function DelayJumpProblem(prob, aggregator::AbstractDelayAggregatorAlgorithm,
 
     solkwargs = make_kwarg(; callback)
 
-    DelayJumpProblem{iip, typeof(new_prob), typeof(aggregator), typeof(callbacks),
-                     typeof(disc_agg), typeof(cont_agg),
-                     typeof(jumps.regular_jump), typeof(maj), typeof(delayjumpsets),
-                     typeof(de_chan0), typeof(rng), typeof(solkwargs)}(new_prob, aggregator,
-                                                                       disc_agg,
-                                                                       callbacks,
-                                                                       cont_agg,
-                                                                       jumps.regular_jump,
-                                                                       maj,
-                                                                       delayjumpsets,
-                                                                       de_chan0,
-                                                                       save_delay_channel,
-                                                                       rng, solkwargs)
+    return DelayJumpProblem{
+        iip,
+        typeof(new_prob),
+        typeof(aggregator),
+        typeof(callbacks),
+        typeof(disc_agg),
+        typeof(cont_agg),
+        typeof(jumps.regular_jump),
+        typeof(maj),
+        typeof(delayjumpsets),
+        typeof(de_chan0),
+        typeof(rng),
+        typeof(solkwargs),
+    }(
+        new_prob,
+        aggregator,
+        disc_agg,
+        callbacks,
+        cont_agg,
+        jumps.regular_jump,
+        maj,
+        delayjumpsets,
+        de_chan0,
+        save_delay_channel,
+        rng,
+        solkwargs,
+    )
 end
 
 make_kwarg(; kwargs...) = kwargs
@@ -254,8 +307,16 @@ make_kwarg(; kwargs...) = kwargs
 
     The initial condition of the delay channel.
 """
-function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0;
-                          scale_rates = false, save_delay_channel = false, kwargs...)
+function DelayJumpProblem(
+    js::JumpSystem,
+    prob,
+    aggregator,
+    delayjumpset,
+    de_chan0;
+    scale_rates=false,
+    save_delay_channel=false,
+    kwargs...,
+)
     statetoid = Dict(value(state) => i for (i, state) in enumerate(states(js)))
     eqs = equations(js)
     invttype = prob.tspan[1] === nothing ? Float64 : typeof(1 / prob.tspan[2])
@@ -263,13 +324,15 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
     # handling parameter substition and empty param vecs
     p = (prob.p isa DiffEqBase.NullParameters || prob.p === nothing) ? Num[] : prob.p
 
-    majpmapper = ModelingToolkit.JumpSysMajParamMapper(js, p; jseqs = eqs,
-                                                       rateconsttype = invttype)
+    majpmapper = ModelingToolkit.JumpSysMajParamMapper(
+        js, p; jseqs=eqs, rateconsttype=invttype
+    )
     majs = isempty(eqs.x[1]) ? nothing : assemble_maj(eqs.x[1], statetoid, majpmapper)
     crjs = ConstantRateJump[assemble_crj(js, j, statetoid) for j in eqs.x[2]]
     vrjs = VariableRateJump[assemble_vrj(js, j, statetoid) for j in eqs.x[3]]
-    ((prob isa DiscreteProblem) && !isempty(vrjs)) &&
-    error("Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps")
+    ((prob isa DiscreteProblem) && !isempty(vrjs)) && error(
+        "Use continuous problems such as an ODEProblem or a SDEProblem with VariableRateJumps",
+    )
     jset = JumpSet(Tuple(vrjs), Tuple(crjs), nothing, majs)
 
     if needs_vartojumps_map(aggregator) || needs_depgraph(aggregator)
@@ -277,8 +340,8 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
         vdeps = variable_dependencies(js)
         vtoj = jdeps.badjlist
         jtov = vdeps.badjlist
-        jtoj = needs_depgraph(aggregator) ? eqeq_dependencies(jdeps, vdeps).fadjlist :
-               nothing
+        jtoj =
+            needs_depgraph(aggregator) ? eqeq_dependencies(jdeps, vdeps).fadjlist : nothing
         dep_graph_delay = dep_gr_delay(delayjumpset, vtoj, length(eqs))
     else
         vtoj = nothing
@@ -287,11 +350,21 @@ function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_cha
         dep_graph_delay = nothing
     end
 
-    DelayJumpProblem(prob, aggregator, jset, delayjumpset, de_chan0;
-                     save_delay_channel = save_delay_channel, dep_graph = jtoj,
-                     vartojumps_map = vtoj, jumptovars_map = jtov,
-                     scale_rates = scale_rates, dep_graph_delay = dep_graph_delay,
-                     nocopy = true, kwargs...)
+    return DelayJumpProblem(
+        prob,
+        aggregator,
+        jset,
+        delayjumpset,
+        de_chan0;
+        save_delay_channel=save_delay_channel,
+        dep_graph=jtoj,
+        vartojumps_map=vtoj,
+        jumptovars_map=jtov,
+        scale_rates=scale_rates,
+        dep_graph_delay=dep_graph_delay,
+        nocopy=true,
+        kwargs...,
+    )
 end
 
 """
@@ -301,9 +374,10 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
     errmesg = """
     DelayJumpProblems can currently only be remade with new u0, de_chan0, p, tspan, delayjumpsets fields, prob fields. 
     """
-    !issubset(keys(kwargs),
-              ((:u0, :de_chan0, :p, :tspan, :prob)...,
-               propertynames(thing.delayjumpsets)...)) && error(errmesg)
+    !issubset(
+        keys(kwargs),
+        ((:u0, :de_chan0, :p, :tspan, :prob)..., propertynames(thing.delayjumpsets)...),
+    ) && error(errmesg)
 
     if :prob ∉ keys(kwargs)
         dprob = DiffEqBase.remake(thing.prob; kwargs...)
@@ -312,8 +386,9 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
             JumpProcesses.update_parameters!(thing.massaction_jump, dprob.p; kwargs...)
         end
     else
-        any(k -> k in keys(kwargs), (:u0, :p, :tspan)) &&
-            error("If remaking a DelayJumpProblem you can not pass both prob and any of u0, p, or tspan.")
+        any(k -> k in keys(kwargs), (:u0, :p, :tspan)) && error(
+            "If remaking a DelayJumpProblem you can not pass both prob and any of u0, p, or tspan.",
+        )
         dprob = kwargs[:prob]
 
         # we can't know if p was changed, so we must remake the MassActionJump
@@ -328,11 +403,20 @@ function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
     end
     de_chan0 = :de_chan0 ∈ keys(kwargs) ? kwargs[:de_chan0] : thing.de_chan0
 
-    DelayJumpProblem(dprob, thing.aggregator, thing.discrete_jump_aggregation,
-                     thing.jump_callback,
-                     thing.variable_jumps, thing.regular_jump, thing.massaction_jump,
-                     delayjumpsets, de_chan0, thing.save_delay_channel, thing.rng,
-                     thing.kwargs)
+    return DelayJumpProblem(
+        dprob,
+        thing.aggregator,
+        thing.discrete_jump_aggregation,
+        thing.jump_callback,
+        thing.variable_jumps,
+        thing.regular_jump,
+        thing.massaction_jump,
+        delayjumpsets,
+        de_chan0,
+        thing.save_delay_channel,
+        thing.rng,
+        thing.kwargs,
+    )
 end
 
 function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)
@@ -347,7 +431,7 @@ function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)
             delay_interrupt = value
         end
     end
-    DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
+    return DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
 end
 
 # function update_delayjumpsets(delayjumpsets::DelayJumpSet; kwargs...)
@@ -365,15 +449,25 @@ end
 # end
 
 function Base.summary(io::IO, prob::DelayJumpProblem)
-    string(DiffEqBase.parameterless_type(prob), " with problem ",
-           DiffEqBase.parameterless_type(prob.prob), " and aggregator ",
-           typeof(prob.aggregator))
+    return string(
+        DiffEqBase.parameterless_type(prob),
+        " with problem ",
+        DiffEqBase.parameterless_type(prob.prob),
+        " and aggregator ",
+        typeof(prob.aggregator),
+    )
 end
 function Base.show(io::IO, mime::MIME"text/plain", A::DelayJumpProblem)
     println(io, summary(A))
-    println(io, "Number of constant rate jumps: ",
-            A.discrete_jump_aggregation === nothing ? 0 :
-            num_constant_rate_jumps(A.discrete_jump_aggregation))
+    println(
+        io,
+        "Number of constant rate jumps: ",
+        if A.discrete_jump_aggregation === nothing
+            0
+        else
+            num_constant_rate_jumps(A.discrete_jump_aggregation)
+        end,
+    )
     println(io, "Number of variable rate jumps: ", length(A.variable_jumps))
     if A.regular_jump !== nothing
         println(io, "Have a regular jump")
@@ -382,10 +476,14 @@ function Base.show(io::IO, mime::MIME"text/plain", A::DelayJumpProblem)
         println(io, "Have a mass action jump")
     end
     if A.delayjumpsets !== nothing
-        println(io, "Number of delay trigger reactions: ",
-                length(A.delayjumpsets.delay_trigger))
-        println(io, "Number of delay interrupt reactions: ",
-                length(A.delayjumpsets.delay_interrupt))
+        println(
+            io, "Number of delay trigger reactions: ", length(A.delayjumpsets.delay_trigger)
+        )
+        println(
+            io,
+            "Number of delay interrupt reactions: ",
+            length(A.delayjumpsets.delay_interrupt),
+        )
     end
 end
 #END DelayJump

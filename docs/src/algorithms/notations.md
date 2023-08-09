@@ -23,9 +23,8 @@ Because the assumption above only pertains to the initiation times of reactions,
 
 **Case 3**: If reaction $k$ is in $\text{ICD}$ and initiates at time $t$, then the system is updated by losing the reactant species at the time of initiation, $t$, and is updated by gaining the product species at the time of completion, $t + \tau_k$.
 
-
-
 ## References
+
 [1] Dmitri A. Bratsun, Dmitri N. Volfson, Jeff Hasty, and Lev S. Tsimring "Non-Markovian processes in gene regulation (Keynote Address)", Proc. SPIE 5845, Noise in Complex Systems and Stochastic Dynamics III, (23 May 2005).
 [https://doi.org/10.1117/12.609707](https://doi.org/10.1117/12.609707)
 

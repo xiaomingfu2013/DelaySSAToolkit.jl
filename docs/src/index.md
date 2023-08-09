@@ -4,47 +4,54 @@ CurrentModule = DelaySSAToolkit
 
 # [DelaySSAToolkit](@id DelaySSAToolkit_doc)
 
-A major assumption behind the majority of stochastic models of biochemical kinetics is the memoryless hypothesis, i.e., the stochastic dynamics of the reactants is only influenced by the current state of the system, which implies that the waiting times for reaction events obey exponential distributions. Gillespie developed a stochastic simulation algorithm (SSA) to simulate stochastic dynamics for such systems [1].  While this Markovian assumption considerably simplifies model analysis, it is dubious for modelling certain non-elementary reaction events that encapsulate multiple intermediate reaction steps [2]. To simulate such problems, several exact SSA methods for chemical reaction systems with delays (also known as delay SSA) were proposed [3-5]. 
+A major assumption behind the majority of stochastic models of biochemical kinetics is the memoryless hypothesis, i.e., the stochastic dynamics of the reactants is only influenced by the current state of the system, which implies that the waiting times for reaction events obey exponential distributions. Gillespie developed a stochastic simulation algorithm (SSA) to simulate stochastic dynamics for such systems [1].  While this Markovian assumption considerably simplifies model analysis, it is dubious for modelling certain non-elementary reaction events that encapsulate multiple intermediate reaction steps [2]. To simulate such problems, several exact SSA methods for chemical reaction systems with delays (also known as delay SSA) were proposed [3-5].
 
 DelaySSAToolkit.jl is a tool developed on top of [JumpProcesses.jl](https://github.com/SciML/JumpProcesses.jl) which solves the stochastic simulation with delay and contains the following features:
 
 ## Features
-- Various exact delay stochastic simulation algorithms are integrated;
-- Stochastic delay type is supported;
-- Multiple delay channels and simultaneous delay reactions are supported;
-- A cascade of delay reactions is supported (a delay reaction that causes other delay reactions);
-- Priority queue and dependency graph are integrated for high computational performance;
-- Ecosystem with [Catalyst](https://github.com/SciML/Catalyst.jl), [JumpProcesses](https://github.com/SciML/JumpProcesses.jl), [DifferentialEquations](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
+
+  - Various exact delay stochastic simulation algorithms are integrated;
+  - Stochastic delay type is supported;
+  - Multiple delay channels and simultaneous delay reactions are supported;
+  - A cascade of delay reactions is supported (a delay reaction that causes other delay reactions);
+  - Priority queue and dependency graph are integrated for high computational performance;
+  - Ecosystem with [Catalyst](https://github.com/SciML/Catalyst.jl), [JumpProcesses](https://github.com/SciML/JumpProcesses.jl), [DifferentialEquations](https://github.com/JuliaDiffEq/DifferentialEquations.jl) and more...
 
 ## Installation
 
 DelaySSAToolkit can be installed through the Julia package manager:
+
 ```julia
 using Pkg
 Pkg.add("DelaySSAToolkit")
 ```
+
 and you might need to run
+
 ```julia
 using Pkg
 Pkg.instantiate()
 ```
+
 for the first time after installation.
 To run the examples in the Tutorials section, Catalyst.jl has to be installed by
+
 ```julia
 using Pkg
 Pkg.add("Catalyst")
 ```
 
-## Recommendation  
+## Recommendation
+
 To solve a `DelayJumpProblem`, here are few recommendations for good performance:
 
-- Use Catalyst.jl to build your Markovian model (model without delays). For certain algorithms that need dependency graph, it will be auto-generated. Otherwise you must explicitly construct and pass these mappings in `JumpSet` (see [Jump Problems](https://diffeq.sciml.ai/stable/types/jump_types/#Jump-Problems) for details).
+  - Use Catalyst.jl to build your Markovian model (model without delays). For certain algorithms that need dependency graph, it will be auto-generated. Otherwise you must explicitly construct and pass these mappings in `JumpSet` (see [Jump Problems](https://diffeq.sciml.ai/stable/types/jump_types/#Jump-Problems) for details).
 
-- For a few number of jumps, `DelayRejection` and `DelayDirect` will often perform better than other aggregators.
-
-- For large numbers of jumps with sparse chain like structures and similar jump rates, for example continuous time random walks, `DelayDirectCR` and `DelayMNRM` often have the best performance.
+  - For a few number of jumps, `DelayRejection` and `DelayDirect` will often perform better than other aggregators.
+  - For large numbers of jumps with sparse chain like structures and similar jump rates, for example continuous time random walks, `DelayDirectCR` and `DelayMNRM` often have the best performance.
 
 ## Acknowledgments
+
 Special thanks to Augustinas Sukys for his suggestions and tests on this package!
 
 ## References
@@ -61,4 +68,3 @@ Special thanks to Augustinas Sukys for his suggestions and tests on this package
 
 [5] David F. Anderson, "A modified Next Reaction Method for simulating chemical systems with time dependent propensities and delays", The Journal of Chemical Physics 128, 109903(2008).
 [https://doi/10.1063/1.2799998](https://aip.scitation.org/doi/10.1063/1.2799998)
-

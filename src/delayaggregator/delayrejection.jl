@@ -1,5 +1,4 @@
-mutable struct DelayRejectionJumpAggregation{T, S, F1, F2, RNG} <:
-               AbstractDSSAJumpAggregator
+mutable struct DelayRejectionJumpAggregation{T,S,F1,F2,RNG} <: AbstractDSSAJumpAggregator
     next_jump::Int
     prev_jump::Int
     next_jump_time::T
@@ -9,7 +8,7 @@ mutable struct DelayRejectionJumpAggregation{T, S, F1, F2, RNG} <:
     ma_jumps::S
     rates::F1
     affects!::F2
-    save_positions::Tuple{Bool, Bool}
+    save_positions::Tuple{Bool,Bool}
     rng::RNG
     next_delay::Vector{Int}
     num_next_delay::Vector{Int}
@@ -17,38 +16,69 @@ mutable struct DelayRejectionJumpAggregation{T, S, F1, F2, RNG} <:
     dt_delay::T
 end
 #3
-function DelayRejectionJumpAggregation(nj::Int, njt::T, et::T, crs::Vector{T}, sr::T,
-                                       maj::S, rs::F1, affs!::F2, sps::Tuple{Bool, Bool},
-                                       rng::RNG; kwargs...) where {T, S, F1, F2, RNG}
+function DelayRejectionJumpAggregation(
+    nj::Int,
+    njt::T,
+    et::T,
+    crs::Vector{T},
+    sr::T,
+    maj::S,
+    rs::F1,
+    affs!::F2,
+    sps::Tuple{Bool,Bool},
+    rng::RNG;
+    kwargs...,
+) where {T,S,F1,F2,RNG}
     nd = Int64[]
     nnd = Int64[]
     ttnj = zero(et)
     dt_delay = zero(et)
     #4
-    DelayRejectionJumpAggregation{T, S, F1, F2, RNG}(nj, nj, njt, et, crs, sr, maj, rs,
-                                                     affs!, sps, rng, nd, nnd, ttnj,
-                                                     dt_delay)
+    return DelayRejectionJumpAggregation{T,S,F1,F2,RNG}(
+        nj, nj, njt, et, crs, sr, maj, rs, affs!, sps, rng, nd, nnd, ttnj, dt_delay
+    )
 end
 #1 
-function aggregate(aggregator::DelayRejection, u, p, t, end_time, constant_jumps,
-                   ma_jumps, save_positions, rng; kwargs...)
+function aggregate(
+    aggregator::DelayRejection,
+    u,
+    p,
+    t,
+    end_time,
+    constant_jumps,
+    ma_jumps,
+    save_positions,
+    rng;
+    kwargs...,
+)
 
     # handle constant jumps using function wrappers
     rates, affects! = get_jump_info_fwrappers(u, p, t, constant_jumps)
-    build_jump_aggregation(DelayRejectionJumpAggregation, u, p, t, end_time, ma_jumps,
-                           rates, affects!, save_positions, rng; kwargs...)
+    return build_jump_aggregation(
+        DelayRejectionJumpAggregation,
+        u,
+        p,
+        t,
+        end_time,
+        ma_jumps,
+        rates,
+        affects!,
+        save_positions,
+        rng;
+        kwargs...,
+    )
 end
 
 function initialize!(p::DelayRejectionJumpAggregation, integrator, u, params, t)
     find_next_delay_dt!(p, integrator)
     generate_jumps!(p, integrator, u, params, t)
-    nothing
+    return nothing
 end
 
 @inline function execute_jumps!(p::DelayRejectionJumpAggregation, integrator, u, params, t)
     # update_state!(p, integrator, u)
     update_state_delay!(p, integrator, u, t)
-    nothing
+    return nothing
 end
 
 function generate_jumps!(p::DelayRejectionJumpAggregation, integrator, u, params, t)
@@ -58,7 +88,7 @@ function generate_jumps!(p::DelayRejectionJumpAggregation, integrator, u, params
     else
         p.next_jump = 0
     end
-    nothing
+    return nothing
 end
 
 function time_to_next_jump!(p::DelayRejectionJumpAggregation, integrator, u, params, t)
@@ -89,5 +119,5 @@ function time_to_next_jump!(p::DelayRejectionJumpAggregation, integrator, u, par
     dt_delay_generation!(p, integrator)
     compare_delay!(p, integrator.de_chan, p.dt_delay, dt_reaction, t)
     p.sum_rate = sum_rate
-    nothing
+    return nothing
 end

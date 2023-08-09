@@ -23,7 +23,7 @@ An aggregator interface for Delay SSA-like algorithms.
 abstract type AbstractDSSAJumpAggregator <: AbstractJumpAggregator end
 
 function DiscreteCallback(c::AbstractDSSAJumpAggregator)
-    DiscreteCallback(c, c, initialize = c, save_positions = c.save_positions)
+    return DiscreteCallback(c, c; initialize=c, save_positions=c.save_positions)
 end
 
 ########### The following routines are templates for all Delay SSAs ###########
@@ -37,7 +37,7 @@ end
 
 # condition for jump to occur
 @inline function (p::AbstractDSSAJumpAggregator)(u, t, integrator)
-    p.next_jump_time == t
+    return p.next_jump_time == t
 end
 
 # executing jump at the next jump time
@@ -45,7 +45,7 @@ function (p::AbstractDSSAJumpAggregator)(integrator)
     execute_jumps!(p, integrator, integrator.u, integrator.p, integrator.t)
     generate_jumps!(p, integrator, integrator.u, integrator.p, integrator.t)
     register_next_jump_time!(integrator, p, integrator.t)
-    nothing
+    return nothing
 end
 
 # setting up a new simulation for initialize
@@ -53,7 +53,7 @@ function (p::AbstractDSSAJumpAggregator)(dj, u, t, integrator) # initialize
     initialize!(p, integrator, u, integrator.p, t)
     register_next_jump_time!(integrator, p, integrator.t)
     u_modified!(integrator, false)
-    nothing
+    return nothing
 end
 
 ############################## Generic Routines ###############################
@@ -63,15 +63,28 @@ end
 
 Helper routine for setting up standard fields of DSSA jump aggregations.
 """
-function build_jump_aggregation(jump_agg_type, u, p, t, end_time, ma_jumps, rates, affects!,
-                                save_positions, rng; kwargs...)
+function build_jump_aggregation(
+    jump_agg_type,
+    u,
+    p,
+    t,
+    end_time,
+    ma_jumps,
+    rates,
+    affects!,
+    save_positions,
+    rng;
+    kwargs...,
+)
 
     # mass action jumps
     majumps = ma_jumps
     if majumps === nothing
-        majumps = MassActionJump(Vector{typeof(t)}(),
-                                 Vector{Vector{Pair{Int, eltype(u)}}}(),
-                                 Vector{Vector{Pair{Int, eltype(u)}}}())
+        majumps = MassActionJump(
+            Vector{typeof(t)}(),
+            Vector{Vector{Pair{Int,eltype(u)}}}(),
+            Vector{Vector{Pair{Int,eltype(u)}}}(),
+        )
     end
 
     # current jump rates, allows mass action rates and constant jumps
@@ -80,8 +93,19 @@ function build_jump_aggregation(jump_agg_type, u, p, t, end_time, ma_jumps, rate
     sum_rate = zero(typeof(t))
     next_jump = 0
     next_jump_time = typemax(typeof(t))
-    jump_agg_type(next_jump, next_jump_time, end_time, cur_rates, sum_rate,
-                  majumps, rates, affects!, save_positions, rng; kwargs...)
+    return jump_agg_type(
+        next_jump,
+        next_jump_time,
+        end_time,
+        cur_rates,
+        sum_rate,
+        majumps,
+        rates,
+        affects!,
+        save_positions,
+        rng;
+        kwargs...,
+    )
 end
 
 """
@@ -109,7 +133,7 @@ function fill_rates_and_sum!(p::AbstractDSSAJumpAggregator, u, params, t)
     end
 
     p.sum_rate = sum_rate
-    nothing
+    return nothing
 end
 
 """
@@ -124,11 +148,9 @@ Recalculate the rate for the jump with index `rx`.
     end
 end
 
-@inline function evalrxrate(speciesvec::AbstractVector{T}, rxidx::S,
-                            majump::MassActionJump{U, V, W, X})::R where {T, S, R,
-                                                                          U <:
-                                                                          AbstractVector{R},
-                                                                          V, W, X}
+@inline function evalrxrate(
+    speciesvec::AbstractVector{T}, rxidx::S, majump::MassActionJump{U,V,W,X}
+)::R where {T,S,R,U<:AbstractVector{R},V,W,X}
     val = one(T)
     @inbounds for specstoch in majump.reactant_stoch[rxidx]
         specpop = speciesvec[specstoch[1]]
@@ -141,25 +163,26 @@ end
     @inbounds return val * majump.scaled_rates[rxidx]
 end
 
-@inline function executerx!(speciesvec::AbstractVector{T}, rxidx::S,
-                            majump::M) where {T, S,
-                                              M <: JumpProcesses.AbstractMassActionJump}
+@inline function executerx!(
+    speciesvec::AbstractVector{T}, rxidx::S, majump::M
+) where {T,S,M<:JumpProcesses.AbstractMassActionJump}
     @inbounds net_stoch = majump.net_stoch[rxidx]
     @inbounds for specstoch in net_stoch
         speciesvec[specstoch[1]] += specstoch[2]
     end
-    nothing
+    return nothing
 end
 
-@inline function executerx(speciesvec::SVector{T}, rxidx::S,
-                           majump::M) where {T, S, M <:
-                                                   JumpProcesses.AbstractMassActionJump}
+@inline function executerx(
+    speciesvec::SVector{T}, rxidx::S, majump::M
+) where {T,S,M<:JumpProcesses.AbstractMassActionJump}
     @inbounds net_stoch = majump.net_stoch[rxidx]
     @inbounds for specstoch in net_stoch
-        speciesvec = setindex(speciesvec, speciesvec[specstoch[1]] + specstoch[2],
-                              specstoch[1])
+        speciesvec = setindex(
+            speciesvec, speciesvec[specstoch[1]] + specstoch[2], specstoch[1]
+        )
     end
-    speciesvec
+    return speciesvec
 end
 
 @inline function dt_delay_generation!(p, integrator)
@@ -167,7 +190,7 @@ end
     ttnj = p.time_to_next_jump
     SimpleUnPack.@unpack delay_trigger_set, delay_interrupt_set = integrator.delayjumpsets
     if !isempty(p.next_delay) ||
-       any(set -> next_jump in set, [delay_interrupt_set, delay_trigger_set])
+        any(set -> next_jump in set, [delay_interrupt_set, delay_trigger_set])
         find_next_delay_dt!(p, integrator)
     else
         p.dt_delay -= ttnj
@@ -176,7 +199,9 @@ end
 
 @inline function update_state_delay!(p::AbstractDSSAJumpAggregator, integrator, u, t)
     SimpleUnPack.@unpack ma_jumps, next_jump, next_delay, time_to_next_jump = p
-    SimpleUnPack.@unpack delay_interrupt, delay_trigger, delay_trigger_set, delay_interrupt_set, delay_complete = integrator.delayjumpsets
+    SimpleUnPack.@unpack delay_interrupt,
+    delay_trigger, delay_trigger_set, delay_interrupt_set,
+    delay_complete = integrator.delayjumpsets
 
     ttnj = time_to_next_jump
     if isempty(next_delay)
@@ -206,7 +231,7 @@ end
     end
     # save jump that was just executed
     p.prev_jump = next_jump
-    nothing
+    return nothing
 end
 
 """
@@ -226,7 +251,7 @@ function compare_delay!(p::AbstractDSSAJumpAggregator, de_chan, dt_delay, dt_rea
     p.next_delay = next_delay
     p.num_next_delay = num_next_delay
     p.next_jump_time = add_fast(t, ttnj)
-    nothing
+    return nothing
 end
 
 """
@@ -236,7 +261,7 @@ Find the minimal dt_delay in all delay channels.
 function find_next_delay_dt!(p, integrator)
     de_chan = integrator.de_chan
     p.dt_delay = find_minimum_dt_delay(de_chan)
-    nothing
+    return nothing
 end
 
 # find the minimum of a vector of vectors
@@ -245,7 +270,7 @@ function find_minimum_dt_delay(de_chan::Vector{Vector{T}}) where {T}
     @inbounds for i in eachindex(de_chan)
         val_vec[i] = isempty(de_chan[i]) ? typemax(T) : minimum(de_chan[i])
     end
-    minimum(val_vec)
+    return minimum(val_vec)
 end
 
 # find the minimum of a vector of vectors alternative
@@ -267,11 +292,12 @@ function find_next_delay_num!(p, de_chan::Vector{Vector{T}}) where {T}
     end
     p.next_delay, p.num_next_delay = find_next_delay_vec(de_chan, val)
     p.next_delay_time = val
-    nothing
+    return nothing
 end
 
-@inline function shift_delay_channel!(de_chan::Vector{Vector{T1}},
-                                      ttnj::T2) where {T1 <: Real, T2 <: Real}
+@inline function shift_delay_channel!(
+    de_chan::Vector{Vector{T1}}, ttnj::T2
+) where {T1<:Real,T2<:Real}
     @inbounds for idx in eachindex(de_chan)
         for j in eachindex(de_chan[idx])
             de_chan[idx][j] -= ttnj
@@ -279,7 +305,7 @@ end
     end
 end
 
-@inline function update_delay_channel!(de_chan::Vector{Vector{T}}) where {T <: Real}
+@inline function update_delay_channel!(de_chan::Vector{Vector{T}}) where {T<:Real}
     @inbounds for idx in eachindex(de_chan)
         filter!(x -> x > zero(T), de_chan[idx])
     end
@@ -290,11 +316,11 @@ end
 function update_delay_interrupt!(p, integrator)
     delay_interrupt = integrator.delayjumpsets.delay_interrupt
     execute_delay_interrupt!(delay_interrupt[p.next_jump], p, integrator)
-    nothing
+    return nothing
 end
 function execute_delay_interrupt!(delay_interrupt_affect!::Function, p, integrator)
     delay_interrupt_affect!(integrator, p.rng)
-    nothing
+    return nothing
 end
 
 """
@@ -303,18 +329,19 @@ end
 function update_delay_trigger!(p, integrator)
     delay_trigger = integrator.delayjumpsets.delay_trigger
     execute_delay_trigger!(delay_trigger[p.next_jump], p, integrator)
-    nothing
+    return nothing
 end
 function execute_delay_trigger!(delay_trigger_affect!::Function, p, integrator)
     delay_trigger_affect!(integrator, p.rng)
-    nothing
+    return nothing
 end
-function execute_delay_trigger!(delay_trigger_affect!::Vector{Pair{Int64, T}}, p,
-                                integrator) where {T}
+function execute_delay_trigger!(
+    delay_trigger_affect!::Vector{Pair{Int64,T}}, p, integrator
+) where {T}
     for (chan_idx, τ) in delay_trigger_affect!
         append!(integrator.de_chan[chan_idx], τ)
     end
-    nothing
+    return nothing
 end
 
 """
@@ -327,14 +354,16 @@ function update_delay_complete!(p, integrator)
     @inbounds for j in eachindex(next_delay_vec)
         next_delay = next_delay_vec[j]
         num_next_delay = num_next_delay_vec[j]
-        execute_delay_complete!(delay_complete[next_delay], num_next_delay, integrator,
-                                p.rng)
+        execute_delay_complete!(
+            delay_complete[next_delay], num_next_delay, integrator, p.rng
+        )
     end
-    nothing
+    return nothing
 end
 
-function execute_delay_complete!(delay_complete::Vector{Pair{Int64, Int64}},
-                                 num_next_delay::Int64, integrator, rng)
+function execute_delay_complete!(
+    delay_complete::Vector{Pair{Int64,Int64}}, num_next_delay::Int64, integrator, rng
+)
     @inbounds for (i, ξ) in delay_complete
         if integrator.u isa SVector
             integrator.u = setindex(integrator.u, integrator.u[i] + num_next_delay * ξ, i)
@@ -344,8 +373,9 @@ function execute_delay_complete!(delay_complete::Vector{Pair{Int64, Int64}},
         end
     end
 end
-function execute_delay_complete!(delay_complete::Function, num_next_delay::Int64,
-                                 integrator, rng)
+function execute_delay_complete!(
+    delay_complete::Function, num_next_delay::Int64, integrator, rng
+)
     for _ in 1:num_next_delay
         delay_complete(integrator, rng)
     end
@@ -357,8 +387,9 @@ input::Vector{Int} species indices
 output::Vector{Int} reactions need to be updated
 """
 
-function vars_to_jumps_delay(vartojumps_map::Vector{Vector{Int}},
-                             vars::Vector{Int})::Vector{Int}
+function vars_to_jumps_delay(
+    vartojumps_map::Vector{Vector{Int}}, vars::Vector{Int}
+)::Vector{Int}
     jumps = Vector{Int}[]
     for var in vars
         push!(jumps, vartojumps_map[var])
@@ -372,11 +403,11 @@ end
     output::Dict next_delay idx => reactions need to be updated
 """
 function dep_gr_delay(delayjumpsets::DelayJumpSet, vartojumps_map, num_reactions)
-    dict_ = Dict{Int, Vector{Int}}()
+    dict_ = Dict{Int,Vector{Int}}()
     dict_complete = delayjumpsets.delay_complete
     @inbounds for key in keys(dict_complete)
         delay_complete_action = dict_complete[key]
-        if typeof(delay_complete_action) <: Vector{Pair{Int, Int}}
+        if typeof(delay_complete_action) <: Vector{Pair{Int,Int}}
             vars = first.(delay_complete_action)
             jumps = unique(vars_to_jumps_delay(vartojumps_map, vars))
         else
@@ -384,7 +415,7 @@ function dep_gr_delay(delayjumpsets::DelayJumpSet, vartojumps_map, num_reactions
         end
         push!(dict_, key => jumps)
     end
-    dict_
+    return dict_
 end
 
 """
@@ -404,7 +435,7 @@ julia> find_next_delay_vec(A, x)
 ([1, 2, 3], [2, 1, 1])
 ```
 """
-function find_next_delay_vec(de_chan::Vector{Vector{T}}, ttnj::T) where {T <: Real}
+function find_next_delay_vec(de_chan::Vector{Vector{T}}, ttnj::T) where {T<:Real}
     position_indices = Vector{Int64}()
     num_in_vec = Vector{Int64}()
     for idx in eachindex(de_chan)

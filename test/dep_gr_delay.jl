@@ -5,7 +5,7 @@ rn = @reaction_network begin
     1 / (1 + Y^2), 0 --> X
     1 / (1 + Y), Y --> 0
 end
-jumpsys = convert(JumpSystem, rn, combinatoric_ratelaws = false)
+jumpsys = convert(JumpSystem, rn; combinatoric_ratelaws=false)
 # states(rn)
 u0 = [0, 0]
 de_chan0 = [[]]
@@ -15,7 +15,7 @@ tspan = (0, tf)
 dprob = DiscreteProblem(jumpsys, u0, tspan)
 
 delay_trigger_affect! = function (integrator, rng)
-    append!(integrator.de_chan[1], τ)
+    return append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1 => delay_trigger_affect!)
 delay_complete = Dict(1 => [2 => 1], 2 => [1 => -1])
@@ -36,5 +36,5 @@ for alg in [DelayDirectCR(), DelayMNRM(), DelayCoevolve()]
     @test p.vartojumps_map == [[], [1, 2]]
     @test p.dep_gr == [[1], [1, 2]]
     @test DelaySSAToolkit.dep_gr_delay(delayjumpset, p.vartojumps_map, 2) ==
-          Dict(1 => [1, 2], 2 => [])
+        Dict(1 => [1, 2], 2 => [])
 end

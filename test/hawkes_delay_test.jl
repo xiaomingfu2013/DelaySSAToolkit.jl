@@ -4,11 +4,11 @@ using Test
 using Random
 rng = MersenneTwister(12345)
 delay = 20.0
-function reset_history!(h; start_time = nothing)
+function reset_history!(h; start_time=nothing)
     @inbounds for i in 1:length(h)
         h[i] = eltype(h)[]
     end
-    nothing
+    return nothing
 end
 
 function empirical_rate(sol, agg)
@@ -37,16 +37,17 @@ function hawkes_rate(i::Int, g, h)
     return rate
 end
 
-function hawkes_jump(i::Int, g, h, agg; uselrate = true)
+function hawkes_jump(i::Int, g, h, agg; uselrate=true)
     rate = hawkes_rate(i, g, h)
     urate = rate
     if uselrate
         lrate(u, p, t) = p[1]
-        rateinterval = (u, p, t) -> begin
-            _lrate = lrate(u, p, t)
-            _urate = urate(u, p, t)
-            return _urate == _lrate ? typemax(t) : 1 / (2 * _urate)
-        end
+        rateinterval =
+            (u, p, t) -> begin
+                _lrate = lrate(u, p, t)
+                _urate = urate(u, p, t)
+                return _urate == _lrate ? typemax(t) : 1 / (2 * _urate)
+            end
     else
         lrate = nothing
         rateinterval = (u, p, t) -> begin
@@ -68,13 +69,20 @@ function hawkes_jump(i::Int, g, h, agg; uselrate = true)
     return VariableRateJump(rate, affect!; lrate, urate, rateinterval)
 end
 
-function hawkes_jump(u, g, h, agg; uselrate = true)
+function hawkes_jump(u, g, h, agg; uselrate=true)
     return [hawkes_jump(i, g, h, agg; uselrate) for i in 1:length(u)]
 end
 
-function hawkes_problem(p, agg::DelayCoevolve; u = [0.0], tspan = (0.0, 50.0),
-                        save_positions = (false, true),
-                        g = [[1]], h = [[]], uselrate = true)
+function hawkes_problem(
+    p,
+    agg::DelayCoevolve;
+    u=[0.0],
+    tspan=(0.0, 50.0),
+    save_positions=(false, true),
+    g=[[1]],
+    h=[[]],
+    uselrate=true,
+)
     dprob = DiscreteProblem(u, tspan, p)
     jumps = JumpSet(hawkes_jump(u, g, h, agg; uselrate)...)
     de_chan0 = [[]]
@@ -82,19 +90,27 @@ function hawkes_problem(p, agg::DelayCoevolve; u = [0.0], tspan = (0.0, 50.0),
     delay_complete = Dict(1 => [1 => 1]) # complete the delay will duplicate 1 product
     delay_interrupt = Dict()
     delayjumpset = DelayJumpSet(delay_trigger, delay_complete, delay_interrupt)
-    jprob = DelayJumpProblem(dprob, agg, jumps, delayjumpset, de_chan0; dep_graph = g,
-                             save_positions, rng)
+    jprob = DelayJumpProblem(
+        dprob, agg, jumps, delayjumpset, de_chan0; dep_graph=g, save_positions, rng
+    )
     return jprob
 end
 
 function f!(du, u, p, t)
     du .= 0
-    nothing
+    return nothing
 end
 
-function hawkes_problem(p, agg; u = [0.0], tspan = (0.0, 50.0),
-                        save_positions = (false, true),
-                        g = [[1]], h = [[]], kwargs...)
+function hawkes_problem(
+    p,
+    agg;
+    u=[0.0],
+    tspan=(0.0, 50.0),
+    save_positions=(false, true),
+    g=[[1]],
+    h=[[]],
+    kwargs...,
+)
     oprob = ODEProblem(f!, u, tspan, p)
     jumps = hawkes_jump(u, g, h, agg)
     jprob = JumpProblem(oprob, agg, jumps...; save_positions, rng)
@@ -133,7 +149,7 @@ Nsims = Int(5e2)
 
 for (i, agg) in enumerate(aggs)
     @info "Testing $(typeof(agg))"
-    jump_prob = hawkes_problem(p, agg; u = u0, tspan, g, h, uselrate = uselrate[i])
+    jump_prob = hawkes_problem(p, agg; u=u0, tspan, g, h, uselrate=uselrate[i])
     if typeof(agg) <: DelayCoevolve
         stepper = SSAStepper()
     else
@@ -148,10 +164,11 @@ for (i, agg) in enumerate(aggs)
         λs = permutedims(mapreduce((sol) -> empirical_rate(sol, agg), hcat, sols))
     else
         cols = length(sols[1].u[1].u)
-        λs = permutedims(mapreduce((sol) -> empirical_rate(sol, agg), hcat, sols))[:,
-                                                                                   1:cols]
+        λs = permutedims(mapreduce((sol) -> empirical_rate(sol, agg), hcat, sols))[
+            :, 1:cols
+        ]
     end
     Eλ, Varλ = expected_stats_hawkes_problem(p, tspan, agg)
-    @test isapprox(mean(λs), Eλ; atol = 0.01)
-    @test isapprox(var(λs), Varλ; atol = 0.001)
+    @test isapprox(mean(λs), Eλ; atol=0.01)
+    @test isapprox(var(λs), Varλ; atol=0.001)
 end

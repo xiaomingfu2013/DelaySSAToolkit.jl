@@ -4,26 +4,30 @@ Simulation methods for systems with delays need to calculate when reactions init
 
 ## Algorithm
 
-1. Initialize. Set the initial number of molecules of each species and set $t = 0$.
-2. Calculate the propensity function, $a_k$, for each reaction.
-3. Set $a_0 = \sum_{k=1}^M a_k$.
-4. Generate an independent uniform $(0,1)$ random number, $r_1$, and set $\Delta = 1/a_0 \ln(1/r_1)$.
-5. If there is a delayed reaction set to finish in $[t, t + \Delta)$
-   - Discard $\Delta$.
-   - Update $t$ to be the time of the next delayed reaction,$\mu$.
-   - Update $\mathbf{x}$ according to the stored reaction $\mu$.
-6. Else
-   - Generate an independent uniform $(0,1)$ random number $r_2$.
-   - Find $\mu\in[1,\ldots, m]$ such that
-   ```math
-   \sum_{k=1}^{\mu-1} a_k(t) < r_2 a_0 \leq \sum_{k=1}^\mu a_k(t)
-   ```
-   - If $\mu\in \text{ND}$, update the number of each molecular species according to reaction $\mu$.
-   - If $\mu\in \text{CD}$, store the information that at time $t+\tau_\mu$ the system must be updated according to reaction $\mu$.
-   - If $\mu\in \text{ICD}$, update the system according to the initiation of $\mu$ and store that at time $t+\tau_\mu$ the system must be updated according to the completion of reaction $\mu$.
-   - Set $t = t +\Delta$
-7. Endif
-8. Return to step 2 or quit.
+ 1. Initialize. Set the initial number of molecules of each species and set $t = 0$.
+ 2. Calculate the propensity function, $a_k$, for each reaction.
+ 3. Set $a_0 = \sum_{k=1}^M a_k$.
+ 4. Generate an independent uniform $(0,1)$ random number, $r_1$, and set $\Delta = 1/a_0 \ln(1/r_1)$.
+ 5. If there is a delayed reaction set to finish in $[t, t + \Delta)$
+    
+      + Discard $\Delta$.
+      + Update $t$ to be the time of the next delayed reaction,$\mu$.
+      + Update $\mathbf{x}$ according to the stored reaction $\mu$.
+ 6. Else
+    
+      + Generate an independent uniform $(0,1)$ random number $r_2$.
+      + Find $\mu\in[1,\ldots, m]$ such that
+    
+    ```math
+    \sum_{k=1}^{\mu-1} a_k(t) < r_2 a_0 \leq \sum_{k=1}^\mu a_k(t)
+    ```
+    
+      + If $\mu\in \text{ND}$, update the number of each molecular species according to reaction $\mu$.
+      + If $\mu\in \text{CD}$, store the information that at time $t+\tau_\mu$ the system must be updated according to reaction $\mu$.
+      + If $\mu\in \text{ICD}$, update the system according to the initiation of $\mu$ and store that at time $t+\tau_\mu$ the system must be updated according to the completion of reaction $\mu$.
+      + Set $t = t +\Delta$
+ 7. Endif
+ 8. Return to step 2 or quit.
 
 ## References
 
@@ -32,4 +36,3 @@ Simulation methods for systems with delays need to calculate when reactions init
 
 [2]  Manuel Barrio, Kevin Burrage, André Leier, Tianhai Tian. "Oscillatory Regulation of Hes1: Discrete Stochastic Delay Modelling and Simulation", PLoS Computational Biology, 10.1371(2006).
 [https://doi.org/10.1371/journal.pcbi.0020117](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.0020117)
-

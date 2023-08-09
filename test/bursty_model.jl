@@ -14,7 +14,7 @@ rxs = vcat(rxs)
 @named rs = ReactionSystem(rxs, t, [X], [])
 
 # convert the ReactionSystem to a JumpSystem
-jumpsys = convert(JumpSystem, rs, combinatoric_ratelaws = false)
+jumpsys = convert(JumpSystem, rs; combinatoric_ratelaws=false)
 
 # equations(jumpsys)|>length
 
@@ -47,16 +47,18 @@ bursty_var(t) = 2 * a * b^2 * min(t, τ) + a * b * min(t, τ)
 # Check mean and variance
 samplesize = Int64(5e4)
 @testset for alg in algos
-    jprob = DelayJumpProblem(jumpsys, dprob, alg, delayjumpset, de_chan0,
-                             save_positions = (false, false))
+    jprob = DelayJumpProblem(
+        jumpsys, dprob, alg, delayjumpset, de_chan0; save_positions=(false, false)
+    )
     ensprob = EnsembleProblem(jprob)
     @info "Testing method $(alg)"
-    @time ens = solve(ensprob, SSAStepper(), EnsembleSerial(), trajectories = samplesize,
-                      saveat = timestamps)
+    @time ens = solve(
+        ensprob, SSAStepper(), EnsembleSerial(); trajectories=samplesize, saveat=timestamps
+    )
     for idx in eachindex(timestamps)
         sol_end = reduce(vcat, [ens[i].u[idx + 1] for i in 1:samplesize])
         t_ = timestamps[idx]
-        @test mean(sol_end)≈bursty_mean(t_) atol=reltol * bursty_mean(t_)
-        @test var(sol_end)≈bursty_var(t_) atol=reltol * bursty_var(t_)
+        @test mean(sol_end) ≈ bursty_mean(t_) atol = reltol * bursty_mean(t_)
+        @test var(sol_end) ≈ bursty_var(t_) atol = reltol * bursty_var(t_)
     end
 end

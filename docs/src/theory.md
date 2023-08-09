@@ -70,12 +70,14 @@ P_0(\Delta)=P(E_0,\ldots,E_i)=P(E_0) \prod_{k=1}^i P(E_k丨E_0,\ldots,E_{k-1}).
 \end{equation}
 ```
 
-From the derivation of Gillespie’s exact SSA, we know that  
+From the derivation of Gillespie’s exact SSA, we know that
+
 ```math
 P(E_0) = \exp (−a_0(t)T_1),\\
 P_0(E_k丨E_0,\ldots,E_{k-1}) = \exp(-a_0(t+T_k)) × (T_{k+1}−T_k),k=0,\ldots,i−1,\\
 P(E_i丨E_0,\ldots,E_{i-1}) = \exp(-a_0(t+T_i)(\Delta-T_i)).
 ```
+
 Notice that propensity functions change at $t+T_k$ after a delayed reaction finishes, and we use $a_0(t+T_k)$ to represent the new $a_0$. The probability $P_0(\Delta)$ is then given by
 
 ```math
@@ -105,9 +107,11 @@ f_\mu(\mu)={ {a_\mu(t+T_i)} \over {a_0(t+T_i)} },\ \ \  \mu = 1,\ldots,M,\ \ \  
 ```
 
 It is not difficult to verify that $\int_{0}^{\infty} f_\Delta(\Delta)\, \text{d}\Delta = 1$. In simulation, $\mu$ can be generated, from a standard uniform random variable $u_1$, by taking $\mu$ to be the integer for which
+
 ```math
 \sum_{k=1}^{\mu-1} a_k(t+T_i)  < u_1 a_0(t+T_i) ≤  \sum_{k=1}^\mu a_k(t+T_i),
 ```
+
 after $\Delta$ is generated to be in the time interval $[T_i,T_{i+1})$. We next derive the method of generating  $\Delta$ according to its PDF in Eq. ([8](#mjx-eqn-8)).
 
 The cumulative distribution function of $\Delta$ can be found from Eq. ([8](#mjx-eqn-8)) as
@@ -132,30 +136,37 @@ Find $T_i$ such that  $F_\Delta(T_i) ≤ u_2 ≤ F_\Delta(T_{i+1})$, then calcul
 
 Since we need $T_1,\ldots,T_d$ to generate $\Delta$ and $\mu$, we define an array of data structures, named *Tstruct*, whose $i$th $(i=1,\ldots,d)$ cell stores $T_i$ and the index, $\mu_i$, of the reaction that $T_i$ is associated with. The reaction index $\mu_i$ is needed during the generation of $\Delta$, when we update the propensity functions affected by the reaction that is delayed but finishes at $t+T_i$. During simulation, we need to generate $\Delta$ and $\mu$, maintain *Tstruct*, and then update the state vector $X(t)$. We refer to [delay direct algorithm](algorithms/delaydirect.md) for details.
 
-
 ### [Delay rejection method](@id delay_rejection_method)
+
 Bratsun et al. [3] and Barrio et al. [4] used an algorithm for computing the initiation times that is exactly like the original Gillespie Algorithm except that if there is a stored delayed reaction set to finish within a computed time step, then the computed time step is discarded, and the system is updated to incorporate the stored delayed reaction. The algorithm then attempts another step starting at its new state. This algorithm is called the Rejection Method. We briefly summarized this algorithm in [delay rejection method](algorithms/delayrejection.md).
 
 The rejection algorithm essentially generates $\Delta$ in the event ([2](#mjx-eqn-2)) using a rejection method in an iterative fashion: in the *i*-th iteration, it generates a $\Delta_i$ according to an exponential PDF with parameter $a_0(t+T_{i−1})$, where we have denoted the time to next event generated in the *i*-th iteration as $\Delta_i$. If $\Delta_i < T_i - T_{i−1}$, then we have $\Delta = T_{i-1} + \Delta_i$ and the algorithm continues simulation to generate $\mu$; otherwise, it rejects $\Delta_i$, updates the state vector $X(t+T_i)$, calculates $a_k(t+T_i),k=1,\ldots,M$, and goes to the next iteration. If $\Delta$ is determined in the *(i+1)*-th iteration, where *i*
 is a non-negative integer, then we have $\Delta \in [T_i,T_{i+1})$ and *i* delayed reactions finished in the time interval $[t,t+\Delta)$.
 
 We point out the following equivalence:
+
 !!! note
+    
     For a given integer $i$, the event $\Delta \in [T_i,T_{i+1})$ in the delay direct method is equivalent to the event $\Delta_1,\Delta_2,\ldots,\Delta_i$ are rejected and the time to the next event $\Delta_{i+1}$ is accepted, i.e. $\Delta_{i+1}+T_i=\Delta$ in the delay rejection method.
 
 From the iterative procedure of generating $\Delta$ described
 above, we can find $P_0(\Delta)$ that the rejection method algorithm produces. Specifically, if $\Delta \in [T_i,T_{i+1})$, we have
+
 ```math
 P(E_0)=P(\Delta_1 > T_1),\\
 P(E_k丨E_0,\ldots,E_{k-1}) = P(\Delta_{k+1} > T_{k+1} - T_k), k=1,\ldots,i−1,
 ```
+
 because $\Delta_k,k=1,\ldots,i$, are rejected. Since $\Delta_{i+1}$ is accepted, at least one reaction will occur in the time interval $[t+T_i,t+\Delta)$, if $\Delta_{i+1} < \Delta −T_i$. Thus, $P(E_i丨E_0,\ldots,E_{i-1}) = 1−P(\Delta_{i+1} < \Delta - T_i) = P(\Delta_{i+1} > \Delta - T_i)$. Therefore, for the rejection method, $P_0(\Delta)$ in Eq. ([6](#mjx-eqn-6)) can be written as
+
 ```math
 \begin{equation}
 P_0(\Delta) = P(\Delta_{i+1} > \Delta - T_i) \prod_{k=1}^i P(\Delta_k > T_k - T_{k-1}).
 \end{equation}
 ```
+
 The random variables $\Delta_k,k=1,\ldots,i+1$, follow an exponential distribution with parameter $a_0(t+T_{k−1})$, and thus we have
+
 ```math
 \begin{equation}
 \begin{aligned}
@@ -164,15 +175,19 @@ The random variables $\Delta_k,k=1,\ldots,i+1$, follow an exponential distributi
 \end{aligned}
 \end{equation}
 ```
+
 and
+
 ```math
 \begin{equation}
 P(\Delta_{i+1} > \Delta −T_i) = \exp(-a_0(t+T_i)(\Delta-T_i)).
 \end{equation}
 ```
+
 Substituting Eqs. ([10](#mjx-eqn-10)) and ([11](#mjx-eqn-11)) into Eq. ([9](#mjx-eqn-9)), we find that $P_0(\Delta)$ in Eq. ([9](#mjx-eqn-9)) is exactly the same as $P_0(\Delta)$ in Eq. ([7](#mjx-eqn-7)) that is derived directly from the event ([2](#mjx-eqn-2)) and the fundamental premise ([1](#mjx-eqn-1)). Since the delay direct algorithm generates $\Delta$ and $\mu$ according to PDFs of $\Delta$ and $\mu$ derived from $P_0(\Delta)$ in Eq. ([7](#mjx-eqn-7)), the rejection method is equivalent to the direct method and also is an exact SSA for chemical reaction systems with delays.
 
 ### Other Methods
+
 The rigorous proof of [delay rejection method](@ref delay_rejection_method) opens a way to transform any exact SSA method to an exact delay SSA method. If we denote `dt_reaction` as the time to the next reaction generated by the instantaneous reactions $\{R_1,\ldots,R_M\}$ using a given exact stochastic simulation algorithm method, for instance next reaction method [5], direct method with composition and rejection [6-7], partial propensity method [8] etc. To extend such an SSA method to a delay SSA method, it suffices to compare `dt_reaction` with `dt_delay` which is the time to the next delay reaction (the minimum delay time in the delay channels). If `dt_reaction` < `dt_delay`, we reject `dt_delay`, otherwise accept `dt_delay`. Based on the proof in [delay rejection method](@ref delay_rejection_method), such an extension guarantees to the exactness of transformed delay SSA method.
 
 ## References
@@ -189,13 +204,11 @@ The rigorous proof of [delay rejection method](@ref delay_rejection_method) open
 [4]  Manuel Barrio, Kevin Burrage, André Leier, Tianhai Tian. "Oscillatory Regulation of Hes1: Discrete Stochastic Delay Modelling and Simulation", PLoS Computational Biology, 10.1371(2006).
 [https://doi.org/10.1371/journal.pcbi.0020117](https://journals.plos.org/ploscompbiol/article?id=10.1371/journal.pcbi.0020117)
 
-
 [5] David F. Anderson, "A modified Next Reaction Method for simulating chemical systems with time dependent propensities and delays", The Journal of Chemical Physics 128, 109903(2008).
 [https://doi/10.1063/1.2799998](https://aip.scitation.org/doi/10.1063/1.2799998)
 
 [6] Slepoy, Alexander, Aidan P. Thompson, and Steven J. Plimpton. "A constant-time kinetic Monte Carlo algorithm for simulation of large biochemical reaction networks." The journal of chemical physics 128, no. 20 (2008): 05B618. [https://doi.org/10.1063/1.2919546](https://doi.org/10.1063/1.2919546)
 
 [7] Mauch, Sean, and Mark Stalzer. "Efficient formulations for exact stochastic simulation of chemical systems." IEEE/ACM Transactions on Computational Biology and Bioinformatics 8, no. 1 (2009): 27-35. [https://doi.org/10.1109/TCBB.2009.47](https://doi.org/10.1109/TCBB.2009.47)
-
 
 [8] Ramaswamy, Rajesh, and Ivo F. Sbalzarini. "A partial-propensity formulation of the stochastic simulation algorithm for chemical reaction networks with delays." The Journal of chemical physics 134, no. 1 (2011): 014106. [https://doi.org/10.1063/1.3521496](https://doi.org/10.1063/1.3521496)
