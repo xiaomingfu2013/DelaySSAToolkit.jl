@@ -1,6 +1,6 @@
 ## This example shows an application of `DelaySSA.jl` for a bursty model with delay
 
-## A Bursty model with delay is described as 
+## A Bursty model with delay is described as
 # ab^n/(1+b)^(n+1): 0 -> n P, which triggers n P to degrade after delay time τ
 
 using DelaySSAToolkit
@@ -30,7 +30,7 @@ dprob = DiscreteProblem(jumpsys, u0, tspan, ps)
 delay_trigger_affect! = []
 for i in 1:burst_sup
     push!(delay_trigger_affect!, function (integrator, rng)
-        return append!(integrator.de_chan[1], fill(τ, i))
+        append!(integrator.de_chan[1], fill(τ, i))
     end)
 end
 delay_trigger_affect!

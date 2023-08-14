@@ -44,7 +44,7 @@ Next, we define the non-Markovian part. Here we mainly need to consider the dela
 delay_trigger_affect! = []
 for n in 1:burst_sup
     push!(delay_trigger_affect!, function (integrator, rng)
-        return append!(integrator.de_chan[1], fill(τ, n))
+        append!(integrator.de_chan[1], fill(τ, n))
     end)
 end
 delay_trigger = Dict([Pair(i, delay_trigger_affect![i]) for i in 1:burst_sup])

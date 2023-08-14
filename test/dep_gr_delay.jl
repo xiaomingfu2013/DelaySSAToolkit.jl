@@ -15,7 +15,7 @@ tspan = (0, tf)
 dprob = DiscreteProblem(jumpsys, u0, tspan)
 
 delay_trigger_affect! = function (integrator, rng)
-    return append!(integrator.de_chan[1], τ)
+    append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1 => delay_trigger_affect!)
 delay_complete = Dict(1 => [2 => 1], 2 => [1 => -1])

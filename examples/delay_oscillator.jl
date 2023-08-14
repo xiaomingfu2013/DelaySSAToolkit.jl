@@ -3,7 +3,7 @@ using Catalyst
 # using Plots
 ################################################################################
 # the following example illustrates how to deal with a oscillatory system
-# d: X-> 0; k1/(1+Y^2): 0-> X; [trigger X-> Y after τ time;] k2*Y/(1+Y):  Y-> 0;  
+# d: X-> 0; k1/(1+Y^2): 0-> X; [trigger X-> Y after τ time;] k2*Y/(1+Y):  Y-> 0;
 
 rn = @reaction_network begin
     1 / (1 + Y^2), 0 --> X
@@ -21,7 +21,7 @@ dprob = DiscreteProblem(jumpsys, u0, tspan)
 # jumpsys.dep_graph
 
 delay_trigger_affect! = function (integrator, rng)
-    return append!(integrator.de_chan[1], τ)
+    append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1 => delay_trigger_affect!)
 delay_complete = Dict(1 => [2 => 1, 1 => -1])

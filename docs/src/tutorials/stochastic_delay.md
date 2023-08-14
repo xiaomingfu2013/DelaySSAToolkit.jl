@@ -43,7 +43,7 @@ Unlike other examples, the elongation time $\tau$ is a random variable sampled f
 ```julia
 delay_trigger_affect! = function (integrator, rng)
     τ = rand(LogNormal(1, sqrt(2))) + 120
-    return append!(integrator.de_chan[1], τ)
+    append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(3 => delay_trigger_affect!)
 delay_complete = Dict(1 => [3 => -1])

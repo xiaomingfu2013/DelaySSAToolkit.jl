@@ -8,7 +8,7 @@ end
 delay_trigger_affect! = []
 chain_len = 10
 delay_trigger_affect! = function (integrator, rng)
-    return append!(integrator.de_chan[1], 1.0)
+    append!(integrator.de_chan[1], 1.0)
 end
 
 u0 = zeros(chain_len)
@@ -22,7 +22,7 @@ for i in 1:(chain_len - 1)
     push!(delay_complete_affect!, function (integrator, rng)
         integrator.u[i] -= 1 # A_prev minus 1
         integrator.u[i + 1] += 1 # A plus 1
-        return append!(integrator.de_chan[i + 1], 1.0) # add to the delay channel
+        append!(integrator.de_chan[i + 1], 1.0) # add to the delay channel
     end)
 end
 push!(delay_complete_affect!, function (integrator, rng)

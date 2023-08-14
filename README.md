@@ -56,7 +56,7 @@ ps = [1e-4, 1e-2]
 # Model: non-Markovian part (delay reactions)
 τ = 20.0
 delay_trigger_affect! = function (integrator, rng)
-    return append!(integrator.de_chan[1], τ) # add a delay time τ to the first delay channel
+    append!(integrator.de_chan[1], τ) # add a delay time τ to the first delay channel
 end
 delay_trigger = Dict(1 => delay_trigger_affect!) # the first reaction S+I -> E+I will trigger a delay reaction: E --> I after τ time.  
 delay_complete = Dict(1 => [2 => 1, 3 => -1]) # E --> I after τ time: transfer from E (minus 1) to I (plus 1) after the completed delay reaction
@@ -111,7 +111,7 @@ ps = [0.0282, 3.46]
 delay_trigger_affect! = []
 for i in 1:burst_sup
     push!(delay_trigger_affect!, function (integrator, rng)
-        return append!(integrator.de_chan[1], fill(τ, i))
+        append!(integrator.de_chan[1], fill(τ, i))
     end)
 end
 delay_trigger = Dict([Pair(i, delay_trigger_affect![i]) for i in 1:burst_sup])

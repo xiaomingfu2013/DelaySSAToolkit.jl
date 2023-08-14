@@ -14,7 +14,7 @@ ps = [1e-4, 1e-2] # parameters for ρ, r
 dprob = DiscreteProblem(u0, tspan, ps)
 
 delay_trigger_affect! = function (integrator, rng)
-    return append!(integrator.de_chan[1], τ)
+    append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1 => delay_trigger_affect!)
 delay_complete = Dict(1 => [2 => 1, 3 => -1])

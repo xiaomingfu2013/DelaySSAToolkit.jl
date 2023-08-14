@@ -37,7 +37,7 @@ dprob = DiscreteProblem(u0, tspan, p)
 
 τ = 15.0
 delay_trigger_affect! = function (integrator, rng)
-    return append!(integrator.de_chan[1], τ)
+    append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(3 => delay_trigger_affect!)
 delay_complete = Dict(1 => [2 => -1])

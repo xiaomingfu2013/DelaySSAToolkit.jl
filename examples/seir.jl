@@ -17,7 +17,7 @@ ps = [1e-4, 1e-2]
 τ = 20.0
 dprob = DiscreteProblem(jumpsys, u0, tspan, ps)
 delay_trigger_affect! = function (integrator, rng)
-    return append!(integrator.de_chan[1], τ)
+    append!(integrator.de_chan[1], τ)
 end
 delay_trigger = Dict(1 => delay_trigger_affect!)
 # delay_trigger = Dict(1=>[1=>τ])
