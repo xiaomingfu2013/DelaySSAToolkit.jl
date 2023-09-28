@@ -2,7 +2,7 @@
 
 | **Documentation** | **Build Status** |
 |:-----------------:|:----------------:|
-| [![doc dev badge](https://img.shields.io/badge/docs-dev-blue.svg)](https://xiaomingfu2013.github.io/DelaySSAToolkit.jl/dev/) | [![ci badge](https://github.com/xiaomingfu2013/DelaySSAToolkit.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/xiaomingfu2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain) [![cov badge](https://codecov.io/gh/xiaomingfu2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/xiaomingfu2013/DelaySSAToolkit.jl) |
+| [![doc dev badge](https://img.shields.io/badge/docs-dev-blue.svg)](https://xiaomingfu2013.github.io/DelaySSAToolkit.jl/dev/) | [![ci badge](https://github.com/xiaomingfu2013/DelaySSAToolkit.jl/actions/workflows/CI.yml/badge.svg?branch=main)](https://github.com/xiaomingfu2013/DelaySSAToolkit.jl/actions/workflows/CI.yml?query=branch%3Amain) [![cov badge](https://codecov.io/gh/palmtree2013/DelaySSAToolkit.jl/branch/main/graph/badge.svg)](https://codecov.io/gh/xiaomingfu2013/DelaySSAToolkit.jl) |
 
 DelaySSAToolkit.jl is a tool developed on top of [JumpProcesses.jl](https://github.com/SciML/JumpProcesses.jl) in Julia which solves the stochastic simulation [[1]](#1) coupled with delays. A portion of this library’s code is taken from the MIT licensed JumpProcesses.jl library.
 That code is copyright (c) 2017: Chris Rackauckas. This package contains the following features:
