@@ -8,49 +8,49 @@ $(FIELDS)
 
 # Notes
 - `delay_trigger::Dict{Int,T}`: reactions in the Markovian part that trigger the change of the state of the delay channels or/and the state of the reactants upon initiation.
-    - Keys: Indices of reactions defined in the Markovian part that can trigger the delay reactions; 
-    - Values: value type `T` can be either 
-      - `Function`: 
+    - Keys: Indices of reactions defined in the Markovian part that can trigger the delay reactions;
+    - Values: value type `T` can be either
+      - `Function`:
         a function that decides how to update the delay channel and/or the state of the reactants. For example, one can define
         ```julia
         delay_trigger_affect! = function(integrator, rng)
             append!(integrator.de_chan[1], rand(rng))
             integrator.u[2] +=1
         end
-        ``` 
+        ```
         which means adding a random number (with a given random seed `rng`) in (0,1) to the first delay channel, and adding 1 individual to the second species.
-      - `Vector{Pair{Int,T2}}` where T2<:Union{Real, Vector{Real}} 
-        a pair type is a simplified update function for only changing the delay channel (which will render better performance). For example, setting `delay_trigger_affect! = [1=>τ]` is equivalent to 
+      - `Vector{Pair{Int,T2}}` where T2<:Union{Real, Vector{Real}}
+        a pair type is a simplified update function for only changing the delay channel (which will render better performance). For example, setting `delay_trigger_affect! = [1=>τ]` is equivalent to
         ```julia
         delay_trigger_affect! = function(integrator, rng)
             append!(integrator.de_chan[1], τ)
         end
         ```
-- `delay_interrupt::Dict{Int,Function}`: reactions in the Markovian part that change the state of the delay channels or/and the state of the reactants in the middle of on-going delay reactions. 
-    - Keys: Indices of reactions defined in the Markovian part that can interrupt the delay reactions; 
+- `delay_interrupt::Dict{Int,Function}`: reactions in the Markovian part that change the state of the delay channels or/and the state of the reactants in the middle of on-going delay reactions.
+    - Keys: Indices of reactions defined in the Markovian part that can interrupt the delay reactions;
     - Values: value type `T` can be an update function of `Function` type that decides how to update the delay channel or the state of the reactants.
 
-- `delay_complete::Dict{Int,T}`: reactions that are initiated by delay trigger reactions and change the state of the delay channels or/and the state of the reactants upon completion. 
-    - Keys: Indices of the delay channel; 
+- `delay_complete::Dict{Int,T}`: reactions that are initiated by delay trigger reactions and change the state of the delay channels or/and the state of the reactants upon completion.
+    - Keys: Indices of the delay channel;
     - Values: value type `T` can be either an update function of `Function` type or a `Vector{Pair{Int,Int}}` type that decides how to update the delay channel or the state of the reactants upon completion
 
 - `delay_trigger_set::Vector{Int}`: collection of indices of reactions that can trigger the delay reaction.
 
 - `delay_interrupt_set::Vector{Int}`: collection of  indices of reactions that can interrupt the delay reactions.
 
-We take this [model](https://palmtree2013.github.io/DelaySSAToolkit.jl/dev/tutorials/delay_degradation/) for example.
+We take this [model](https://xiaomingfu2013.github.io/DelaySSAToolkit.jl/dev/tutorials/delay_degradation/) for example.
 ```julia
-# Take the following example 
+# Take the following example
 # C: 0 --> X_A
 # γ: X_A --> 0
 # β: X_A -->  X_I, which triggers  X_I ==> 0 after time τ
-# γ: X_I -->0 
+# γ: X_I -->0
 
 # the 3rd reaction will trigger a delay reaction
 delay_trigger_affect! = function (integrator, rng)
   append!(integrator.de_chan[1], τ)
 end
-# this is equivalent to 
+# this is equivalent to
 # delay_trigger = Dict(3=>[1=>τ])
 delay_trigger = Dict(3=>delay_trigger_affect!)
 
@@ -63,7 +63,7 @@ delay_interrupt_affect! = function (integrator, rng)
    i = rand(rng, 1:length(integrator.de_chan[1]))
    deleteat!(integrator.de_chan[1],i)
 end
-delay_interrupt = Dict(4=>delay_interrupt_affect!) 
+delay_interrupt = Dict(4=>delay_interrupt_affect!)
 
 
 delaysets = DelayJumpSet(delay_trigger,delay_complete,delay_interrupt)
@@ -158,10 +158,10 @@ end
     A jumpset containing the information of Markovian part.
 
 - `delayjumpset::DelayJumpSet`
-   
+
     A delay jumpset containing the information of Non-Markovian part.
 
-- `de_chan0::Vector{Vector{T}}` 
+- `de_chan0::Vector{Vector{T}}`
 
     The initial condition of the delay channel.
 """
@@ -289,8 +289,8 @@ make_kwarg(; kwargs...) = kwargs
 """
     function DelayJumpProblem(js::JumpSystem, prob, aggregator, delayjumpset, de_chan0; kwargs...)
 # Fields
-- `js::JumpSystem`  
-  
+- `js::JumpSystem`
+
     A jump system containing the information of Markovian part, defined by `Catalyst`.
     - `prob::DiscreteProblem`
 
@@ -300,10 +300,10 @@ make_kwarg(; kwargs...) = kwargs
 
     A given algorithm to solve the DelaySSA problem.
 - `delayjumpset::DelayJumpSet`
-   
+
     A delay jumpset containing the information of Non-Markovian part.
 
-- `de_chan0::Vector{Vector{T}}` 
+- `de_chan0::Vector{Vector{T}}`
 
     The initial condition of the delay channel.
 """
@@ -372,7 +372,7 @@ end
 """
 function DiffEqBase.remake(thing::DelayJumpProblem; kwargs...)
     errmesg = """
-    DelayJumpProblems can currently only be remade with new u0, de_chan0, p, tspan, delayjumpsets fields, prob fields. 
+    DelayJumpProblems can currently only be remade with new u0, de_chan0, p, tspan, delayjumpsets fields, prob fields.
     """
     !issubset(
         keys(kwargs),
@@ -438,7 +438,7 @@ end
 #   delayjumpsets_ = deepcopy(delayjumpsets)
 #   SimpleUnPack.@unpack delay_trigger_, delay_complete_, delay_interrupt_ = delayjumpsets
 #   for (key, value) in kwargs
-#       exp_key = toexpr(key)  
+#       exp_key = toexpr(key)
 #       if exp_key in [:delay_trigger, :delay_complete, :delay_interrupt]
 #           setproperty!(delayjumpsets_, exp_key, value)
 #       end
