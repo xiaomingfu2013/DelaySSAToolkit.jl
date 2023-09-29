@@ -35,6 +35,7 @@ makedocs(;
         "Theory" => "theory.md",
         "API" => "api.md",
     ],
+    warnonly=true,
 )
 
 deploydocs(; repo="github.com/xiaomingfu2013/DelaySSAToolkit.jl", devbranch="main")
