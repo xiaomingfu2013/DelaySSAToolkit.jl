@@ -12,13 +12,13 @@ An aggregator interface for Delay SSA-like algorithms.
 - `affects!`           # vector of affect functions for ConstantRateJumps
 - `save_positions`     # tuple for whether to save the jumps before and/or after event
 - `rng`                # random number generator
-- `next_delay`         # the index of the delay channel 
+- `next_delay`         # the index of the delay channel
 - `num_next_delay`     # how many times needed for updating the states in the next_delay channel
 - `time_to_next_jump`  # the time to the next jump (time gap)
 - `dt_delay`           # the time to the next delay reaction
 ### Optional fields:
 - `dep_gr`             # dependency graph, dep_gr[i] = indices of reactions that should
-                       # be updated when rx i occurs.    
+                       # be updated when rx i occurs.
 """
 abstract type AbstractDSSAJumpAggregator <: AbstractJumpAggregator end
 
@@ -205,7 +205,7 @@ end
 
     ttnj = time_to_next_jump
     if isempty(next_delay)
-        # update_state ! 
+        # update_state !
         num_ma_rates = get_num_majumps(ma_jumps)
         if next_jump <= num_ma_rates # is next jump a mass action jump
             if u isa SVector
@@ -439,9 +439,10 @@ function find_next_delay_vec(de_chan::Vector{Vector{T}}, ttnj::T) where {T<:Real
     position_indices = Vector{Int64}()
     num_in_vec = Vector{Int64}()
     for idx in eachindex(de_chan)
-        if ttnj in de_chan[idx]
+        num_count = count(==(ttnj), de_chan[idx])
+        if num_count > 0
+            append!(num_in_vec, num_count)
             append!(position_indices, idx)
-            append!(num_in_vec, count(==(ttnj), de_chan[idx]))
         end
     end
     return position_indices, num_in_vec
