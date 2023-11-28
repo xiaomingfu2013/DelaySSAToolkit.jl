@@ -54,8 +54,8 @@ tspan = (0, tf)
 ps = [1e-4, 1e-2]
 
 # Model: non-Markovian part (delay reactions)
-τ = 20.0
 delay_trigger_affect! = function (integrator, rng)
+    τ = 20.0
     append!(integrator.de_chan[1], τ) # add a delay time τ to the first delay channel
 end
 delay_trigger = Dict(1 => delay_trigger_affect!) # the first reaction S+I -> E+I will trigger a delay reaction: E --> I after τ time.  
@@ -107,10 +107,11 @@ tf = 200.0
 tspan = (0, tf)
 ps = [0.0282, 3.46]
 # Model: non-Markovian part
-τ = 130.0
+
 delay_trigger_affect! = []
 for i in 1:burst_sup
     push!(delay_trigger_affect!, function (integrator, rng)
+        τ = 130.0
         append!(integrator.de_chan[1], fill(τ, i))
     end)
 end
